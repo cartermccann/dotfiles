@@ -34,7 +34,7 @@ in
   # Fonts
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
-    nerd-fonts.cascadia-mono
+    nerd-fonts.caskaydia-mono
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-color-emoji

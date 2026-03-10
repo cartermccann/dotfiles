@@ -9,7 +9,7 @@
 
     # Video production
     obs-studio
-    kdenlive
+    kdePackages.kdenlive
     gpu-screen-recorder
 
     # Image tools

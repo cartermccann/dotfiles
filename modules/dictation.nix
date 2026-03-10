@@ -1,15 +1,20 @@
 { config, lib, pkgs, ... }:
 
 {
-  # Nerd-dictation — offline speech-to-text using VOSK
+  # Dictation tools
   environment.systemPackages = with pkgs; [
-    nerd-dictation
-    vosk-models.small-en-us # VOSK speech model
     libnotify # for notify-send in toggle script
     ydotool # for typing output
     wtype # Wayland text input
   ];
 
   # ydotool daemon for simulating keyboard input
-  services.ydotool.enable = true;
+  systemd.services.ydotoold = {
+    description = "ydotoold - ydotool daemon";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.ydotool}/bin/ydotoold";
+      Restart = "on-failure";
+    };
+  };
 }

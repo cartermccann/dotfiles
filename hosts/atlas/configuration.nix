@@ -18,6 +18,10 @@
 
   networking.hostName = "atlas";
 
+  # Use default kernel instead of nixos-hardware's patched Surface kernel
+  # (Surface kernel patches are currently broken for 6.12.19)
+  boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
+
   # Broadcom BCM4331 WiFi
   hardware.firmware = [ pkgs.linux-firmware ];
   boot.kernelModules = [ "wl" ];

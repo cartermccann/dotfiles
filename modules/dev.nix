@@ -83,7 +83,7 @@
     wget
     whois
     inetutils
-    openbsd-netcat
+    netcat-openbsd
   ];
 
   # Docker
