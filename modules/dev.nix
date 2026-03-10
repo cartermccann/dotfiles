@@ -32,6 +32,9 @@
     rustup
     rust-analyzer
 
+    # Java
+    jdt-language-server
+
     # Nix
     nil
     nixfmt-rfc-style

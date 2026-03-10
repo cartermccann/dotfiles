@@ -4,7 +4,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/common.nix
-    ../../modules/desktop.nix
+    ../../modules/desktop-niri.nix
     ../../modules/dev.nix
   ];
 

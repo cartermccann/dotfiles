@@ -9,21 +9,26 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }: {
-    nixosConfigurations.atlas = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        ./hosts/atlas/configuration.nix
-        home-manager.nixosModules.home-manager
-        {
-          home-manager = {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-            users.carter = import ./home/common.nix;
-            backupFileExtension = "backup";
-          };
-        }
-      ];
+  outputs = { self, nixpkgs, home-manager, ... }:
+    let
+      mkHost = hostname: { system ? "x86_64-linux", user ? "carter" }:
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hosts/${hostname}/configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.${user} = import ./home/common.nix;
+                backupFileExtension = "backup";
+              };
+            }
+          ];
+        };
+    in
+    {
+      nixosConfigurations.atlas = mkHost "atlas" {};
     };
-  };
 }

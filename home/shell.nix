@@ -25,9 +25,9 @@
       dlog = "docker logs";
 
       # Nix
-      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos#$(hostname | tr 'A-Z' 'a-z')";
-      nrs = "sudo nixos-rebuild switch --flake /etc/nixos#$(hostname | tr 'A-Z' 'a-z')";
-      update = "sudo nixos-rebuild switch --flake /etc/nixos#$(hostname | tr 'A-Z' 'a-z') --upgrade";
+      rebuild = "sudo nixos-rebuild switch --flake ~/dotfiles#$(hostname | tr 'A-Z' 'a-z')";
+      nrs = "sudo nixos-rebuild switch --flake ~/dotfiles#$(hostname | tr 'A-Z' 'a-z')";
+      update = "sudo nixos-rebuild switch --flake ~/dotfiles#$(hostname | tr 'A-Z' 'a-z') --upgrade";
 
       # Modern replacements
       ls = "eza --icons";
