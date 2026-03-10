@@ -11,11 +11,12 @@
       url = "github:googleworkspace/cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
-  outputs = { self, nixpkgs, home-manager, google-workspace-cli, ... }:
+  outputs = { self, nixpkgs, home-manager, google-workspace-cli, nixos-hardware, ... }:
     let
-      mkHost = hostname: { system ? "x86_64-linux", user ? "carter" }:
+      mkHost = hostname: { system ? "x86_64-linux", user ? "carter", extraModules ? [] }:
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = { inherit user google-workspace-cli; };
@@ -40,11 +41,11 @@
                 backupFileExtension = "backup";
               };
             }
-          ];
+          ] ++ extraModules;
         };
     in
     {
-      nixosConfigurations.atlas = mkHost "atlas" {};
+      nixosConfigurations.atlas = mkHost "atlas" { extraModules = [ nixos-hardware.nixosModules.microsoft-surface-common ]; };
       nixosConfigurations.desktop = mkHost "desktop" { user = "cjm"; };
     };
 }

@@ -29,7 +29,7 @@
 
   # Desktop packages
   environment.systemPackages = with pkgs; [
-    alacritty
+    ghostty
     fuzzel
     swaybg
     grim

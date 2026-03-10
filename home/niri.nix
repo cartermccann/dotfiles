@@ -24,28 +24,33 @@
       touchpad {
         tap
         natural-scroll
+        scroll-method "two-finger"
       }
     }
 
     // Layout
     layout {
-      gaps 8
+      gaps 12
       center-focused-column "never"
       default-column-width { proportion 0.5; }
       focus-ring {
+        off
+      }
+      border {
         width 2
         active-color "#81A1C1"
         inactive-color "#3B4252"
-      }
-      border {
-        off
       }
     }
 
     // Window rules
     window-rule {
-      geometry-corner-radius 8
+      geometry-corner-radius 12
       clip-to-geometry true
+      shadow {
+        on
+        color "#00000064"
+      }
     }
 
     // Screenshots
@@ -160,8 +165,8 @@
       XF86AudioPrev { spawn "playerctl" "previous"; }
 
       // ── Brightness ──
-      XF86MonitorBrightnessUp allow-when-locked=true { spawn "brightnessctl" "set" "5%+"; }
-      XF86MonitorBrightnessDown allow-when-locked=true { spawn "brightnessctl" "set" "5%-"; }
+      XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "set" "5%+"; }
+      XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "set" "5%-"; }
     }
   '';
 
@@ -169,7 +174,7 @@
   xdg.configFile."fuzzel/fuzzel.ini".text = ''
     [main]
     font=JetBrainsMono Nerd Font:size=12
-    terminal=alacritty
+    terminal=ghostty
     layer=overlay
     prompt="  "
 

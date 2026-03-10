@@ -5,7 +5,7 @@
     ./shell.nix
     ./git.nix
     ./neovim.nix
-    ./alacritty.nix
+    ./ghostty.nix
     ./niri.nix
     ./tmux.nix
     ./dictation.nix
