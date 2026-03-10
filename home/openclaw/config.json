@@ -1,0 +1,174 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.1"
+  },
+  "wizard": {
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "browser": {
+    "attachOnly": false
+  },
+  "auth": {
+    "profiles": {
+      "anthropic:default": {
+        "provider": "anthropic",
+        "mode": "token"
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "PLACEHOLDER_HOME/clawd",
+      "model": {
+        "primary": "claw-llm-router/auto"
+      },
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    }
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "boot-md": {
+          "enabled": true
+        },
+        "command-logger": {
+          "enabled": true
+        },
+        "session-memory": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "web": {
+    "enabled": true
+  },
+  "channels": {
+    "whatsapp": {
+      "dmPolicy": "allowlist",
+      "selfChatMode": true,
+      "allowFrom": ["+placeholder"],
+      "groupPolicy": "allowlist",
+      "mediaMaxMb": 50,
+      "debounceMs": 0
+    },
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "botToken": "SECRET",
+      "groupPolicy": "allowlist",
+      "streaming": "partial"
+    },
+    "slack": {
+      "mode": "socket",
+      "webhookPath": "/slack/events",
+      "enabled": true,
+      "commands": {
+        "native": true,
+        "nativeSkills": true
+      },
+      "configWrites": true,
+      "botToken": "SECRET",
+      "appToken": "SECRET",
+      "userTokenReadOnly": true,
+      "allowBots": true,
+      "dmPolicy": "open",
+      "allowFrom": ["*"],
+      "groupPolicy": "open",
+      "blockStreamingCoalesce": {
+        "idleMs": 0
+      },
+      "actions": {
+        "reactions": true,
+        "messages": true,
+        "pins": true,
+        "search": true,
+        "permissions": true,
+        "memberInfo": true,
+        "channelInfo": true,
+        "emojiList": true
+      }
+    }
+  },
+  "canvasHost": {
+    "enabled": true
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "SECRET"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    },
+    "entries": {
+      "goplaces": {
+        "apiKey": "SECRET"
+      },
+      "local-places": {
+        "apiKey": "SECRET"
+      },
+      "openai-image-gen": {
+        "apiKey": "SECRET"
+      },
+      "openai-whisper-api": {
+        "apiKey": "SECRET"
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "whatsapp": {
+        "enabled": true
+      },
+      "slack": {
+        "enabled": true
+      },
+      "telegram": {
+        "enabled": true
+      },
+      "memory-service": {
+        "enabled": true,
+        "config": {
+          "url": "https://memserv-production-2044.up.railway.app"
+        }
+      },
+      "claw-llm-router": {
+        "enabled": true,
+        "config": {
+          "tiers": {
+            "SIMPLE": "ollama/qwen3.5:4b",
+            "MEDIUM": "ollama/qwen3.5:9b",
+            "COMPLEX": "anthropic/claude-sonnet-4-5-20250929",
+            "REASONING": "anthropic/claude-opus-4-20250115"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,14 +1,16 @@
-{ config, pkgs, ... }:
+{ config, pkgs, user, ... }:
 
 {
   # Niri config (KDL format)
+  # Keybinds ported from Omarchy + vim-style navigation
   xdg.configFile."niri/config.kdl".text = ''
     // Startup processes
-    spawn-at-startup "swaybg" "-m" "fill" "-i" "/home/carter/wallpaper.png"
+    spawn-at-startup "swaybg" "-m" "fill" "-i" "/home/${user}/wallpaper.png"
     spawn-at-startup "waybar"
     spawn-at-startup "mako"
     spawn-at-startup "nm-applet"
     spawn-at-startup "xwayland-satellite"
+    spawn-at-startup "easyeffects" "--gapplication-service"
 
     // Input
     input {
@@ -51,56 +53,113 @@
 
     // Keybindings
     binds {
-      // Programs
-      Mod+Return { spawn "alacritty"; }
-      Mod+D { spawn "fuzzel"; }
-      Mod+Shift+S { screenshot; }
-      Mod+Shift+P { screenshot-screen; }
 
-      // Window management
+      // ── Programs (Omarchy-style) ──
+      Mod+Return { spawn "alacritty"; }
+      Mod+Space { spawn "fuzzel"; }                         // Omarchy: SUPER+SPACE = app launcher
+      Mod+Shift+S { screenshot; }                           // region screenshot
+      Mod+Shift+P { screenshot-screen; }                    // full screen screenshot
+      Print { screenshot; }                                 // Omarchy: PrintScreen
+
+      // ── Window management (Omarchy: SUPER+W close) ──
+      Mod+W { close-window; }
       Mod+Q { close-window; }
+
+      // ── Vim-style focus (from your niri config) ──
       Mod+H { focus-column-left; }
       Mod+J { focus-window-down; }
       Mod+K { focus-window-up; }
       Mod+L { focus-column-right; }
+
+      // ── Arrow key focus (Omarchy-style) ──
+      Mod+Left { focus-column-left; }
+      Mod+Down { focus-window-down; }
+      Mod+Up { focus-window-up; }
+      Mod+Right { focus-column-right; }
+
+      // ── Vim-style move windows ──
       Mod+Shift+H { move-column-left; }
       Mod+Shift+J { move-window-down; }
       Mod+Shift+K { move-window-up; }
       Mod+Shift+L { move-column-right; }
 
-      // Resize
+      // ── Arrow key move windows (Omarchy-style) ──
+      Mod+Shift+Left { move-column-left; }
+      Mod+Shift+Down { move-window-down; }
+      Mod+Shift+Up { move-window-up; }
+      Mod+Shift+Right { move-column-right; }
+
+      // ── Resize (Omarchy: SUPER +/-) ──
       Mod+Ctrl+H { set-column-width "-10%"; }
       Mod+Ctrl+L { set-column-width "+10%"; }
+      Mod+Minus { set-column-width "-10%"; }
+      Mod+Equal { set-column-width "+10%"; }
 
-      // Layout
+      // ── Layout (Omarchy: SUPER+F fullscreen, SUPER+T float) ──
       Mod+F { maximize-column; }
       Mod+Shift+F { fullscreen-window; }
       Mod+C { center-column; }
+      Mod+T { toggle-window-floating; }
 
-      // Workspaces
+      // ── Workspaces 1-10 (Omarchy-style) ──
       Mod+1 { focus-workspace 1; }
       Mod+2 { focus-workspace 2; }
       Mod+3 { focus-workspace 3; }
       Mod+4 { focus-workspace 4; }
       Mod+5 { focus-workspace 5; }
       Mod+6 { focus-workspace 6; }
+      Mod+7 { focus-workspace 7; }
+      Mod+8 { focus-workspace 8; }
+      Mod+9 { focus-workspace 9; }
+      Mod+0 { focus-workspace 10; }
+
       Mod+Shift+1 { move-column-to-workspace 1; }
       Mod+Shift+2 { move-column-to-workspace 2; }
       Mod+Shift+3 { move-column-to-workspace 3; }
       Mod+Shift+4 { move-column-to-workspace 4; }
       Mod+Shift+5 { move-column-to-workspace 5; }
       Mod+Shift+6 { move-column-to-workspace 6; }
+      Mod+Shift+7 { move-column-to-workspace 7; }
+      Mod+Shift+8 { move-column-to-workspace 8; }
+      Mod+Shift+9 { move-column-to-workspace 9; }
+      Mod+Shift+0 { move-column-to-workspace 10; }
 
-      // Session
+      // ── Workspace cycling (Omarchy: SUPER+TAB) ──
+      Mod+Tab { focus-workspace-down; }
+      Mod+Shift+Tab { focus-workspace-up; }
+
+      // ── Notifications (Omarchy: SUPER+COMMA) ──
+      Mod+Comma { spawn "makoctl" "dismiss"; }
+      Mod+Shift+Comma { spawn "makoctl" "dismiss" "--all"; }
+      Mod+Alt+Comma { spawn "makoctl" "invoke"; }
+
+      // ── Utilities ──
+      Mod+Shift+Space { spawn "bash" "-c" "pkill waybar || waybar"; }  // toggle waybar
+      Mod+Ctrl+L { spawn "bash" "-c" "loginctl lock-session"; }       // lock screen
+
+      // ── Dictation (Omarchy: SUPER+CTRL+X, also SUPER+ALT+L from your custom) ──
+      Mod+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
+      Mod+Ctrl+X { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
+
+      // ── Control panels (Omarchy-style) ──
+      Mod+Ctrl+A { spawn "pavucontrol"; }                   // audio controls
+      Mod+Ctrl+B { spawn "bluetui"; }                        // bluetooth
+      Mod+Ctrl+T { spawn "alacritty" "-e" "btop"; }         // system monitor
+
+      // ── Session ──
       Mod+Shift+E { quit; }
       Mod+Shift+Slash { show-hotkey-overlay; }
 
-      // Audio
+      // ── Audio (media keys) ──
       XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"; }
       XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-"; }
       XF86AudioMute allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
+      XF86AudioMicMute allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+      XF86AudioPlay { spawn "playerctl" "play-pause"; }
+      XF86AudioNext { spawn "playerctl" "next"; }
+      XF86AudioPrev { spawn "playerctl" "previous"; }
 
-      // Brightness
+      // ── Brightness ──
       XF86MonitorBrightnessUp allow-when-locked=true { spawn "brightnessctl" "set" "5%+"; }
       XF86MonitorBrightnessDown allow-when-locked=true { spawn "brightnessctl" "set" "5%-"; }
     }
@@ -154,7 +213,7 @@
     spacing = 4;
     modules-left = [ "niri/workspaces" ];
     modules-center = [ "clock" ];
-    modules-right = [ "cpu" "memory" "network" "pulseaudio" "tray" ];
+    modules-right = [ "cpu" "memory" "network" "pulseaudio" "bluetooth" "tray" ];
 
     "niri/workspaces" = {
       format = "{index}";
@@ -177,6 +236,11 @@
       format-muted = " Muted";
       format-icons.default = [ "" "" "" ];
       on-click = "pavucontrol";
+    };
+    bluetooth = {
+      format = " {status}";
+      format-connected = " {device_alias}";
+      on-click = "bluetui";
     };
     clock = {
       format = " {:%H:%M   %a %b %d}";
@@ -211,7 +275,7 @@
       border-bottom: 2px solid #81A1C1;
     }
 
-    #cpu, #memory, #network, #pulseaudio, #clock, #tray {
+    #cpu, #memory, #network, #pulseaudio, #bluetooth, #clock, #tray {
       padding: 0 10px;
     }
 
@@ -219,6 +283,7 @@
     #memory { color: #81A1C1; }
     #network { color: #A3BE8C; }
     #pulseaudio { color: #EBCB8B; }
+    #bluetooth { color: #B48EAD; }
     #clock { color: #D8DEE9; }
   '';
 }

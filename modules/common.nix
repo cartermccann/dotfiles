@@ -1,15 +1,13 @@
 { config, lib, pkgs, ... }:
 
+let
+  # User is passed via specialArgs from flake.nix
+  user = config.users.users;
+in
 {
   # Boot
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  # Swap — gives headroom for LLMs
-  swapDevices = [{
-    device = "/swapfile";
-    size = 4096; # 4GB
-  }];
 
   # Networking
   networking.networkmanager.enable = true;
@@ -33,28 +31,12 @@
     };
   };
 
-  # Docker
-  virtualisation.docker.enable = true;
-
-  # Ollama — local LLM server
-  services.ollama = {
-    enable = true;
-    acceleration = false; # no GPU, CPU-only
-  };
-
-  # User
-  users.users.carter = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" "docker" "networkmanager" ];
-    openssh.authorizedKeys.keys = [
-      # Add your public SSH key here before rebuilding
-    ];
-  };
-
   # Fonts
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
+    nerd-fonts.cascadia-mono
     noto-fonts
+    noto-fonts-cjk-sans
     noto-fonts-color-emoji
   ];
 
@@ -69,6 +51,7 @@
     unzip
     file
     killall
+    zoxide
   ];
 
   # Firefox
