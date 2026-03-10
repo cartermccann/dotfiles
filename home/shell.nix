@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, user, ... }:
 
 {
   programs.bash = {
@@ -36,18 +36,36 @@
       grep = "rg";
 
       # Ollama
-      ai = "ollama run llama3.2:3b";
+      ai = "ollama run qwen3.5:9b";
 
       # OpenClaw
       claw = "openclaw";
     };
     initExtra = ''
-      export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$HOME/.cargo/bin:$PATH"
+      export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$HOME/.cargo/bin:$HOME/.fly/bin:$PATH"
+      export NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+      export OPENCLAW_NO_RESPAWN=1
 
       # Set npm global prefix for NixOS (Nix store is read-only)
       if command -v npm &> /dev/null; then
         npm set prefix ~/.npm-global 2>/dev/null
       fi
+
+      # Prompt to install openclaw if missing
+      if ! command -v openclaw &> /dev/null && command -v npm &> /dev/null; then
+        echo "openclaw not found — install with: npm i -g openclaw"
+      fi
+
+      # tmux dev layout
+      dev() {
+        tmux new-session -d -s dev -c "$(pwd)"
+        tmux split-window -h -p 40
+        tmux split-window -v -p 50
+        tmux select-pane -t 1
+        tmux send-keys -t dev:1.1 "nvim" Enter
+        tmux select-pane -t dev:1.1
+        tmux attach -t dev
+      }
     '';
   };
 
@@ -90,6 +108,12 @@
       "--color=fg:#D8DEE9,header:#81A1C1,info:#EBCB8B,pointer:#81A1C1"
       "--color=marker:#81A1C1,fg+:#D8DEE9,prompt:#81A1C1,hl+:#81A1C1"
     ];
+  };
+
+  # zoxide (smart cd)
+  programs.zoxide = {
+    enable = true;
+    enableBashIntegration = true;
   };
 
   # direnv for per-project nix shells

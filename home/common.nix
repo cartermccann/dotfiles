@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, user, ... }:
 
 {
   imports = [
@@ -8,10 +8,12 @@
     ./alacritty.nix
     ./niri.nix
     ./tmux.nix
+    ./dictation.nix
+    ./openclaw.nix
   ];
 
-  home.username = "carter";
-  home.homeDirectory = "/home/carter";
+  home.username = user;
+  home.homeDirectory = "/home/${user}";
 
   home.packages = with pkgs; [
     fastfetch
