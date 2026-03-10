@@ -1,0 +1,104 @@
+* {
+    nord0:  #2E3440;
+    nord1:  #3B4252;
+    nord2:  #434C5E;
+    nord3:  #4C566A;
+    nord4:  #D8DEE9;
+    nord5:  #E5E9F0;
+    nord6:  #ECEFF4;
+    nord8:  #88C0D0;
+    nord9:  #81A1C1;
+    nord11: #BF616A;
+
+    background-color: transparent;
+    text-color:       @nord4;
+    font:             "JetBrainsMono Nerd Font 12";
+}
+
+window {
+    background-color: @nord0;
+    border:           2px solid;
+    border-color:     @nord9;
+    border-radius:    8px;
+    width:            540px;
+    padding:          0;
+}
+
+mainbox {
+    background-color: @nord0;
+    padding:          12px;
+    spacing:          10px;
+}
+
+inputbar {
+    background-color: @nord1;
+    border-radius:    6px;
+    padding:          10px 14px;
+    spacing:          8px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color:       @nord8;
+    background-color: transparent;
+}
+
+entry {
+    placeholder:       "Search...";
+    placeholder-color: @nord3;
+    background-color:  transparent;
+    text-color:        @nord6;
+}
+
+listview {
+    background-color: @nord0;
+    lines:            8;
+    columns:          1;
+    spacing:          4px;
+    fixed-height:     false;
+    scrollbar:        false;
+}
+
+element {
+    background-color: transparent;
+    padding:          8px 12px;
+    border-radius:    6px;
+    spacing:          10px;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color:       @nord4;
+}
+
+element alternate.normal {
+    background-color: transparent;
+    text-color:       @nord4;
+}
+
+element selected.normal {
+    background-color: @nord9;
+    text-color:       @nord0;
+}
+
+element-icon {
+    size:             22px;
+    background-color: transparent;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+    vertical-align:   0.5;
+}
+
+message {
+    background-color: @nord1;
+    border-radius:    6px;
+    padding:          8px 12px;
+}
+
+textbox {
+    background-color: transparent;
+    text-color:       @nord4;
+}
