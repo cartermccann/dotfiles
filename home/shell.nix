@@ -74,7 +74,7 @@ in
     settings = {
       format = builtins.concatStringsSep "" [
         "[░▒▓](#a3aed2)"
-        "[  ](bg:#a3aed2 fg:#090c0c)"
+        "[ ](bg:#a3aed2 fg:#090c0c)"
         "[](bg:#769ff0 fg:#a3aed2)"
         "$directory"
         "[](fg:#769ff0 bg:#394260)"
