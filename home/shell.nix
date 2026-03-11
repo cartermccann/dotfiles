@@ -45,6 +45,7 @@ in
     enable = true;
     inherit shellAliases;
     interactiveShellInit = ''
+      set -g fish_greeting
       fish_add_path $HOME/.local/bin $HOME/.cargo/bin
 
       # tmux dev layout

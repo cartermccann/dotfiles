@@ -336,10 +336,10 @@
     layout-bg-color=00000000
     layout-text-color=D8DEE9
 
-    inside-color=ECEFF4AA
-    inside-clear-color=ECEFF4AA
-    inside-ver-color=ECEFF4AA
-    inside-wrong-color=ECEFF4AA
+    inside-color=2E3440DD
+    inside-clear-color=2E3440DD
+    inside-ver-color=2E3440DD
+    inside-wrong-color=2E3440DD
 
     ring-color=4C566A
     ring-clear-color=88C0D0
@@ -351,9 +351,9 @@
     line-ver-color=00000000
     line-wrong-color=00000000
 
-    text-color=2E3440
-    text-clear-color=5E81AC
-    text-ver-color=5E81AC
+    text-color=ECEFF4
+    text-clear-color=88C0D0
+    text-ver-color=81A1C1
     text-wrong-color=BF616A
   '';
 }

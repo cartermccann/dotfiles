@@ -10,7 +10,7 @@
     wayland.enable = true;
     theme = "sddm-astronaut-theme";
     extraPackages = [
-      (pkgs.sddm-astronaut.override {
+      ((pkgs.sddm-astronaut.override {
         embeddedTheme = "japanese_aesthetic";
         themeConfig = {
           Background = "${../wallpaper/nord-landscape.png}";
@@ -44,7 +44,26 @@
           DateTextColor = "#D8DEE9";
           TimeTextColor = "#ECEFF4";
         };
-      })
+      }).overrideAttrs (old: {
+        postInstall = (old.postInstall or "") + ''
+          # Patch theme config with Nord colors (in case themeConfig overrides aren't applied)
+          conf="$out/share/sddm/themes/sddm-astronaut-theme/Themes/japanese_aesthetic.conf"
+          if [ -f "$conf" ]; then
+            substituteInPlace "$conf" \
+              --replace-quiet 'LoginFieldTextColor="#32302f"' 'LoginFieldTextColor="#D8DEE9"' \
+              --replace-quiet 'PasswordFieldTextColor="#32302f"' 'PasswordFieldTextColor="#D8DEE9"' \
+              --replace-quiet 'PlaceholderTextColor="#7c6f64"' 'PlaceholderTextColor="#4C566A"' \
+              --replace-quiet 'LoginFieldBackgroundColor="#1d2021"' 'LoginFieldBackgroundColor="#3B4252"'
+          fi
+
+          # Fix hardcoded 0.2 opacity on input backgrounds
+          input="$out/share/sddm/themes/sddm-astronaut-theme/Components/Input.qml"
+          if [ -f "$input" ]; then
+            substituteInPlace "$input" \
+              --replace-quiet 'opacity: 0.2' 'opacity: 0.6'
+          fi
+        '';
+      }))
     ];
   };
 
@@ -80,11 +99,5 @@
     wlsunset
     swaylock-effects
     swayidle
-    (sddm-astronaut.override {
-      embeddedTheme = "japanese_aesthetic";
-      themeConfig = {
-        Background = "${../wallpaper/nord-landscape.png}";
-      };
-    })
   ];
 }
