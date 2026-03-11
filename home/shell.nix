@@ -73,54 +73,69 @@ in
     enable = true;
     settings = {
       format = builtins.concatStringsSep "" [
-        "[](fg:#3B4252)"
+        "[░▒▓](#a3aed2)"
+        "[  ](bg:#a3aed2 fg:#090c0c)"
+        "[](bg:#769ff0 fg:#a3aed2)"
         "$directory"
-        "[](bg:#434C5E fg:#3B4252)"
+        "[](fg:#769ff0 bg:#394260)"
         "$git_branch"
         "$git_status"
-        "[](fg:#434C5E)"
-        " $python$nodejs$elixir$rust$nix_shell$docker_context"
-        "$character"
+        "[](fg:#394260 bg:#212736)"
+        "$nodejs"
+        "$rust"
+        "$golang"
+        "$php"
+        "[](fg:#212736 bg:#1d2230)"
+        "$time"
+        "[ ](fg:#1d2230)"
+        "\n$character"
       ];
       directory = {
         format = "[ $path ]($style)";
-        style = "bg:#3B4252 fg:#81A1C1 bold";
+        style = "fg:#e3e5e5 bg:#769ff0";
         truncation_length = 3;
+        truncation_symbol = "…/";
+      };
+      directory.substitutions = {
+        "Documents" = "󰈙 ";
+        "Downloads" = " ";
+        "Music" = " ";
+        "Pictures" = " ";
       };
       git_branch = {
-        format = "[  $branch ]($style)";
-        style = "bg:#434C5E fg:#A3BE8C bold";
+        symbol = "";
+        style = "bg:#394260";
+        format = "[[ $symbol $branch ](fg:#769ff0 bg:#394260)]($style)";
       };
       git_status = {
-        format = "[$all_status$ahead_behind]($style)";
-        style = "bg:#434C5E fg:#BF616A bold";
-      };
-      python = {
-        format = "[](fg:#EBCB8B)[ $symbol$version ](bg:#EBCB8B fg:#2E3440)[](fg:#EBCB8B) ";
-        symbol = " ";
+        style = "bg:#394260";
+        format = "[[($all_status$ahead_behind )](fg:#769ff0 bg:#394260)]($style)";
       };
       nodejs = {
-        format = "[](fg:#A3BE8C)[ $symbol$version ](bg:#A3BE8C fg:#2E3440)[](fg:#A3BE8C) ";
-        symbol = " ";
-      };
-      elixir = {
-        format = "[](fg:#B48EAD)[ $symbol$version ](bg:#B48EAD fg:#2E3440)[](fg:#B48EAD) ";
-        symbol = " ";
+        symbol = "";
+        style = "bg:#212736";
+        format = "[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)";
       };
       rust = {
-        format = "[](fg:#D08770)[ $symbol$version ](bg:#D08770 fg:#2E3440)[](fg:#D08770) ";
-        symbol = " ";
+        symbol = "";
+        style = "bg:#212736";
+        format = "[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)";
       };
-      nix_shell = {
-        format = "[](fg:#88C0D0)[  $state ](bg:#88C0D0 fg:#2E3440)[](fg:#88C0D0) ";
+      golang = {
+        symbol = "";
+        style = "bg:#212736";
+        format = "[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)";
       };
-      docker_context = {
-        format = "[](fg:#81A1C1)[ $symbol$context ](bg:#81A1C1 fg:#2E3440)[](fg:#81A1C1) ";
-        symbol = " ";
+      php = {
+        symbol = "";
+        style = "bg:#212736";
+        format = "[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)";
       };
-      character = {
-        success_symbol = " [❯](bold #A3BE8C)";
-        error_symbol = " [❯](bold #BF616A)";
+      time = {
+        disabled = false;
+        time_format = "%R";
+        style = "bg:#1d2230";
+        format = "[[  $time ](fg:#a0a9cb bg:#1d2230)]($style)";
       };
     };
   };
