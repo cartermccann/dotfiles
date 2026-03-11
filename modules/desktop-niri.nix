@@ -10,7 +10,41 @@
     wayland.enable = true;
     theme = "sddm-astronaut-theme";
     extraPackages = [
-      (pkgs.sddm-astronaut.override { embeddedTheme = "japanese_aesthetic"; })
+      (pkgs.sddm-astronaut.override {
+        embeddedTheme = "japanese_aesthetic";
+        themeConfig = {
+          Background = "${../wallpaper/nord-landscape.png}";
+          DimBackground = "0.3";
+          FormBackgroundColor = "#2E3440";
+          BackgroundColor = "#2E3440";
+          DimBackgroundColor = "#2E3440";
+          LoginFieldBackgroundColor = "#3B4252";
+          PasswordFieldBackgroundColor = "#3B4252";
+          LoginFieldTextColor = "#D8DEE9";
+          PasswordFieldTextColor = "#D8DEE9";
+          UserIconColor = "#81A1C1";
+          PasswordIconColor = "#81A1C1";
+          PlaceholderTextColor = "#4C566A";
+          WarningColor = "#BF616A";
+          LoginButtonTextColor = "#ECEFF4";
+          LoginButtonBackgroundColor = "#81A1C1";
+          SystemButtonsIconsColor = "#D8DEE9";
+          SessionButtonTextColor = "#D8DEE9";
+          DropdownTextColor = "#D8DEE9";
+          DropdownSelectedBackgroundColor = "#434C5E";
+          DropdownBackgroundColor = "#3B4252";
+          HighlightTextColor = "#88C0D0";
+          HighlightBackgroundColor = "#3B4252";
+          HighlightBorderColor = "#81A1C1";
+          HoverUserIconColor = "#88C0D0";
+          HoverPasswordIconColor = "#88C0D0";
+          HoverSystemButtonsIconsColor = "#88C0D0";
+          HoverSessionButtonTextColor = "#88C0D0";
+          HeaderTextColor = "#ECEFF4";
+          DateTextColor = "#D8DEE9";
+          TimeTextColor = "#ECEFF4";
+        };
+      })
     ];
   };
 
@@ -46,6 +80,11 @@
     wlsunset
     swaylock-effects
     swayidle
-    (sddm-astronaut.override { embeddedTheme = "japanese_aesthetic"; })
+    (sddm-astronaut.override {
+      embeddedTheme = "japanese_aesthetic";
+      themeConfig = {
+        Background = "${../wallpaper/nord-landscape.png}";
+      };
+    })
   ];
 }

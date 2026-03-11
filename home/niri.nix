@@ -318,7 +318,7 @@
 
   # Swaylock config (Nord + blur)
   xdg.configFile."swaylock/config".text = ''
-    screenshots
+    image=/home/${user}/wallpaper.png
     clock
     indicator
     indicator-radius=120
@@ -336,12 +336,12 @@
     layout-bg-color=00000000
     layout-text-color=D8DEE9
 
-    inside-color=2E344000
-    inside-clear-color=2E344000
-    inside-ver-color=2E344000
-    inside-wrong-color=2E344000
+    inside-color=2E3440CC
+    inside-clear-color=2E3440CC
+    inside-ver-color=2E3440CC
+    inside-wrong-color=2E3440CC
 
-    ring-color=3B4252
+    ring-color=4C566A
     ring-clear-color=88C0D0
     ring-ver-color=81A1C1
     ring-wrong-color=BF616A

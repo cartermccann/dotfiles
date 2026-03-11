@@ -5,7 +5,6 @@ let
     # Navigation
     ".." = "cd ..";
     "..." = "cd ../..";
-    "~" = "cd ~";
 
     # Git
     gs = "git status";
