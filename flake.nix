@@ -23,7 +23,7 @@
           modules = [
             ./hosts/${hostname}/configuration.nix
             home-manager.nixosModules.home-manager
-            {
+            ({ pkgs, ... }: {
               # User account
               users.users.${user} = {
                 isNormalUser = true;
@@ -41,7 +41,7 @@
                 extraSpecialArgs = { inherit user google-workspace-cli; };
                 backupFileExtension = "backup";
               };
-            }
+            })
           ] ++ extraModules;
         };
     in
