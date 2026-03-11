@@ -1,7 +1,7 @@
 { config, pkgs, user, ... }:
 
 {
-  # Dictation toggle script (same as your Omarchy setup)
+  # Dictation toggle script
   home.file.".local/bin/toggle-dictation.sh" = {
     executable = true;
     text = ''

@@ -34,10 +34,7 @@
   }];
 
   # Ollama — CPU-only, i7 + 32GB RAM
-  services.ollama = {
-    enable = true;
-    acceleration = false;
-  };
+  # Runs via Docker (see modules/ollama.nix)
   local.ollamaTier = "medium";
 
   # Starlink WiFi auto-connect

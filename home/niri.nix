@@ -2,7 +2,6 @@
 
 {
   # Niri config (KDL format)
-  # Keybinds ported from Omarchy + vim-style navigation
   xdg.configFile."niri/config.kdl".text = ''
     // Startup processes
     spawn-at-startup "swaybg" "-m" "fill" "-i" "/home/${user}/wallpaper.png"
@@ -40,6 +39,7 @@
         width 2
         active-color "#81A1C1"
         inactive-color "#3B4252"
+        corner-radius 12
       }
     }
 
@@ -59,14 +59,14 @@
     // Keybindings
     binds {
 
-      // ── Programs (Omarchy-style) ──
+      // ── Programs ──
       Mod+Return { spawn "alacritty"; }
-      Mod+Space { spawn "fuzzel"; }                         // Omarchy: SUPER+SPACE = app launcher
-      Mod+Shift+S { screenshot; }                           // region screenshot
-      Mod+Shift+P { screenshot-screen; }                    // full screen screenshot
-      Print { screenshot; }                                 // Omarchy: PrintScreen
+      Mod+Space { spawn "fuzzel"; }
+      Mod+Shift+S { screenshot; }
+      Mod+Shift+P { screenshot-screen; }
+      Print { screenshot; }
 
-      // ── Window management (Omarchy: SUPER+W close) ──
+      // ── Window management ──
       Mod+W { close-window; }
       Mod+Q { close-window; }
 
@@ -76,7 +76,7 @@
       Mod+K { focus-window-up; }
       Mod+L { focus-column-right; }
 
-      // ── Arrow key focus (Omarchy-style) ──
+      // ── Arrow key focus ──
       Mod+Left { focus-column-left; }
       Mod+Down { focus-window-down; }
       Mod+Up { focus-window-up; }
@@ -88,25 +88,25 @@
       Mod+Shift+K { move-window-up; }
       Mod+Shift+L { move-column-right; }
 
-      // ── Arrow key move windows (Omarchy-style) ──
+      // ── Arrow key move windows ──
       Mod+Shift+Left { move-column-left; }
       Mod+Shift+Down { move-window-down; }
       Mod+Shift+Up { move-window-up; }
       Mod+Shift+Right { move-column-right; }
 
-      // ── Resize (Omarchy: SUPER +/-) ──
+      // ── Resize ──
       Mod+Ctrl+H { set-column-width "-10%"; }
       Mod+Ctrl+L { set-column-width "+10%"; }
       Mod+Minus { set-column-width "-10%"; }
       Mod+Equal { set-column-width "+10%"; }
 
-      // ── Layout (Omarchy: SUPER+F fullscreen, SUPER+T float) ──
+      // ── Layout ──
       Mod+F { maximize-column; }
       Mod+Shift+F { fullscreen-window; }
       Mod+C { center-column; }
       Mod+T { toggle-window-floating; }
 
-      // ── Workspaces 1-10 (Omarchy-style) ──
+      // ── Workspaces 1-10 ──
       Mod+1 { focus-workspace 1; }
       Mod+2 { focus-workspace 2; }
       Mod+3 { focus-workspace 3; }
@@ -129,11 +129,11 @@
       Mod+Shift+9 { move-column-to-workspace 9; }
       Mod+Shift+0 { move-column-to-workspace 10; }
 
-      // ── Workspace cycling (Omarchy: SUPER+TAB) ──
+      // ── Workspace cycling ──
       Mod+Tab { focus-workspace-down; }
       Mod+Shift+Tab { focus-workspace-up; }
 
-      // ── Notifications (Omarchy: SUPER+COMMA) ──
+      // ── Notifications ──
       Mod+Comma { spawn "makoctl" "dismiss"; }
       Mod+Shift+Comma { spawn "makoctl" "dismiss" "--all"; }
       Mod+Alt+Comma { spawn "makoctl" "invoke"; }
@@ -142,11 +142,14 @@
       Mod+Shift+Space { spawn "bash" "-c" "pkill waybar || waybar"; }  // toggle waybar
       Mod+Ctrl+L { spawn "bash" "-c" "loginctl lock-session"; }       // lock screen
 
-      // ── Dictation (Omarchy: SUPER+CTRL+X, also SUPER+ALT+L from your custom) ──
+      // ── Night shift ──
+      Mod+Ctrl+N { spawn "bash" "-c" "pkill wlsunset || wlsunset -t 3500 -T 6500"; }
+
+      // ── Dictation ──
       Mod+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
       Mod+Ctrl+X { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
 
-      // ── Control panels (Omarchy-style) ──
+      // ── Control panels ──
       Mod+Ctrl+A { spawn "pavucontrol"; }                   // audio controls
       Mod+Ctrl+B { spawn "bluetui"; }                        // bluetooth
       Mod+Ctrl+T { spawn "alacritty" "-e" "btop"; }         // system monitor

@@ -20,15 +20,8 @@
 
   networking.hostName = "kronos";
 
-  # LUKS encryption
-  boot.initrd.luks.devices."root" = {
-    device = "/dev/nvme0n1p2";
-  };
-
-  # AMD iGPU (for hardware decoding fallback)
-  hardware.amd.amdgpu.amdvlk.enable = true;
-
   # Ollama — high tier: RTX 5070 (12GB VRAM) + 64GB RAM
+  # Runs via Docker with GPU passthrough (see modules/ollama.nix)
   local.ollamaTier = "high";
 
   system.stateVersion = "25.11";

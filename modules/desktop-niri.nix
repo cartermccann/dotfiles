@@ -41,5 +41,6 @@
     networkmanagerapplet
     pavucontrol
     brightnessctl
+    wlsunset
   ];
 }

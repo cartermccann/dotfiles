@@ -35,8 +35,9 @@
       cat = "bat";
       grep = "rg";
 
-      # Ollama
-      ai = "ollama run qwen3.5:9b";
+      # Ollama (runs in podman container as root)
+      ollama = "sudo podman exec -it ollama ollama";
+      ai = "sudo podman exec -it ollama ollama run qwen3.5:9b";
 
       # OpenClaw
       claw = "openclaw";

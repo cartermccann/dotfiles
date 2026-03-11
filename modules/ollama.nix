@@ -1,32 +1,30 @@
 { config, lib, pkgs, ... }:
 
-# Host-specific Ollama model management
-# Set `local.ollamaTier` in each host's configuration.nix:
-#   local.ollamaTier = "high";   # desktop — RTX 5070 12GB + 64GB RAM
-#   local.ollamaTier = "medium"; # atlas   — i7 CPU + 32GB RAM
-#   local.ollamaTier = "low";    # minimal — 16GB RAM or less
+# Ollama via Docker
+# On GPU hosts: uses nvidia-container-toolkit for CUDA acceleration
+# On CPU hosts: runs without GPU passthrough
+# Avoids nixpkgs CUDA build issues (cicc crash on Blackwell/RTX 5070)
 
 let
-  # Model presets by hardware tier
   modelsByTier = {
     high = [
-      "qwen3.5:4b"         # fast simple tasks, fully in VRAM
-      "qwen3.5:9b"         # strong coding/general, fully in 12GB VRAM
-      "deepseek-r1:14b"    # reasoning, fits in 12GB VRAM
+      "qwen3.5:4b"
+      "qwen3.5:9b"
+      "deepseek-r1:14b"
     ];
     medium = [
-      "qwen3.5:4b"         # fast, runs well on CPU w/ 32GB
-      "llama3.2:3b"        # lightweight fallback
+      "qwen3.5:4b"
+      "llama3.2:3b"
     ];
     low = [
-      "llama3.2:3b"        # only small models
+      "llama3.2:3b"
     ];
   };
 
   tier = config.local.ollamaTier;
   models = modelsByTier.${tier};
+  hasGpu = config.hardware.nvidia-container-toolkit.enable or false;
 
-  # Script to pull models if not already present
   preloadScript = pkgs.writeShellScript "ollama-preload-models" ''
     set -euo pipefail
     echo "Ollama model preload — tier: ${tier}"
@@ -67,11 +65,17 @@ in
   };
 
   config = {
-    # Oneshot service to pull models after Ollama starts
+    virtualisation.oci-containers.containers.ollama = {
+      image = "ollama/ollama";
+      ports = [ "11434:11434" ];
+      volumes = [ "ollama:/root/.ollama" ];
+      extraOptions = lib.optionals hasGpu [ "--device=nvidia.com/gpu=all" ];
+    };
+
     systemd.services.ollama-preload = {
       description = "Preload Ollama models for this machine's tier";
-      after = [ "ollama.service" "network-online.target" ];
-      wants = [ "ollama.service" "network-online.target" ];
+      after = [ "docker-ollama.service" "network-online.target" ];
+      wants = [ "docker-ollama.service" "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";

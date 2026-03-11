@@ -24,9 +24,6 @@
     WLR_NO_HARDWARE_CURSORS = "1";
   };
 
-  # Ollama with CUDA acceleration
-  services.ollama = {
-    enable = true;
-    acceleration = "cuda";
-  };
+  # NVIDIA container toolkit — lets Docker containers use the GPU
+  hardware.nvidia-container-toolkit.enable = true;
 }
