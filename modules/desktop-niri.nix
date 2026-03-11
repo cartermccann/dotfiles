@@ -4,16 +4,18 @@
   # Niri Wayland compositor
   programs.niri.enable = true;
 
-  # greetd display manager with tuigreet
-  services.greetd = {
+  # SDDM display manager
+  services.displayManager.sddm = {
     enable = true;
-    settings = {
-      default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd niri-session";
-        user = "greeter";
-      };
-    };
+    wayland.enable = true;
+    theme = "sddm-astronaut-theme";
+    extraPackages = [
+      (pkgs.sddm-astronaut.override { embeddedTheme = "japanese_aesthetic"; })
+    ];
   };
+
+  # Swaylock (screen locker)
+  security.pam.services.swaylock = {};
 
   # XDG portals for Wayland
   xdg.portal = {
@@ -31,7 +33,7 @@
   environment.systemPackages = with pkgs; [
     ghostty
     fuzzel
-    swaybg
+    swww
     grim
     slurp
     wl-clipboard
@@ -42,5 +44,8 @@
     pavucontrol
     brightnessctl
     wlsunset
+    swaylock-effects
+    swayidle
+    (sddm-astronaut.override { embeddedTheme = "japanese_aesthetic"; })
   ];
 }

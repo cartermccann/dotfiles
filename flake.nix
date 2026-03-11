@@ -27,6 +27,7 @@
               # User account
               users.users.${user} = {
                 isNormalUser = true;
+                shell = pkgs.fish;
                 extraGroups = [ "wheel" "docker" "networkmanager" "input" ];
                 openssh.authorizedKeys.keys = [
                   # Add your public SSH key here
@@ -37,7 +38,7 @@
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 users.${user} = import ./home/common.nix;
-                extraSpecialArgs = { inherit user; };
+                extraSpecialArgs = { inherit user google-workspace-cli; };
                 backupFileExtension = "backup";
               };
             }
@@ -47,5 +48,18 @@
     {
       nixosConfigurations.atlas = mkHost "atlas" { extraModules = [ nixos-hardware.nixosModules.microsoft-surface-common ]; };
       nixosConfigurations.kronos = mkHost "kronos" { user = "cjm"; };
+
+      templates = {
+        node = { path = ./templates/node; description = "Node.js + pnpm + TypeScript"; };
+        python = { path = ./templates/python; description = "Python 3 + uv"; };
+        elixir = { path = ./templates/elixir; description = "Elixir + Erlang/OTP"; };
+        zig = { path = ./templates/zig; description = "Zig"; };
+        go = { path = ./templates/go; description = "Go"; };
+        ruby = { path = ./templates/ruby; description = "Ruby"; };
+        java = { path = ./templates/java; description = "Java (JDK)"; };
+        c = { path = ./templates/c; description = "C/C++ with gcc, cmake, llvm"; };
+        rust = { path = ./templates/rust; description = "Rust (rustup)"; };
+        deno = { path = ./templates/deno; description = "Deno"; };
+      };
     };
 }

@@ -10,10 +10,18 @@
     ./tmux.nix
     ./dictation.nix
     ./openclaw.nix
+    ./tools.nix
   ];
 
   home.username = user;
   home.homeDirectory = "/home/${user}";
+
+  home.pointerCursor = {
+    name = "Bibata-Modern-Ice";
+    package = pkgs.bibata-cursors;
+    size = 24;
+    gtk.enable = true;
+  };
 
   home.packages = with pkgs; [
     fastfetch

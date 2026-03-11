@@ -54,6 +54,9 @@ in
     zoxide
   ];
 
+  # Fish (needed at system level for login shell)
+  programs.fish.enable = true;
+
   # Firefox
   programs.firefox.enable = true;
 }

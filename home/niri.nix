@@ -4,12 +4,14 @@
   # Niri config (KDL format)
   xdg.configFile."niri/config.kdl".text = ''
     // Startup processes
-    spawn-at-startup "swaybg" "-m" "fill" "-i" "/home/${user}/wallpaper.png"
+    spawn-at-startup "swww-daemon"
+    spawn-at-startup "bash" "-c" "sleep 1 && swww img /home/${user}/wallpaper.png --transition-type fade"
     spawn-at-startup "waybar"
     spawn-at-startup "mako"
     spawn-at-startup "nm-applet"
     spawn-at-startup "xwayland-satellite"
     spawn-at-startup "easyeffects" "--gapplication-service"
+    spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f" "timeout" "600" "niri msg action power-off-monitors" "before-sleep" "swaylock -f"
 
     // Input
     input {
@@ -39,13 +41,12 @@
         width 2
         active-color "#81A1C1"
         inactive-color "#3B4252"
-        corner-radius 12
       }
     }
 
     // Window rules
     window-rule {
-      geometry-corner-radius 12
+      geometry-corner-radius 16
       clip-to-geometry true
       shadow {
         on
@@ -60,7 +61,7 @@
     binds {
 
       // ── Programs ──
-      Mod+Return { spawn "alacritty"; }
+      Mod+Return { spawn "ghostty"; }
       Mod+Space { spawn "fuzzel"; }
       Mod+Shift+S { screenshot; }
       Mod+Shift+P { screenshot-screen; }
@@ -96,7 +97,6 @@
 
       // ── Resize ──
       Mod+Ctrl+H { set-column-width "-10%"; }
-      Mod+Ctrl+L { set-column-width "+10%"; }
       Mod+Minus { set-column-width "-10%"; }
       Mod+Equal { set-column-width "+10%"; }
 
@@ -140,7 +140,7 @@
 
       // ── Utilities ──
       Mod+Shift+Space { spawn "bash" "-c" "pkill waybar || waybar"; }  // toggle waybar
-      Mod+Ctrl+L { spawn "bash" "-c" "loginctl lock-session"; }       // lock screen
+      Mod+Ctrl+L { spawn "swaylock" "-f"; }                            // lock screen
 
       // ── Night shift ──
       Mod+Ctrl+N { spawn "bash" "-c" "pkill wlsunset || wlsunset -t 3500 -T 6500"; }
@@ -152,7 +152,7 @@
       // ── Control panels ──
       Mod+Ctrl+A { spawn "pavucontrol"; }                   // audio controls
       Mod+Ctrl+B { spawn "bluetui"; }                        // bluetooth
-      Mod+Ctrl+T { spawn "alacritty" "-e" "btop"; }         // system monitor
+      Mod+Ctrl+T { spawn "ghostty" "-e" "btop"; }         // system monitor
 
       // ── Session ──
       Mod+Shift+E { quit; }
@@ -217,8 +217,11 @@
   xdg.configFile."waybar/config".text = builtins.toJSON {
     layer = "top";
     position = "top";
-    height = 30;
+    height = 34;
     spacing = 4;
+    margin-top = 6;
+    margin-left = 12;
+    margin-right = 12;
     modules-left = [ "niri/workspaces" ];
     modules-center = [ "clock" ];
     modules-right = [ "cpu" "memory" "network" "pulseaudio" "bluetooth" "tray" ];
@@ -266,25 +269,43 @@
     }
 
     window#waybar {
-      background-color: #2E3440;
+      background-color: rgba(46, 52, 64, 0.85);
       color: #D8DEE9;
-      border-bottom: 2px solid #3B4252;
+      border-radius: 12px;
+      border: none;
+    }
+
+    #workspaces {
+      background: #3B4252;
+      border-radius: 8px;
+      margin: 4px 2px;
+      padding: 0 4px;
     }
 
     #workspaces button {
       padding: 0 8px;
       color: #4C566A;
       border: none;
-      border-radius: 0;
+      border-radius: 6px;
+      margin: 2px;
+      transition: all 0.2s ease;
+    }
+
+    #workspaces button:hover {
+      background: #434C5E;
+      color: #D8DEE9;
     }
 
     #workspaces button.active {
-      color: #81A1C1;
-      border-bottom: 2px solid #81A1C1;
+      color: #88C0D0;
+      background: #434C5E;
     }
 
     #cpu, #memory, #network, #pulseaudio, #bluetooth, #clock, #tray {
-      padding: 0 10px;
+      background: #3B4252;
+      border-radius: 8px;
+      margin: 4px 2px;
+      padding: 0 12px;
     }
 
     #cpu { color: #88C0D0; }
@@ -293,5 +314,46 @@
     #pulseaudio { color: #EBCB8B; }
     #bluetooth { color: #B48EAD; }
     #clock { color: #D8DEE9; }
+  '';
+
+  # Swaylock config (Nord + blur)
+  xdg.configFile."swaylock/config".text = ''
+    screenshots
+    clock
+    indicator
+    indicator-radius=120
+    indicator-thickness=10
+    effect-blur=7x5
+    effect-vignette=0.5:0.5
+    grace=3
+    fade-in=0.2
+
+    font=JetBrainsMono Nerd Font
+
+    bs-hl-color=BF616A
+    key-hl-color=8FBCBB
+    separator-color=00000000
+    layout-bg-color=00000000
+    layout-text-color=D8DEE9
+
+    inside-color=2E344000
+    inside-clear-color=2E344000
+    inside-ver-color=2E344000
+    inside-wrong-color=2E344000
+
+    ring-color=3B4252
+    ring-clear-color=88C0D0
+    ring-ver-color=81A1C1
+    ring-wrong-color=BF616A
+
+    line-color=00000000
+    line-clear-color=00000000
+    line-ver-color=00000000
+    line-wrong-color=00000000
+
+    text-color=ECEFF4
+    text-clear-color=88C0D0
+    text-ver-color=81A1C1
+    text-wrong-color=BF616A
   '';
 }
