@@ -18,7 +18,7 @@
     ../../modules/apps.nix
   ];
 
-  networking.hostName = "desktop";
+  networking.hostName = "kronos";
 
   # LUKS encryption
   boot.initrd.luks.devices."root" = {

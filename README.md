@@ -7,7 +7,7 @@ NixOS flake config for all my machines. Niri (Wayland tiling compositor), Ghostt
 | Host | Hardware | User | Notes |
 |------|----------|------|-------|
 | **atlas** | Surface Laptop Studio, i7, 32GB RAM | carter | CPU-only Ollama, Broadcom WiFi, nixos-hardware Surface module |
-| **desktop** | Ryzen 9 9950X, RTX 5070 12GB, 64GB RAM | cjm | LUKS + btrfs, CUDA Ollama, snapper snapshots |
+| **kronos** | Ryzen 9 9950X, RTX 5070 12GB, 64GB RAM | cjm | LUKS + btrfs, CUDA Ollama, snapper snapshots |
 
 ## Quick start
 
@@ -17,7 +17,7 @@ git clone https://github.com/cartermccann/dotfiles ~/dotfiles
 
 # Build for your host
 sudo nixos-rebuild switch --flake ~/dotfiles#atlas
-sudo nixos-rebuild switch --flake ~/dotfiles#desktop
+sudo nixos-rebuild switch --flake ~/dotfiles#kronos
 
 # Or use the alias
 rebuild
@@ -41,7 +41,7 @@ flake.nix                           # Entry point — mkHost helper, all inputs
 │   ├── atlas/                      # Surface Laptop Studio
 │   │   ├── configuration.nix       # Broadcom WiFi, CPU Ollama, Surface kernel override
 │   │   └── hardware-configuration.nix
-│   └── desktop/                    # Desktop workstation
+│   └── kronos/                     # Desktop workstation
 │       ├── configuration.nix       # LUKS, btrfs, NVIDIA, CUDA Ollama, snapper
 │       └── hardware-configuration.nix
 ├── modules/                        # Shared NixOS modules (pick what you need)

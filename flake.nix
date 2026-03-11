@@ -46,6 +46,6 @@
     in
     {
       nixosConfigurations.atlas = mkHost "atlas" { extraModules = [ nixos-hardware.nixosModules.microsoft-surface-common ]; };
-      nixosConfigurations.desktop = mkHost "desktop" { user = "cjm"; };
+      nixosConfigurations.kronos = mkHost "kronos" { user = "cjm"; };
     };
 }
