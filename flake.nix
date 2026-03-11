@@ -12,14 +12,18 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    matugen = {
+      url = "github:InioX/matugen";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, google-workspace-cli, nixos-hardware, ... }:
+  outputs = { self, nixpkgs, home-manager, google-workspace-cli, nixos-hardware, matugen, ... }:
     let
       mkHost = hostname: { system ? "x86_64-linux", user ? "carter", extraModules ? [] }:
         nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit user google-workspace-cli; };
+          specialArgs = { inherit user google-workspace-cli matugen; };
           modules = [
             ./hosts/${hostname}/configuration.nix
             home-manager.nixosModules.home-manager
@@ -38,7 +42,7 @@
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 users.${user} = import ./home/common.nix;
-                extraSpecialArgs = { inherit user google-workspace-cli; };
+                extraSpecialArgs = { inherit user google-workspace-cli matugen; };
                 backupFileExtension = "backup";
               };
             })

@@ -4,68 +4,57 @@
   # Niri Wayland compositor
   programs.niri.enable = true;
 
-  # SDDM display manager
-  services.displayManager.sddm = {
+  # greetd + ReGreet (Wayland greeter)
+  # programs.regreet enables greetd automatically and runs regreet under cage
+  programs.regreet = {
     enable = true;
-    wayland.enable = true;
-    theme = "sddm-astronaut-theme";
-    extraPackages = [
-      ((pkgs.sddm-astronaut.override {
-        embeddedTheme = "japanese_aesthetic";
-        themeConfig = {
-          Background = "${../wallpaper/nord-landscape.png}";
-          DimBackground = "0.3";
-          FormBackgroundColor = "#2E3440";
-          BackgroundColor = "#2E3440";
-          DimBackgroundColor = "#2E3440";
-          LoginFieldBackgroundColor = "#3B4252";
-          PasswordFieldBackgroundColor = "#3B4252";
-          LoginFieldTextColor = "#D8DEE9";
-          PasswordFieldTextColor = "#D8DEE9";
-          UserIconColor = "#81A1C1";
-          PasswordIconColor = "#81A1C1";
-          PlaceholderTextColor = "#4C566A";
-          WarningColor = "#BF616A";
-          LoginButtonTextColor = "#ECEFF4";
-          LoginButtonBackgroundColor = "#81A1C1";
-          SystemButtonsIconsColor = "#D8DEE9";
-          SessionButtonTextColor = "#D8DEE9";
-          DropdownTextColor = "#D8DEE9";
-          DropdownSelectedBackgroundColor = "#434C5E";
-          DropdownBackgroundColor = "#3B4252";
-          HighlightTextColor = "#88C0D0";
-          HighlightBackgroundColor = "#3B4252";
-          HighlightBorderColor = "#81A1C1";
-          HoverUserIconColor = "#88C0D0";
-          HoverPasswordIconColor = "#88C0D0";
-          HoverSystemButtonsIconsColor = "#88C0D0";
-          HoverSessionButtonTextColor = "#88C0D0";
-          HeaderTextColor = "#ECEFF4";
-          DateTextColor = "#D8DEE9";
-          TimeTextColor = "#ECEFF4";
-        };
-      }).overrideAttrs (old: {
-        postInstall = (old.postInstall or "") + ''
-          # Patch theme config with Nord colors (in case themeConfig overrides aren't applied)
-          conf="$out/share/sddm/themes/sddm-astronaut-theme/Themes/japanese_aesthetic.conf"
-          if [ -f "$conf" ]; then
-            substituteInPlace "$conf" \
-              --replace-quiet 'LoginFieldTextColor="#32302f"' 'LoginFieldTextColor="#D8DEE9"' \
-              --replace-quiet 'PasswordFieldTextColor="#32302f"' 'PasswordFieldTextColor="#D8DEE9"' \
-              --replace-quiet 'PlaceholderTextColor="#7c6f64"' 'PlaceholderTextColor="#4C566A"' \
-              --replace-quiet 'LoginFieldBackgroundColor="#1d2021"' 'LoginFieldBackgroundColor="#3B4252"'
-          fi
+    settings = {
+      GTK = {
+        application_prefer_dark_theme = lib.mkForce true;
+        cursor_theme_name = lib.mkForce "Bibata-Modern-Ice";
+        font_name = lib.mkForce "JetBrainsMono Nerd Font 12";
+        icon_theme_name = lib.mkForce "Papirus-Dark";
+      };
+      background = {
+        path = lib.mkForce "/etc/greetd/wallpaper.png";
+        fit = lib.mkForce "Cover";
+      };
+    };
+    cageArgs = [ "-s" ];
+    extraCss = ''
+      window {
+        background-size: cover;
+        background-position: center;
+      }
 
-          # Fix hardcoded 0.2 opacity on input backgrounds
-          input="$out/share/sddm/themes/sddm-astronaut-theme/Components/Input.qml"
-          if [ -f "$input" ]; then
-            substituteInPlace "$input" \
-              --replace-quiet 'opacity: 0.2' 'opacity: 0.6'
-          fi
-        '';
-      }))
-    ];
+      .login-box {
+        background-color: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      }
+
+      entry {
+        background-color: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 12px 16px;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      button {
+        background-color: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 12px;
+        color: white;
+        padding: 10px 24px;
+      }
+    '';
   };
+
+  # Copy wallpaper for greeter
+  environment.etc."greetd/wallpaper.png".source = ../wallpaper/nord-landscape.png;
 
   # Swaylock (screen locker)
   security.pam.services.swaylock = {};
