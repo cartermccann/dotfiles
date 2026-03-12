@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   # User is passed via specialArgs from flake.nix
@@ -17,7 +22,10 @@ in
   i18n.defaultLocale = "en_US.UTF-8";
 
   # Nix settings
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
   nixpkgs.config.allowUnfree = true;
   programs.nix-ld.enable = true;
 
@@ -52,6 +60,8 @@ in
     file
     killall
     zoxide
+    pid-fan-controller
+
   ];
 
   # Fish (needed at system level for login shell)

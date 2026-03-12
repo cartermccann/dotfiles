@@ -99,9 +99,14 @@ in
         "$rust"
         "$golang"
         "$php"
-        "[${sep}](fg:color_surface) "
+        "[${sep}](fg:color_surface)"
         "$character"
       ];
+
+      character = {
+        success_symbol = "[${sep}](fg:color_primary) ";
+        error_symbol = "[${sep}](fg:color_error) ";
+      };
 
       directory = {
         format = "[ $path ]($style)";
