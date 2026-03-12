@@ -13,9 +13,6 @@
     spawn-at-startup "easyeffects" "--gapplication-service"
     spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f" "timeout" "600" "niri msg action power-off-monitors" "before-sleep" "swaylock -f"
 
-    // Include matugen-generated colors
-    include "colors.kdl"
-
     // Input
     input {
       keyboard {
@@ -44,6 +41,31 @@
         width 2
         active-color "#81A1C1"
         inactive-color "#3B4252"
+      }
+    }
+
+    // Animations (snappy, critically damped)
+    animations {
+      window-open {
+        duration-ms 150
+        curve "ease-out-quad"
+      }
+      window-close {
+        duration-ms 150
+        curve "ease-out-quad"
+      }
+      workspace-switch {
+        spring damping-ratio=1.0 stiffness=1000 epsilon=0.0001
+      }
+      window-resize {
+        duration-ms 150
+        curve "ease-out-quad"
+      }
+      horizontal-view-movement {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+      }
+      window-movement {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
       }
     }
 

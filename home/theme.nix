@@ -11,12 +11,41 @@ let
     fi
     # Set wallpaper with transition
     ${pkgs.swww}/bin/swww img "$WALLPAPER" --transition-type grow --transition-duration 1.5
-    # Copy for persistence
-    cp "$WALLPAPER" ~/wallpaper.png
-    # Copy for greeter (requires sudo)
-    sudo cp "$WALLPAPER" /etc/greetd/wallpaper.png 2>/dev/null || true
-    # Regenerate all theme configs from wallpaper colors
-    ${matugenPkg}/bin/matugen image "$WALLPAPER" --mode dark
+    # Remove home-manager symlink if present, then copy for persistence
+    [ -L ~/wallpaper.png ] && rm ~/wallpaper.png
+    cp -f "$WALLPAPER" ~/wallpaper.png
+    # Regenerate all theme configs from wallpaper colors (non-interactive)
+    mkdir -p "$HOME/.config/matugen/generated"
+    ${matugenPkg}/bin/matugen image "$WALLPAPER" --source-color-index 0
+    # Merge matugen-generated palette into starship.toml
+    STARSHIP_BASE="$HOME/.config/starship.toml"
+    STARSHIP_PALETTE="$HOME/.config/matugen/generated/starship-palette.toml"
+    if [ -f "$STARSHIP_BASE" ] && [ -f "$STARSHIP_PALETTE" ]; then
+      # Replace home-manager symlink with a mutable copy
+      if [ -L "$STARSHIP_BASE" ]; then
+        cp --remove-destination "$(readlink -f "$STARSHIP_BASE")" "$STARSHIP_BASE"
+      fi
+      ${pkgs.gawk}/bin/awk '
+        /^\[palettes\.matugen\]/ { skip=1; next }
+        /^\[/ { skip=0 }
+        !skip
+      ' "$STARSHIP_BASE" > "$STARSHIP_BASE.tmp" && mv "$STARSHIP_BASE.tmp" "$STARSHIP_BASE"
+      echo "" >> "$STARSHIP_BASE"
+      cat "$STARSHIP_PALETTE" >> "$STARSHIP_BASE"
+    fi
+    # Apply matugen-generated colors to niri border config
+    NIRI_COLORS="$HOME/.config/matugen/generated/niri-colors"
+    NIRI_CONFIG="$HOME/.config/niri/config.kdl"
+    if [ -f "$NIRI_COLORS" ] && [ -f "$NIRI_CONFIG" ]; then
+      source "$NIRI_COLORS"
+      # Replace home-manager symlink with a mutable copy
+      if [ -L "$NIRI_CONFIG" ]; then
+        cp --remove-destination "$(readlink -f "$NIRI_CONFIG")" "$NIRI_CONFIG"
+      fi
+      ${pkgs.gnused}/bin/sed -i "s/active-color \"#[0-9A-Fa-f]\{6\}\"/active-color \"$NIRI_ACTIVE_COLOR\"/" "$NIRI_CONFIG"
+      ${pkgs.gnused}/bin/sed -i "s/inactive-color \"#[0-9A-Fa-f]\{6\}\"/inactive-color \"$NIRI_INACTIVE_COLOR\"/" "$NIRI_CONFIG"
+      niri msg action reload-config 2>/dev/null || true
+    fi
   '';
 
   wallpaper-pick = pkgs.writeShellScriptBin "wallpaper-pick" ''
@@ -61,8 +90,15 @@ in
     output_path = "${config.home.homeDirectory}/.config/ghostty/config"
 
     [templates.niri-colors]
-    input_path = "${config.home.homeDirectory}/.config/matugen/templates/niri-colors.kdl"
-    output_path = "${config.home.homeDirectory}/.config/niri/colors.kdl"
+    input_path = "${config.home.homeDirectory}/.config/matugen/templates/niri-colors"
+    output_path = "${config.home.homeDirectory}/.config/matugen/generated/niri-colors"
+
+    [templates.tmux-theme]
+    input_path = "${config.home.homeDirectory}/.config/matugen/templates/tmux-theme.conf"
+    output_path = "${config.home.homeDirectory}/.config/tmux/matugen-theme.conf"
+
+    [templates.tmux-theme.hooks]
+    post = ["bash", "-c", "tmux source-file ~/.config/tmux/matugen-theme.conf 2>/dev/null || true"]
 
     [templates.swaylock]
     input_path = "${config.home.homeDirectory}/.config/matugen/templates/swaylock"
@@ -76,14 +112,14 @@ in
     input_path = "${config.home.homeDirectory}/.config/matugen/templates/regreet.css"
     output_path = "/tmp/regreet-theme.css"
 
-    [templates.starship]
-    input_path = "${config.home.homeDirectory}/.config/matugen/templates/starship.toml"
-    output_path = "${config.home.homeDirectory}/.config/starship.toml"
+    [templates.starship-palette]
+    input_path = "${config.home.homeDirectory}/.config/matugen/templates/starship-palette.toml"
+    output_path = "${config.home.homeDirectory}/.config/matugen/generated/starship-palette.toml"
   '';
 
   # ── Matugen Templates ──
 
-  # Waybar CSS template (faux glass)
+  # Waybar CSS template (flat glass bar)
   xdg.configFile."matugen/templates/waybar.css".text = ''
     * {
       font-family: "JetBrainsMono Nerd Font";
@@ -92,7 +128,7 @@ in
     }
 
     window#waybar {
-      background-color: rgba({{colors.surface.default.red}}, {{colors.surface.default.green}}, {{colors.surface.default.blue}}, 0.72);
+      background-color: rgba({{colors.surface.default.red}}, {{colors.surface.default.green}}, {{colors.surface.default.blue}}, 0.65);
       color: {{colors.on_surface.default.hex}};
       border-radius: 14px;
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -100,10 +136,7 @@ in
     }
 
     #workspaces {
-      background: rgba({{colors.surface_container.default.red}}, {{colors.surface_container.default.green}}, {{colors.surface_container.default.blue}}, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 10px;
-      margin: 4px 2px;
+      margin: 4px 4px;
       padding: 0 4px;
     }
 
@@ -127,11 +160,13 @@ in
     }
 
     #cpu, #memory, #network, #pulseaudio, #bluetooth, #clock, #tray {
-      background: rgba({{colors.surface_container.default.red}}, {{colors.surface_container.default.green}}, {{colors.surface_container.default.blue}}, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 10px;
-      margin: 4px 2px;
-      padding: 0 12px;
+      padding: 0 10px;
+      margin: 4px 0;
+    }
+
+    /* Subtle separator between modules */
+    #cpu, #memory, #network, #pulseaudio, #bluetooth {
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     #cpu { color: {{colors.tertiary.default.hex}}; }
@@ -233,28 +268,36 @@ in
     window-decoration = false
   '';
 
-  # Niri colors KDL template
-  # Note: niri include files cannot override layout {} blocks set in the main config,
-  # so border colors remain in the main config. This file provides color values as
-  # comments for reference; actual border colors use matugen-generated values
-  # after wallpaper-set runs and are applied via the niri config directly.
-  xdg.configFile."matugen/templates/niri-colors.kdl".text = ''
-    // Auto-generated by matugen — do not edit
-    // primary: {{colors.primary.default.hex}}
-    // secondary: {{colors.secondary.default.hex}}
-    // surface: {{colors.surface.default.hex}}
-    // on_surface: {{colors.on_surface.default.hex}}
+  # Niri colors template (shell-sourceable vars for wallpaper-set)
+  xdg.configFile."matugen/templates/niri-colors".text = ''
+    NIRI_ACTIVE_COLOR={{colors.primary.default.hex}}
+    NIRI_INACTIVE_COLOR={{colors.surface_container.default.hex}}
   '';
 
-  # Swaylock template
+  # Tmux matugen theme template
+  xdg.configFile."matugen/templates/tmux-theme.conf".text = ''
+    # Auto-generated by matugen — do not edit
+    set -g status-style 'bg={{colors.surface.default.hex}},fg={{colors.on_surface.default.hex}}'
+    set -g pane-border-style 'fg={{colors.surface_container.default.hex}}'
+    set -g pane-active-border-style 'fg={{colors.primary.default.hex}}'
+    set -g window-status-current-style 'bg={{colors.surface_container.default.hex}},fg={{colors.primary.default.hex}},bold'
+    set -g window-status-style 'fg={{colors.on_surface_variant.default.hex}}'
+    set -g message-style 'bg={{colors.surface.default.hex}},fg={{colors.on_surface.default.hex}}'
+    set -g mode-style 'bg={{colors.surface_container.default.hex}},fg={{colors.on_surface.default.hex}}'
+    set -g status-left '#[bg={{colors.primary.default.hex}},fg={{colors.surface.default.hex}},bold] #S #[default] '
+    set -g status-right '#[fg={{colors.on_surface_variant.default.hex}}] %H:%M  %a %b %d '
+    set -g window-status-current-format ' #I:#W '
+    set -g window-status-format ' #I:#W '
+  '';
+
+  # Swaylock template (minimal indicator + heavy blur)
   xdg.configFile."matugen/templates/swaylock".text = ''
     image=~/wallpaper.png
-    clock
     indicator
-    indicator-radius=120
-    indicator-thickness=10
-    effect-blur=7x5
-    effect-vignette=0.5:0.5
+    indicator-radius=80
+    indicator-thickness=6
+    effect-blur=12x6
+    effect-vignette=0.4:0.7
     grace=3
     fade-in=0.2
 
@@ -266,10 +309,10 @@ in
     layout-bg-color=00000000
     layout-text-color={{colors.on_surface.default.hex_stripped}}
 
-    inside-color={{colors.surface.default.hex_stripped}}DD
-    inside-clear-color={{colors.surface.default.hex_stripped}}DD
-    inside-ver-color={{colors.surface.default.hex_stripped}}DD
-    inside-wrong-color={{colors.surface.default.hex_stripped}}DD
+    inside-color={{colors.surface.default.hex_stripped}}AA
+    inside-clear-color={{colors.surface.default.hex_stripped}}AA
+    inside-ver-color={{colors.surface.default.hex_stripped}}AA
+    inside-wrong-color={{colors.surface.default.hex_stripped}}AA
 
     ring-color={{colors.outline.default.hex_stripped}}
     ring-clear-color={{colors.tertiary.default.hex_stripped}}
@@ -326,76 +369,55 @@ in
     }
   '';
 
-  # Starship prompt template
-  xdg.configFile."matugen/templates/starship.toml".text = ''
-    format = """
-    [░▒▓]({{colors.primary.default.hex}})\
-    [ ](bg:{{colors.primary.default.hex}} fg:#090c0c)\
-    [](bg:{{colors.secondary.default.hex}} fg:{{colors.primary.default.hex}})\
-    $directory\
-    [](fg:{{colors.secondary.default.hex}} bg:{{colors.surface_container.default.hex}})\
-    $git_branch\
-    $git_status\
-    [](fg:{{colors.surface_container.default.hex}} bg:{{colors.surface.default.hex}})\
-    $nodejs\
-    $rust\
-    $golang\
-    $php\
-    [](fg:{{colors.surface.default.hex}})\
-    \n$character"""
-
-    [directory]
-    format = "[ $path ]($style)"
-    style = "fg:#e3e5e5 bg:{{colors.secondary.default.hex}}"
-    truncation_length = 3
-    truncation_symbol = "…/"
-
-    [directory.substitutions]
-    "Documents" = "󰈙 "
-    "Downloads" = " "
-    "Music" = " "
-    "Pictures" = " "
-
-    [git_branch]
-    symbol = ""
-    style = "bg:{{colors.surface_container.default.hex}}"
-    format = "[[ $symbol $branch ](fg:{{colors.primary.default.hex}} bg:{{colors.surface_container.default.hex}})]($style)"
-
-    [git_status]
-    style = "bg:{{colors.surface_container.default.hex}}"
-    format = "[[($all_status$ahead_behind )](fg:{{colors.primary.default.hex}} bg:{{colors.surface_container.default.hex}})]($style)"
-
-    [nodejs]
-    symbol = ""
-    style = "bg:{{colors.surface.default.hex}}"
-    format = "[[ $symbol ($version) ](fg:{{colors.primary.default.hex}} bg:{{colors.surface.default.hex}})]($style)"
-
-    [rust]
-    symbol = ""
-    style = "bg:{{colors.surface.default.hex}}"
-    format = "[[ $symbol ($version) ](fg:{{colors.primary.default.hex}} bg:{{colors.surface.default.hex}})]($style)"
-
-    [golang]
-    symbol = ""
-    style = "bg:{{colors.surface.default.hex}}"
-    format = "[[ $symbol ($version) ](fg:{{colors.primary.default.hex}} bg:{{colors.surface.default.hex}})]($style)"
-
-    [php]
-    symbol = ""
-    style = "bg:{{colors.surface.default.hex}}"
-    format = "[[ $symbol ($version) ](fg:{{colors.primary.default.hex}} bg:{{colors.surface.default.hex}})]($style)"
-
-    [time]
-    disabled = false
-    time_format = "%R"
-    style = "bg:{{colors.surface.default.hex}}"
-    format = "[[  $time ](fg:{{colors.on_surface_variant.default.hex}} bg:{{colors.surface.default.hex}})]($style)"
+  # Starship palette-only template (format strings live in shell.nix)
+  xdg.configFile."matugen/templates/starship-palette.toml".text = ''
+    [palettes.matugen]
+    color_primary = "{{colors.primary.default.hex}}"
+    color_secondary = "{{colors.secondary.default.hex}}"
+    color_tertiary = "{{colors.tertiary.default.hex}}"
+    color_surface = "{{colors.surface.default.hex}}"
+    color_surface_container = "{{colors.surface_container.default.hex}}"
+    color_on_surface = "{{colors.on_surface.default.hex}}"
+    color_on_surface_variant = "{{colors.on_surface_variant.default.hex}}"
+    color_error = "{{colors.error.default.hex}}"
   '';
 
   # Run matugen on activation to generate initial configs
   home.activation.matugen = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+    # Set initial wallpaper if none exists yet
+    if [ ! -f "$HOME/wallpaper.png" ]; then
+      cp "$HOME/wallpapers/nord-landscape.png" "$HOME/wallpaper.png" 2>/dev/null || true
+    fi
     if [ -f "$HOME/wallpaper.png" ]; then
-      ${matugenPkg}/bin/matugen image "$HOME/wallpaper.png" --mode dark 2>/dev/null || true
+      mkdir -p "$HOME/.config/matugen/generated"
+      ${matugenPkg}/bin/matugen image "$HOME/wallpaper.png" 2>/dev/null || true
+      # Merge matugen-generated palette into starship.toml
+      STARSHIP_BASE="$HOME/.config/starship.toml"
+      STARSHIP_PALETTE="$HOME/.config/matugen/generated/starship-palette.toml"
+      if [ -f "$STARSHIP_BASE" ] && [ -f "$STARSHIP_PALETTE" ]; then
+        # Replace home-manager symlink with a mutable copy
+        if [ -L "$STARSHIP_BASE" ]; then
+          cp --remove-destination "$(readlink -f "$STARSHIP_BASE")" "$STARSHIP_BASE"
+        fi
+        ${pkgs.gawk}/bin/awk '
+          /^\[palettes\.matugen\]/ { skip=1; next }
+          /^\[/ { skip=0 }
+          !skip
+        ' "$STARSHIP_BASE" > "$STARSHIP_BASE.tmp" && mv "$STARSHIP_BASE.tmp" "$STARSHIP_BASE"
+        echo "" >> "$STARSHIP_BASE"
+        cat "$STARSHIP_PALETTE" >> "$STARSHIP_BASE"
+      fi
+      # Apply matugen-generated colors to niri border config
+      NIRI_COLORS="$HOME/.config/matugen/generated/niri-colors"
+      NIRI_CONFIG="$HOME/.config/niri/config.kdl"
+      if [ -f "$NIRI_COLORS" ] && [ -f "$NIRI_CONFIG" ]; then
+        source "$NIRI_COLORS"
+        if [ -L "$NIRI_CONFIG" ]; then
+          cp --remove-destination "$(readlink -f "$NIRI_CONFIG")" "$NIRI_CONFIG"
+        fi
+        ${pkgs.gnused}/bin/sed -i "s/active-color \"#[0-9A-Fa-f]\{6\}\"/active-color \"$NIRI_ACTIVE_COLOR\"/" "$NIRI_CONFIG"
+        ${pkgs.gnused}/bin/sed -i "s/inactive-color \"#[0-9A-Fa-f]\{6\}\"/inactive-color \"$NIRI_INACTIVE_COLOR\"/" "$NIRI_CONFIG"
+      fi
     fi
   '';
 }

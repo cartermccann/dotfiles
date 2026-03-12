@@ -18,10 +18,11 @@
 
   # Wayland + NVIDIA env vars
   environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    GBM_BACKEND = "nvidia-drm";
     NVD_BACKEND = "direct";
     LIBVA_DRIVER_NAME = "nvidia";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    WLR_NO_HARDWARE_CURSORS = "1";
   };
 
   # NVIDIA container toolkit — lets Docker containers use the GPU

@@ -31,15 +31,24 @@
 
   gtk = {
     enable = true;
+    theme = {
+      name = "adw-gtk3-dark";
+      package = pkgs.adw-gtk3;
+    };
     iconTheme = {
       name = "Papirus-Dark";
       package = pkgs.papirus-icon-theme;
     };
   };
 
-  # Wallpapers directory
+  dconf.settings = {
+    "org/gnome/desktop/interface" = {
+      color-scheme = "prefer-dark";
+    };
+  };
+
+  # Wallpapers directory (wallpaper-set manages ~/wallpaper.png at runtime)
   home.file."wallpapers".source = ../wallpaper;
-  home.file."wallpaper.png".source = ../wallpaper/nord-landscape.png;
 
   # Figma (Chrome web app)
   xdg.desktopEntries.figma = {
