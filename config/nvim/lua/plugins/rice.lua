@@ -63,10 +63,13 @@ return {
       opts.options.separator_style = "slant"
       opts.options.indicator = { style = "underline" }
       opts.options.hover = { enabled = true, delay = 200, reveal = { "close" } }
-      -- Use catppuccin's bufferline highlights
-      local ok, cat = pcall(require, "catppuccin.groups.integrations.bufferline")
-      if ok then
-        opts.highlights = cat.get()
+      -- Use catppuccin's bufferline highlights when catppuccin is active
+      local colorscheme = vim.g.colors_name or ""
+      if colorscheme:find("catppuccin") then
+        local ok, cat = pcall(require, "catppuccin.groups.integrations.bufferline")
+        if ok then
+          opts.highlights = cat.get()
+        end
       end
     end,
   },
@@ -197,13 +200,19 @@ return {
   {
     "nvim-zh/colorful-winsep.nvim",
     event = "WinLeave",
-    opts = {
-      hi = {
-        fg = "#b4befe", -- catppuccin lavender
-      },
-      smooth = true,
-      exponential_smoothing = true,
-    },
+    opts = function()
+      -- Dynamically pick accent color from the active theme's WinSeparator highlight
+      local fg = "#b4befe" -- fallback
+      local hl = vim.api.nvim_get_hl(0, { name = "WinSeparator" })
+      if hl and hl.fg then
+        fg = string.format("#%06x", hl.fg)
+      end
+      return {
+        hi = { fg = fg },
+        smooth = true,
+        exponential_smoothing = true,
+      }
+    end,
   },
 
   -----------------------------------------------------------------------------

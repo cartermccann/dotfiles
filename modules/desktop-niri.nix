@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   # Niri Wayland compositor
@@ -24,12 +29,21 @@
   };
 
   # Swaylock (screen locker)
-  security.pam.services.swaylock = {};
+  security.pam.services.swaylock = { };
 
   # XDG portals for Wayland
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gnome ];
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gnome # file picker, etc.
+      pkgs.xdg-desktop-portal-wlr # screen/window capture for wlroots compositors
+    ];
+    # Use wlr portal for screenshots/screencasting, gnome for everything else
+    config.common = {
+      default = [ "gnome" ];
+      "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+      "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+    };
   };
 
   # Polkit for privilege escalation

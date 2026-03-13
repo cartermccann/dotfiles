@@ -1,4 +1,10 @@
-{ config, pkgs, user, matugen, ... }:
+{
+  config,
+  pkgs,
+  user,
+  matugen,
+  ...
+}:
 
 {
   imports = [
@@ -11,6 +17,7 @@
     ./openclaw.nix
     ./tools.nix
     ./theme.nix
+    ./themes
   ];
 
   home.username = user;
@@ -55,16 +62,21 @@
     exec = "google-chrome-stable --app=https://figma.com/ %U";
     terminal = false;
     icon = ./icons/Figma.png;
-    categories = [ "Graphics" "Development" ];
+    categories = [
+      "Graphics"
+      "Development"
+    ];
   };
 
   # Custom TUI launchers
   xdg.desktopEntries.disk-usage = {
     name = "Disk Usage";
     comment = "View disk usage with dust";
-    exec = toString (pkgs.writeShellScript "disk-usage-tui" ''
-      ghostty --class=TUI.float -e bash -c 'dust -r; read -n 1 -s'
-    '');
+    exec = toString (
+      pkgs.writeShellScript "disk-usage-tui" ''
+        ghostty --class=TUI.float -e bash -c 'dust -r; read -n 1 -s'
+      ''
+    );
     terminal = false;
     icon = "disk-usage-analyzer";
     categories = [ "System" ];

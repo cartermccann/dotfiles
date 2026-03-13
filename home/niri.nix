@@ -1,4 +1,9 @@
-{ config, pkgs, user, ... }:
+{
+  config,
+  pkgs,
+  user,
+  ...
+}:
 
 {
   # Niri config (KDL format)
@@ -217,8 +222,9 @@
       Mod+Ctrl+B { spawn "bluetui"; }                        // bluetooth
       Mod+Ctrl+T { spawn "ghostty" "-e" "btop"; }         // system monitor
 
-      // ── Wallpaper ──
+      // ── Wallpaper & Theme ──
       Mod+Shift+W { spawn "wallpaper-pick"; }
+      Mod+Shift+T { spawn "ghostty" "-e" "theme-select"; }
 
       // ── Session ──
       Mod+Shift+E { quit; }
@@ -250,7 +256,14 @@
     spacing = 4;
     modules-left = [ "niri/workspaces" ];
     modules-center = [ "clock" ];
-    modules-right = [ "cpu" "memory" "network" "pulseaudio" "bluetooth" "tray" ];
+    modules-right = [
+      "cpu"
+      "memory"
+      "network"
+      "pulseaudio"
+      "bluetooth"
+      "tray"
+    ];
 
     "niri/workspaces" = {
       format = "{index}";
@@ -271,7 +284,11 @@
     pulseaudio = {
       format = "{icon} {volume}%";
       format-muted = " Muted";
-      format-icons.default = [ "" "" "" ];
+      format-icons.default = [
+        ""
+        ""
+        ""
+      ];
       on-click = "pavucontrol";
     };
     bluetooth = {

@@ -1,4 +1,10 @@
-{ config, pkgs, user, matugen, ... }:
+{
+  config,
+  pkgs,
+  user,
+  matugen,
+  ...
+}:
 
 let
   matugenPkg = matugen.packages.${pkgs.system}.default;
@@ -31,6 +37,9 @@ let
       ${pkgs.gnused}/bin/sed -i "s/inactive-color \"#[0-9A-Fa-f]\{6\}\"/inactive-color \"$NIRI_INACTIVE_COLOR\"/" "$NIRI_CONFIG"
       niri msg action reload-config 2>/dev/null || true
     fi
+
+    # Mark mode as dynamic and signal Neovim
+    echo "dynamic" > "$HOME/.config/theme/current"
   '';
 
   wallpaper-set = pkgs.writeShellScriptBin "wallpaper-set" ''
@@ -43,6 +52,7 @@ let
     [ -L ~/wallpaper.png ] && rm ~/wallpaper.png
     cp -f "$WALLPAPER" ~/wallpaper.png
     mkdir -p "$HOME/.config/matugen/generated"
+    mkdir -p "$HOME/.config/theme"
     ${matugenPkg}/bin/matugen image "$WALLPAPER" --source-color-index 0
     ${theme-apply-colors}
   '';
@@ -59,7 +69,7 @@ in
     wallpaper-pick
   ];
 
-  # Matugen config
+  # Matugen config (used when in "dynamic" mode)
   xdg.configFile."matugen/config.toml".text = ''
     [config]
     mode = "dark"
@@ -112,9 +122,9 @@ in
     output_path = "${config.home.homeDirectory}/.config/matugen/generated/starship-palette.toml"
   '';
 
-  # ── Matugen Templates ──
+  # ── Matugen Templates (used in dynamic mode) ──
 
-  # Waybar CSS template (TUI terminal bar)
+  # Waybar CSS template
   xdg.configFile."matugen/templates/waybar.css".text = ''
     * {
       font-family: "JetBrainsMono Nerd Font";
@@ -165,7 +175,7 @@ in
     #clock { color: #CCCCCC; }
   '';
 
-  # Mako notifications template (faux glass)
+  # Mako notifications template
   xdg.configFile."matugen/templates/mako".text = ''
     font=JetBrainsMono Nerd Font 11
     background-color={{colors.surface.default.hex}}C8
@@ -184,7 +194,7 @@ in
     default-timeout=10000
   '';
 
-  # Fuzzel launcher template (faux glass)
+  # Fuzzel launcher template
   xdg.configFile."matugen/templates/fuzzel.ini".text = ''
     [main]
     font=JetBrainsMono Nerd Font:size=14
@@ -256,7 +266,7 @@ in
     window-decoration = false
   '';
 
-  # Niri colors template (shell-sourceable vars for wallpaper-set)
+  # Niri colors template
   xdg.configFile."matugen/templates/niri-colors".text = ''
     NIRI_ACTIVE_COLOR={{colors.primary.default.hex}}
     NIRI_INACTIVE_COLOR={{colors.surface_container.default.hex}}
@@ -278,7 +288,7 @@ in
     set -g window-status-format ' #I:#W '
   '';
 
-  # Swaylock template (TUI-style black + clock)
+  # Swaylock template
   xdg.configFile."matugen/templates/swaylock".text = ''
     color=000000
     indicator
@@ -326,7 +336,7 @@ in
     --color=marker:{{colors.primary.default.hex}},fg+:{{colors.on_surface.default.hex}},prompt:{{colors.primary.default.hex}},hl+:{{colors.tertiary.default.hex}}
   '';
 
-  # Starship palette-only template (format strings live in shell.nix)
+  # Starship palette-only template
   xdg.configFile."matugen/templates/starship-palette.toml".text = ''
     [palettes.matugen]
     color_primary = "{{colors.primary.default.hex}}"
@@ -345,16 +355,23 @@ in
     rm -f "$HOME/.config/niri/config.kdl.hm-bak"
   '';
 
-  # Run matugen on activation to generate initial configs
-  home.activation.matugen = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-    # Set initial wallpaper if none exists yet
-    if [ ! -f "$HOME/wallpaper.png" ]; then
-      cp "$HOME/wallpapers/nord-landscape.png" "$HOME/wallpaper.png" 2>/dev/null || true
-    fi
-    if [ -f "$HOME/wallpaper.png" ]; then
-      mkdir -p "$HOME/.config/matugen/generated"
-      ${matugenPkg}/bin/matugen image "$HOME/wallpaper.png" 2>/dev/null || true
-      ${theme-apply-colors}
+  # On activation: apply matugen if in dynamic mode or first run
+  # Named theme activation is handled by themes/default.nix (where theme-apply is in scope)
+  home.activation.applyThemeFallback = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+    mkdir -p "$HOME/.config/theme"
+    mkdir -p "$HOME/.config/matugen/generated"
+
+    CURRENT=$(cat "$HOME/.config/theme/current" 2>/dev/null || echo "")
+
+    # Only run matugen if in dynamic mode or no theme set yet
+    if [ -z "$CURRENT" ] || [ "$CURRENT" = "dynamic" ]; then
+      if [ ! -f "$HOME/wallpaper.png" ]; then
+        cp "$HOME/wallpapers/nord-landscape.png" "$HOME/wallpaper.png" 2>/dev/null || true
+      fi
+      if [ -f "$HOME/wallpaper.png" ]; then
+        ${matugenPkg}/bin/matugen image "$HOME/wallpaper.png" 2>/dev/null || true
+        ${theme-apply-colors}
+      fi
     fi
   '';
 }

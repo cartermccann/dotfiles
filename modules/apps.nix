@@ -1,10 +1,15 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   waylandFlags = [
     "--ozone-platform=wayland"
     "--ozone-platform-hint=wayland"
-    "--enable-features=TouchpadOverscrollHistoryNavigation"
+    "--enable-features=TouchpadOverscrollHistoryNavigation,WebRTCPipeWireCapturer"
     "--disable-features=WaylandWpColorManagerV1"
   ];
 
@@ -31,8 +36,8 @@ in
     slack
 
     # Utilities
-    localsend     # local file sharing
-    nautilus      # file manager
+    localsend # local file sharing
+    nautilus # file manager
     gnome-disk-utility
     gnome-calculator
     fastfetch

@@ -1,13 +1,27 @@
--- UI configuration - Catppuccin Mocha colorscheme
-return {
-  -- Disable Nord
-  { "shaunsingh/nord.nvim", enabled = false },
+-- UI configuration — multi-theme support
+-- Reads theme from ~/.config/theme/nvim-colorscheme (set by theme-select)
 
-  -- Catppuccin Mocha
+-- Helper: read the current theme from the state file
+local function get_current_theme()
+  local f = io.open(vim.fn.expand("~/.config/theme/nvim-colorscheme"), "r")
+  if f then
+    local theme = f:read("*l")
+    f:close()
+    if theme and theme ~= "" then
+      return theme
+    end
+  end
+  return "catppuccin-mocha" -- default fallback
+end
+
+local current = get_current_theme()
+
+return {
+  -- ── Catppuccin ──
   {
     "catppuccin/nvim",
     name = "catppuccin",
-    lazy = false,
+    lazy = current ~= "catppuccin-mocha",
     priority = 1000,
     opts = {
       flavour = "mocha",
@@ -47,7 +61,57 @@ return {
     },
   },
 
-  -- Neo-tree: disable git-status name coloring (the peach/orange look)
+  -- ── Nord ──
+  {
+    "shaunsingh/nord.nvim",
+    lazy = current ~= "nord",
+    priority = 1000,
+  },
+
+  -- ── Tokyo Night ──
+  {
+    "folke/tokyonight.nvim",
+    lazy = current ~= "tokyonight-night",
+    priority = 1000,
+    opts = {
+      style = "night",
+      transparent = true,
+    },
+  },
+
+  -- ── Kanagawa ──
+  {
+    "rebelot/kanagawa.nvim",
+    lazy = current ~= "kanagawa-wave" and current ~= "kanagawa",
+    priority = 1000,
+    opts = {
+      transparent = true,
+      theme = "wave",
+    },
+  },
+
+  -- ── Gruvbox ──
+  {
+    "ellisonleao/gruvbox.nvim",
+    lazy = current ~= "gruvbox",
+    priority = 1000,
+    opts = {
+      transparent_mode = true,
+    },
+  },
+
+  -- ── Rose Pine ──
+  {
+    "rose-pine/neovim",
+    name = "rose-pine",
+    lazy = current ~= "rose-pine",
+    priority = 1000,
+    opts = {
+      disable_background = true,
+    },
+  },
+
+  -- Neo-tree: disable git-status name coloring
   {
     "nvim-neo-tree/neo-tree.nvim",
     opts = {
@@ -90,11 +154,11 @@ return {
     },
   },
 
-  -- Set Catppuccin as the LazyVim colorscheme
+  -- Set colorscheme based on theme state file
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "catppuccin-nvim",
+      colorscheme = current,
     },
   },
 }
