@@ -22,7 +22,6 @@ let
     dlog = "docker logs";
 
     # Nix
-    rebuild = "sudo nixos-rebuild switch --flake ~/dotfiles#$(hostname | tr 'A-Z' 'a-z')";
     nrs = "sudo nixos-rebuild switch --flake ~/dotfiles#$(hostname | tr 'A-Z' 'a-z')";
     update = "sudo nixos-rebuild switch --flake ~/dotfiles#$(hostname | tr 'A-Z' 'a-z') --upgrade";
 
@@ -32,9 +31,9 @@ let
     cat = "bat";
     grep = "rg";
 
-    # Ollama (runs in podman container as root)
-    ollama = "sudo podman exec -it ollama ollama";
-    ai = "sudo podman exec -it ollama ollama run qwen3.5:9b";
+    # Ollama (runs in docker container as root)
+    ollama = "sudo docker exec -it ollama ollama";
+    ai = "sudo docker exec -it ollama ollama run qwen3.5:9b";
 
     # OpenClaw
     claw = "openclaw";
@@ -47,6 +46,9 @@ in
     interactiveShellInit = ''
       set -g fish_greeting
       fish_add_path $HOME/.local/bin $HOME/.cargo/bin
+
+      # Autosuggestion color — visible but subtle on dark backgrounds
+      set -U fish_color_autosuggestion 90909a
 
       # Load matugen-generated fzf colors
       if test -f $HOME/.config/fzf/colors
@@ -162,6 +164,8 @@ in
         style = "bg:color_surface";
         format = "[[  $time ](fg:color_on_surface_variant bg:color_surface)]($style)";
       };
+
+      aws.disabled = true;
 
       # Fallback palette (used before first wallpaper-set)
       palettes.matugen = {

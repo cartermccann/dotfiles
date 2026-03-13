@@ -5,10 +5,6 @@
   ...
 }:
 
-let
-  # User is passed via specialArgs from flake.nix
-  user = config.users.users;
-in
 {
   # Boot
   boot.loader.systemd-boot.enable = true;
@@ -59,7 +55,6 @@ in
     unzip
     file
     killall
-    zoxide
     pid-fan-controller
 
   ];

@@ -5,7 +5,6 @@
     ./shell.nix
     ./git.nix
     ./neovim.nix
-    ./ghostty.nix
     ./niri.nix
     ./tmux.nix
     ./dictation.nix
@@ -25,7 +24,6 @@
   };
 
   home.packages = with pkgs; [
-    fastfetch
     papirus-icon-theme
   ];
 

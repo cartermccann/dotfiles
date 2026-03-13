@@ -6,7 +6,7 @@
     ripgrep fd jq yq tree bat eza dust tldr tree-sitter
 
     # Dev workflow
-    lazygit lazydocker uv flyctl stripe-cli git-lfs mise
+    lazygit lazydocker uv flyctl stripe-cli git-lfs mise google-cloud-sdk
 
     # Nix tooling
     nixfmt-rfc-style

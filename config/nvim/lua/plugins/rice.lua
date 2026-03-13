@@ -1,0 +1,227 @@
+-- Ricing: dashboard, statusline, tabs, delimiters, animations, and eye candy
+return {
+  -----------------------------------------------------------------------------
+  -- 3a. Snacks Dashboard - Custom ASCII Art + LazyGit Shortcut
+  -----------------------------------------------------------------------------
+  {
+    "folke/snacks.nvim",
+    opts = {
+      dashboard = {
+        preset = {
+          header = [[
+░█▀█░█▀▀░█▀█░█░█░▀█▀░█▄█
+░█░█░█▀▀░█░█░▀▄▀░░█░░█░█
+░▀░▀░▀▀▀░▀▀▀░░▀░░▀▀▀░▀░▀]],
+          keys = {
+            { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
+            { icon = " ", key = "g", desc = "Find Text", action = ":lua Snacks.dashboard.pick('live_grep')" },
+            { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
+            { icon = " ", key = "c", desc = "Config", action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')})" },
+            { icon = " ", key = "s", desc = "Restore Session", section = "session" },
+            { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
+            { icon = " ", key = "G", desc = "LazyGit", action = ":lua Snacks.lazygit()" },
+            { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+          },
+        },
+        sections = {
+          { section = "header" },
+          { section = "keys", gap = 1, padding = 1 },
+          { section = "startup" },
+        },
+      },
+      -- 3g. Snacks Overrides
+      notifier = { style = "fancy" },
+      words = { enabled = true },
+      scope = { enabled = true },
+    },
+  },
+
+  -----------------------------------------------------------------------------
+  -- 3b. Lualine - Powerline Separators + Custom Sections
+  -----------------------------------------------------------------------------
+  {
+    "nvim-lualine/lualine.nvim",
+    opts = function(_, opts)
+      opts.options = opts.options or {}
+      opts.options.section_separators = { left = "", right = "" }
+      opts.options.component_separators = { left = "", right = "" }
+      opts.sections = opts.sections or {}
+      opts.sections.lualine_y = { "encoding", "fileformat", "progress", "location" }
+      opts.sections.lualine_z = {
+        { "filetype", icon_only = false, separator = "", padding = { left = 1, right = 1 } },
+      }
+    end,
+  },
+
+  -----------------------------------------------------------------------------
+  -- 3c. Bufferline - Slant Separators + Underline Indicator
+  -----------------------------------------------------------------------------
+  {
+    "akinsho/bufferline.nvim",
+    opts = function(_, opts)
+      opts.options = opts.options or {}
+      opts.options.separator_style = "slant"
+      opts.options.indicator = { style = "underline" }
+      opts.options.hover = { enabled = true, delay = 200, reveal = { "close" } }
+      -- Use catppuccin's bufferline highlights
+      local ok, cat = pcall(require, "catppuccin.groups.integrations.bufferline")
+      if ok then
+        opts.highlights = cat.get()
+      end
+    end,
+  },
+
+  -----------------------------------------------------------------------------
+  -- 3d. Rainbow Delimiters
+  -----------------------------------------------------------------------------
+  {
+    "HiPhish/rainbow-delimiters.nvim",
+    event = "BufReadPost",
+    config = function()
+      local rainbow = require("rainbow-delimiters")
+      vim.g.rainbow_delimiters = {
+        strategy = { [""] = rainbow.strategy["global"] },
+        query = { [""] = "rainbow-delimiters" },
+        highlight = {
+          "RainbowDelimiterRed",
+          "RainbowDelimiterYellow",
+          "RainbowDelimiterBlue",
+          "RainbowDelimiterOrange",
+          "RainbowDelimiterGreen",
+          "RainbowDelimiterViolet",
+          "RainbowDelimiterCyan",
+        },
+      }
+    end,
+  },
+
+  -----------------------------------------------------------------------------
+  -- 3e. Indent-Blankline Rainbow Scope
+  -----------------------------------------------------------------------------
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    opts = function(_, opts)
+      local highlight = {
+        "RainbowDelimiterRed",
+        "RainbowDelimiterYellow",
+        "RainbowDelimiterBlue",
+        "RainbowDelimiterOrange",
+        "RainbowDelimiterGreen",
+        "RainbowDelimiterViolet",
+        "RainbowDelimiterCyan",
+      }
+      opts.scope = opts.scope or {}
+      opts.scope.highlight = highlight
+    end,
+    config = function(_, opts)
+      require("ibl").setup(opts)
+      local hooks = require("ibl.hooks")
+      hooks.register(hooks.type.SCOPE_HIGHLIGHT, hooks.builtin.scope_highlight_from_extmark)
+    end,
+  },
+
+  -----------------------------------------------------------------------------
+  -- 3f. Noice.nvim - Centered Command Palette
+  -----------------------------------------------------------------------------
+  {
+    "folke/noice.nvim",
+    opts = {
+      presets = { lsp_doc_border = true },
+      views = {
+        cmdline_popup = {
+          position = { row = "40%", col = "50%" },
+          size = { width = 60, height = "auto" },
+          border = { style = "rounded" },
+        },
+        popupmenu = {
+          position = { row = "45%", col = "50%" },
+          size = { width = 60, height = 10 },
+          border = { style = "rounded" },
+        },
+      },
+    },
+  },
+
+  -----------------------------------------------------------------------------
+  -- 3h. Incline.nvim - Floating Window Filenames
+  -----------------------------------------------------------------------------
+  {
+    "b0o/incline.nvim",
+    event = "VeryLazy",
+    opts = {
+      window = {
+        padding = 0,
+        margin = { horizontal = 0 },
+      },
+      render = function(props)
+        local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":t")
+        if filename == "" then
+          filename = "[No Name]"
+        end
+        local ft_icon, ft_color = "", nil
+        local ok, icons = pcall(require, "mini.icons")
+        if ok then
+          local icon, hl = icons.get("file", filename)
+          if icon then
+            ft_icon = icon
+            local hl_fg = vim.api.nvim_get_hl(0, { name = hl }).fg
+            if hl_fg then
+              ft_color = string.format("#%06x", hl_fg)
+            end
+          end
+        end
+        local modified = vim.bo[props.buf].modified
+        return {
+          { " " },
+          ft_icon ~= "" and { ft_icon .. " ", guifg = ft_color } or "",
+          { filename, gui = modified and "bold,italic" or "bold" },
+          { " " },
+        }
+      end,
+    },
+  },
+
+  -----------------------------------------------------------------------------
+  -- 3i. Which-Key - Rounded Borders
+  -----------------------------------------------------------------------------
+  {
+    "folke/which-key.nvim",
+    opts = {
+      win = { border = "rounded" },
+    },
+  },
+
+  -----------------------------------------------------------------------------
+  -- 3j. Colorful Window Separators
+  -----------------------------------------------------------------------------
+  {
+    "nvim-zh/colorful-winsep.nvim",
+    event = "WinLeave",
+    opts = {
+      hi = {
+        fg = "#b4befe", -- catppuccin lavender
+      },
+      smooth = true,
+      exponential_smoothing = true,
+    },
+  },
+
+  -----------------------------------------------------------------------------
+  -- 3k. NVim Colorizer - Inline Color Previews
+  -----------------------------------------------------------------------------
+  {
+    "NvChad/nvim-colorizer.lua",
+    event = "BufReadPost",
+    opts = {
+      filetypes = { "*" },
+      user_default_options = {
+        names = false,
+        css = true,
+        css_fn = true,
+        tailwind = true,
+        mode = "virtualtext",
+        virtualtext = "■",
+      },
+    },
+  },
+}

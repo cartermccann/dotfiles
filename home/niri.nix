@@ -2,6 +2,7 @@
 
 {
   # Niri config (KDL format)
+  xdg.configFile."niri/config.kdl".force = true;
   xdg.configFile."niri/config.kdl".text = ''
     // Startup processes
     spawn-at-startup "swww-daemon"
@@ -69,6 +70,14 @@
       }
     }
 
+    // Blur settings (global)
+    blur {
+      passes 3
+      offset 3.0
+      noise 0.02
+      saturation 1.5
+    }
+
     // Window rules
     window-rule {
       geometry-corner-radius 16
@@ -77,15 +86,14 @@
         on
         color "#00000064"
       }
+      background-effect {
+        blur true
+      }
     }
 
-    // Layer rules (faux glass depth)
+    // Layer rules
     layer-rule {
       match namespace="^waybar$"
-      opacity 0.92
-      shadow {
-        on
-      }
     }
 
     layer-rule {
@@ -94,6 +102,9 @@
       shadow {
         on
       }
+      background-effect {
+        blur true
+      }
     }
 
     layer-rule {
@@ -101,6 +112,9 @@
       opacity 0.95
       shadow {
         on
+      }
+      background-effect {
+        blur true
       }
     }
 
@@ -197,7 +211,6 @@
 
       // ── Dictation ──
       Mod+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
-      Mod+Ctrl+X { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
 
       // ── Control panels ──
       Mod+Ctrl+A { spawn "pavucontrol"; }                   // audio controls
@@ -233,11 +246,8 @@
   xdg.configFile."waybar/config".text = builtins.toJSON {
     layer = "top";
     position = "top";
-    height = 34;
+    height = 30;
     spacing = 4;
-    margin-top = 6;
-    margin-left = 12;
-    margin-right = 12;
     modules-left = [ "niri/workspaces" ];
     modules-center = [ "clock" ];
     modules-right = [ "cpu" "memory" "network" "pulseaudio" "bluetooth" "tray" ];

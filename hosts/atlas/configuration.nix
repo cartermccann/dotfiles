@@ -37,22 +37,6 @@
   # Runs via Docker (see modules/ollama.nix)
   local.ollamaTier = "medium";
 
-  # Starlink WiFi auto-connect
-  networking.networkmanager.ensureProfiles.profiles.starlink = {
-    connection = {
-      id = "STARLINK";
-      type = "wifi";
-      autoconnect = true;
-    };
-    wifi = {
-      ssid = "STARLINK";
-      mode = "infrastructure";
-    };
-    wifi-security = {
-      key-mgmt = "wpa-psk";
-      psk = "CHANGE_ME"; # Set your actual WiFi password before rebuilding
-    };
-  };
 
   system.stateVersion = "25.11";
 }

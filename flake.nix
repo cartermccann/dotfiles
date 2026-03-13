@@ -16,17 +16,41 @@
       url = "github:InioX/matugen";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    niri = {
+      url = "github:sodiboo/niri-flake";
+      inputs.niri-unstable.url = "github:niri-wm/niri?ref=wip/branch";
+    };
+    ghostty = {
+      url = "github:ghostty-org/ghostty";
+    };
+    neovim-nightly-overlay = {
+      url = "github:nix-community/neovim-nightly-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nerd-dictation = {
+      url = "github:ideasman42/nerd-dictation";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, google-workspace-cli, nixos-hardware, matugen, ... }:
+  outputs = { self, nixpkgs, home-manager, google-workspace-cli, nixos-hardware, matugen, niri, ghostty, neovim-nightly-overlay, nerd-dictation, ... }:
     let
       mkHost = hostname: { system ? "x86_64-linux", user ? "carter", extraModules ? [] }:
         nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit user google-workspace-cli matugen; };
+          specialArgs = { inherit user google-workspace-cli matugen nerd-dictation; };
           modules = [
             ./hosts/${hostname}/configuration.nix
             home-manager.nixosModules.home-manager
+            niri.nixosModules.niri
+            ({ pkgs, ... }: {
+              nixpkgs.overlays = [
+                niri.overlays.niri
+                (final: prev: { ghostty = ghostty.packages.${prev.system}.default; })
+                neovim-nightly-overlay.overlays.default
+              ];
+              programs.niri.package = pkgs.niri-unstable.overrideAttrs (old: { doCheck = false; });
+            })
             ({ pkgs, ... }: {
               # User account
               users.users.${user} = {
@@ -43,7 +67,7 @@
                 useUserPackages = true;
                 users.${user} = import ./home/common.nix;
                 extraSpecialArgs = { inherit user google-workspace-cli matugen; };
-                backupFileExtension = "backup";
+                backupFileExtension = "hm-bak";
               };
             })
           ] ++ extraModules;
