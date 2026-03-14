@@ -83,7 +83,17 @@ return {
     config = function()
       local rainbow = require("rainbow-delimiters")
       vim.g.rainbow_delimiters = {
-        strategy = { [""] = rainbow.strategy["global"] },
+        strategy = {
+          -- Return nil for filetypes without a treesitter grammar installed
+          -- (Neovim 0.12 returns identity mapping from get_lang instead of nil)
+          [""] = function(bufnr)
+            local lang = vim.treesitter.language.get_lang(vim.bo[bufnr].ft)
+            if not lang or not pcall(vim.treesitter.language.inspect, lang) then
+              return nil
+            end
+            return rainbow.strategy["global"]
+          end,
+        },
         query = { [""] = "rainbow-delimiters" },
         highlight = {
           "RainbowDelimiterRed",

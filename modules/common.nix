@@ -9,6 +9,7 @@
   # Boot
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.configurationLimit = 10;
 
   # Networking
   networking.networkmanager.enable = true;
@@ -24,6 +25,13 @@
   ];
   nixpkgs.config.allowUnfree = true;
   programs.nix-ld.enable = true;
+
+  # Automatic garbage collection
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
 
   # SSH — key-only auth
   services.openssh = {

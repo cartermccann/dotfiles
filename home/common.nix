@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   user,
   matugen,
@@ -14,10 +15,10 @@
     ./niri.nix
     ./tmux.nix
     ./dictation.nix
-    ./openclaw.nix
     ./tools.nix
     ./theme.nix
     ./themes
+    ./spotify.nix
   ];
 
   home.username = user;
@@ -30,10 +31,6 @@
     gtk.enable = true;
   };
 
-  home.packages = with pkgs; [
-    papirus-icon-theme
-  ];
-
   gtk = {
     enable = true;
     theme = {
@@ -45,6 +42,10 @@
       package = pkgs.papirus-icon-theme;
     };
   };
+
+  # Prevent Home Manager from managing gtk.css — theme-apply and matugen write it at runtime
+  xdg.configFile."gtk-3.0/gtk.css".enable = lib.mkForce false;
+  xdg.configFile."gtk-4.0/gtk.css".enable = lib.mkForce false;
 
   dconf.settings = {
     "org/gnome/desktop/interface" = {

@@ -9,13 +9,10 @@
   # Niri config (KDL format)
   xdg.configFile."niri/config.kdl".force = true;
   xdg.configFile."niri/config.kdl".text = ''
-    // Startup processes
-    spawn-at-startup "bash" "-c" "for i in $(seq 1 10); do [ -S \"$XDG_RUNTIME_DIR/wayland-1\" ] && break; sleep 0.5; done; export WAYLAND_DISPLAY=wayland-1; systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+    // Startup — env import + restart failed portal services, then launch GUI apps
+    spawn-at-startup "bash" "-c" "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && systemctl --user restart xdg-desktop-portal-gtk xdg-desktop-portal 2>/dev/null; waybar & mako & nm-applet &"
     spawn-at-startup "swww-daemon"
     spawn-at-startup "bash" "-c" "sleep 1 && wallpaper-set /home/${user}/wallpaper.png"
-    spawn-at-startup "waybar"
-    spawn-at-startup "mako"
-    spawn-at-startup "nm-applet"
     spawn-at-startup "xwayland-satellite"
     spawn-at-startup "easyeffects" "--gapplication-service"
     spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f" "timeout" "600" "niri msg action power-off-monitors" "before-sleep" "swaylock -f"

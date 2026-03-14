@@ -4,7 +4,6 @@
   environment.systemPackages = with pkgs; [
     # Media players
     mpv
-    spotify
     tidal-hifi
 
     # Video production

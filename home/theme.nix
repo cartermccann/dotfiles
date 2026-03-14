@@ -408,6 +408,10 @@ in
 
     CURRENT=$(cat "$HOME/.config/theme/current" 2>/dev/null || echo "")
 
+    # Remove HM-managed symlinks so matugen can write gtk.css
+    [ -L "$HOME/.config/gtk-3.0/gtk.css" ] && rm "$HOME/.config/gtk-3.0/gtk.css"
+    [ -L "$HOME/.config/gtk-4.0/gtk.css" ] && rm "$HOME/.config/gtk-4.0/gtk.css"
+
     # Only run matugen if in dynamic mode or no theme set yet
     if [ -z "$CURRENT" ] || [ "$CURRENT" = "dynamic" ]; then
       if [ ! -f "$HOME/wallpaper.png" ]; then
