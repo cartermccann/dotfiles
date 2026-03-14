@@ -2,15 +2,14 @@
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   ...
 }:
 
 let
   waylandFlags = [
-    "--ozone-platform=wayland"
-    "--ozone-platform-hint=wayland"
+    "--ozone-platform-hint=auto"
     "--enable-features=TouchpadOverscrollHistoryNavigation,WebRTCPipeWireCapturer"
-    "--disable-features=WaylandWpColorManagerV1"
   ];
 
   google-chrome-wrapped = pkgs.google-chrome.override {
@@ -34,7 +33,7 @@ in
 
     # Communication
     slack
-
+    pkgs-unstable.beeper
     # Utilities
     localsend # local file sharing
     nautilus # file manager

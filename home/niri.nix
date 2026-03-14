@@ -10,6 +10,7 @@
   xdg.configFile."niri/config.kdl".force = true;
   xdg.configFile."niri/config.kdl".text = ''
     // Startup processes
+    spawn-at-startup "bash" "-c" "for i in $(seq 1 10); do [ -S \"$XDG_RUNTIME_DIR/wayland-1\" ] && break; sleep 0.5; done; export WAYLAND_DISPLAY=wayland-1; systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
     spawn-at-startup "swww-daemon"
     spawn-at-startup "bash" "-c" "sleep 1 && wallpaper-set /home/${user}/wallpaper.png"
     spawn-at-startup "waybar"

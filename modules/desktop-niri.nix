@@ -38,7 +38,6 @@
       pkgs.xdg-desktop-portal-gnome # file picker, etc.
       pkgs.xdg-desktop-portal-wlr # screen/window capture for wlroots compositors
     ];
-    # Use wlr portal for screenshots/screencasting, gnome for everything else
     config.common = {
       default = [ "gnome" ];
       "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];

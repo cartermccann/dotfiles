@@ -31,6 +31,7 @@ function M.apply(colorscheme)
     ["kanagawa"] = "kanagawa.nvim",
     ["gruvbox"] = "gruvbox.nvim",
     ["rose-pine"] = "rose-pine",
+    ["lackluster"] = "lackluster.nvim",
   }
 
   local plugin = plugin_map[colorscheme]

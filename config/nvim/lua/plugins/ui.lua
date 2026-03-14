@@ -111,6 +111,18 @@ return {
     },
   },
 
+  -- ── Lackluster (monochrome) ──
+  {
+    "slugbyte/lackluster.nvim",
+    lazy = current ~= "lackluster",
+    priority = 1000,
+    opts = {
+      tweak_background = {
+        normal = "none",
+      },
+    },
+  },
+
   -- Neo-tree: disable git-status name coloring
   {
     "nvim-neo-tree/neo-tree.nvim",

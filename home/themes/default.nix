@@ -16,12 +16,13 @@ let
     kanagawa = import ./kanagawa.nix;
     gruvbox-dark = import ./gruvbox-dark.nix;
     rose-pine = import ./rose-pine.nix;
+    square = import ./square.nix;
   };
 
   # Convert a theme attrset to JSON for runtime scripts
   themeToJson =
     theme:
-    builtins.toJSON {
+    builtins.toJSON ({
       inherit (theme)
         slug
         name
@@ -42,7 +43,10 @@ let
         delta_theme
         bat_theme
         ;
-    };
+    } // {
+      border_radius = theme.border_radius or null;
+      background_opacity = theme.background_opacity or null;
+    });
 
   # ── theme-apply: non-interactive, applies a named theme everywhere ──
   theme-apply = pkgs.writeShellScriptBin "theme-apply" ''
@@ -77,6 +81,22 @@ let
     NVIM_COLORSCHEME=$(get nvim_colorscheme)
     DELTA_THEME=$(get delta_theme)
     BAT_THEME=$(get bat_theme)
+
+    BORDER_RADIUS=$(get border_radius)
+    if [ "$BORDER_RADIUS" = "null" ] || [ -z "$BORDER_RADIUS" ]; then
+      MAKO_RADIUS=12
+      FUZZEL_RADIUS=16
+      NIRI_RADIUS=16
+    else
+      MAKO_RADIUS=$BORDER_RADIUS
+      FUZZEL_RADIUS=$BORDER_RADIUS
+      NIRI_RADIUS=$BORDER_RADIUS
+    fi
+
+    BG_OPACITY=$(get background_opacity)
+    if [ "$BG_OPACITY" = "null" ] || [ -z "$BG_OPACITY" ]; then
+      BG_OPACITY=0.88
+    fi
 
     # Strip # from hex for formats that need it
     strip() { echo "$1" | ${pkgs.gnused}/bin/sed 's/^#//'; }
@@ -115,13 +135,27 @@ let
     palette = 14=$ON_PRIMARY_CONTAINER
     palette = 15=$ON_SURFACE
 
-    background-opacity = 0.88
+    cursor-color = $PRIMARY
+    cursor-text = $SURFACE
+    selection-foreground = $SURFACE
+    selection-background = $PRIMARY
+
+    background-opacity = $BG_OPACITY
+    background-blur = true
     cursor-style = bar
     cursor-style-blink = true
+    adjust-cell-height = 2
+    font-thicken = true
+    bold-is-bright = false
+    mouse-hide-while-typing = true
+    clipboard-trim-trailing-spaces = true
     window-padding-x = 8
     window-padding-y = 8
+    window-padding-balance = true
     gtk-titlebar = false
     window-decoration = false
+    notify-on-command-finish = unfocused
+    notify-on-command-finish-after = 10s
     GHOSTTY
 
     # ── Waybar CSS ──
@@ -184,7 +218,7 @@ let
     text-color=$ON_SURFACE
     border-color=''${OUTLINE_VARIANT}80
     border-size=2
-    border-radius=12
+    border-radius=$MAKO_RADIUS
     default-timeout=5000
     padding=14
     margin=8
@@ -233,7 +267,7 @@ let
 
     [border]
     width=2
-    radius=16
+    radius=$FUZZEL_RADIUS
     FUZZEL
 
     # ── Tmux ──
@@ -337,6 +371,7 @@ let
       chmod u+w "$NIRI_CONFIG" 2>/dev/null || true
       ${pkgs.gnused}/bin/sed -i "s/active-color \"#[0-9A-Fa-f]\{6\}\"/active-color \"$PRIMARY\"/" "$NIRI_CONFIG"
       ${pkgs.gnused}/bin/sed -i "s/inactive-color \"#[0-9A-Fa-f]\{6\}\"/inactive-color \"$SURFACE_CONTAINER\"/" "$NIRI_CONFIG"
+      ${pkgs.gnused}/bin/sed -i "s/geometry-corner-radius [0-9]\+/geometry-corner-radius $NIRI_RADIUS/" "$NIRI_CONFIG"
       niri msg action reload-config 2>/dev/null || true
     fi
 

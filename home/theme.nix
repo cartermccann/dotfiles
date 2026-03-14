@@ -257,13 +257,27 @@ in
     palette = 14={{colors.on_primary_container.default.hex}}
     palette = 15={{colors.on_surface.default.hex}}
 
+    cursor-color = {{colors.primary.default.hex}}
+    cursor-text = {{colors.surface.default.hex}}
+    selection-foreground = {{colors.surface.default.hex}}
+    selection-background = {{colors.primary.default.hex}}
+
     background-opacity = 0.88
+    background-blur = true
     cursor-style = bar
     cursor-style-blink = true
+    adjust-cell-height = 2
+    font-thicken = true
+    bold-is-bright = false
+    mouse-hide-while-typing = true
+    clipboard-trim-trailing-spaces = true
     window-padding-x = 8
     window-padding-y = 8
+    window-padding-balance = true
     gtk-titlebar = false
     window-decoration = false
+    notify-on-command-finish = unfocused
+    notify-on-command-finish-after = 10s
   '';
 
   # Niri colors template
