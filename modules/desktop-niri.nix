@@ -35,11 +35,11 @@
   xdg.portal = {
     enable = true;
     extraPortals = [
-      pkgs.xdg-desktop-portal-gnome # file picker, etc.
+      pkgs.xdg-desktop-portal-gtk # file picker, etc. (works with any WM, unlike -gnome which needs Mutter)
       pkgs.xdg-desktop-portal-wlr # screen/window capture for wlroots compositors
     ];
     config.common = {
-      default = [ "gnome" ];
+      default = [ "gtk" ];
       "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
       "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
     };

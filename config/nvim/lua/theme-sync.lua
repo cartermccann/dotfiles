@@ -32,6 +32,7 @@ function M.apply(colorscheme)
     ["gruvbox"] = "gruvbox.nvim",
     ["rose-pine"] = "rose-pine",
     ["lackluster"] = "lackluster.nvim",
+    ["square"] = nil, -- local colorscheme in colors/square.lua
   }
 
   local plugin = plugin_map[colorscheme]

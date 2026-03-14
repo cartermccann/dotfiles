@@ -58,7 +58,7 @@ let
   '';
 
   wallpaper-pick = pkgs.writeShellScriptBin "wallpaper-pick" ''
-    WALL=$(find ~/wallpapers -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) | sort | ${pkgs.fuzzel}/bin/fuzzel --dmenu --prompt="Wallpaper: ")
+    WALL=$(find -L ~/wallpapers -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) | sort | ${pkgs.fuzzel}/bin/fuzzel --dmenu --prompt="Wallpaper: ")
     [ -n "$WALL" ] && ${wallpaper-set}/bin/wallpaper-set "$WALL"
   '';
 in
@@ -120,6 +120,14 @@ in
     [templates.starship-palette]
     input_path = "${config.home.homeDirectory}/.config/matugen/templates/starship-palette.toml"
     output_path = "${config.home.homeDirectory}/.config/matugen/generated/starship-palette.toml"
+
+    [templates.gtk3-css]
+    input_path = "${config.home.homeDirectory}/.config/matugen/templates/gtk.css"
+    output_path = "${config.home.homeDirectory}/.config/gtk-3.0/gtk.css"
+
+    [templates.gtk4-css]
+    input_path = "${config.home.homeDirectory}/.config/matugen/templates/gtk.css"
+    output_path = "${config.home.homeDirectory}/.config/gtk-4.0/gtk.css"
   '';
 
   # ── Matugen Templates (used in dynamic mode) ──
@@ -361,6 +369,29 @@ in
     color_on_surface = "{{colors.on_surface.default.hex}}"
     color_on_surface_variant = "{{colors.on_surface_variant.default.hex}}"
     color_error = "{{colors.error.default.hex}}"
+  '';
+
+  # GTK CSS template (used by both gtk3-css and gtk4-css matugen templates)
+  xdg.configFile."matugen/templates/gtk.css".text = ''
+    @define-color accent_bg_color {{colors.primary.default.hex}};
+    @define-color accent_color {{colors.primary.default.hex}};
+    @define-color accent_fg_color {{colors.surface.default.hex}};
+    @define-color window_bg_color {{colors.surface.default.hex}};
+    @define-color window_fg_color {{colors.on_surface.default.hex}};
+    @define-color headerbar_bg_color {{colors.surface_container.default.hex}};
+    @define-color headerbar_fg_color {{colors.on_surface.default.hex}};
+    @define-color view_bg_color {{colors.surface.default.hex}};
+    @define-color view_fg_color {{colors.on_surface.default.hex}};
+    @define-color card_bg_color {{colors.surface_container.default.hex}};
+    @define-color card_fg_color {{colors.on_surface.default.hex}};
+    @define-color sidebar_bg_color {{colors.surface_container.default.hex}};
+    @define-color sidebar_fg_color {{colors.on_surface.default.hex}};
+    @define-color popover_bg_color {{colors.surface_container.default.hex}};
+    @define-color popover_fg_color {{colors.on_surface.default.hex}};
+    @define-color dialog_bg_color {{colors.surface_container.default.hex}};
+    @define-color dialog_fg_color {{colors.on_surface.default.hex}};
+    @define-color destructive_bg_color {{colors.error.default.hex}};
+    @define-color borders alpha({{colors.outline.default.hex}}, 0.5);
   '';
 
   # Clean stale HM backup files before link checking

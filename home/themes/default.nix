@@ -109,6 +109,8 @@ let
     mkdir -p "$HOME/.config/swaylock"
     mkdir -p "$HOME/.config/fzf"
     mkdir -p "$HOME/.config/theme"
+    mkdir -p "$HOME/.config/gtk-3.0"
+    mkdir -p "$HOME/.config/gtk-4.0"
 
     # ── Ghostty ──
     cat > "$HOME/.config/ghostty/config" <<GHOSTTY
@@ -335,6 +337,31 @@ let
     --color=fg:$ON_SURFACE,header:$PRIMARY,info:$SECONDARY,pointer:$PRIMARY
     --color=marker:$PRIMARY,fg+:$ON_SURFACE,prompt:$PRIMARY,hl+:$TERTIARY
     FZF
+
+    # ── GTK color overrides (adw-gtk3 / libadwaita) ──
+    GTK_CSS="
+@define-color accent_bg_color $PRIMARY;
+@define-color accent_color $PRIMARY;
+@define-color accent_fg_color $SURFACE;
+@define-color window_bg_color $SURFACE;
+@define-color window_fg_color $ON_SURFACE;
+@define-color headerbar_bg_color $SURFACE_CONTAINER;
+@define-color headerbar_fg_color $ON_SURFACE;
+@define-color view_bg_color $SURFACE;
+@define-color view_fg_color $ON_SURFACE;
+@define-color card_bg_color $SURFACE_CONTAINER;
+@define-color card_fg_color $ON_SURFACE;
+@define-color sidebar_bg_color $SURFACE_CONTAINER;
+@define-color sidebar_fg_color $ON_SURFACE;
+@define-color popover_bg_color $SURFACE_CONTAINER;
+@define-color popover_fg_color $ON_SURFACE;
+@define-color dialog_bg_color $SURFACE_CONTAINER;
+@define-color dialog_fg_color $ON_SURFACE;
+@define-color destructive_bg_color $ERROR;
+@define-color borders alpha($OUTLINE, 0.5);
+"
+    echo "$GTK_CSS" > "$HOME/.config/gtk-4.0/gtk.css"
+    echo "$GTK_CSS" > "$HOME/.config/gtk-3.0/gtk.css"
 
     # ── Starship palette ──
     STARSHIP_BASE="$HOME/.config/starship.toml"
