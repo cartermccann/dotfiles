@@ -26,6 +26,11 @@
   nixpkgs.config.allowUnfree = true;
   programs.nix-ld.enable = true;
 
+  # Symlink /bin/bash for FHS compatibility (e.g. Claude Code plugin hooks)
+  system.activationScripts.binbash = ''
+    ln -sfn /run/current-system/sw/bin/bash /bin/bash
+  '';
+
   # Automatic garbage collection
   nix.gc = {
     automatic = true;

@@ -11,7 +11,6 @@
     ../../modules/bluetooth.nix
     ../../modules/printing.nix
     ../../modules/networking.nix
-    ../../modules/snapper.nix
     ../../modules/dictation.nix
     ../../modules/dev.nix
     ../../modules/media.nix
@@ -23,6 +22,9 @@
   # Ollama — high tier: RTX 5070 (12GB VRAM) + 64GB RAM
   # Runs via Docker with GPU passthrough (see modules/ollama.nix)
   local.ollamaTier = "high";
+
+  # Pantheon AI stack — disabled pending module update
+  # pantheon = { ... };
 
   system.stateVersion = "25.11";
 }

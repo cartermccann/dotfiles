@@ -19,6 +19,7 @@
     tree-sitter
 
     # Dev workflow
+    nodejs
     lazygit
     lazydocker
     uv
@@ -27,6 +28,7 @@
     git-lfs
     mise
     google-cloud-sdk
+    awscli2
 
     # Nix tooling
     nixfmt-rfc-style
