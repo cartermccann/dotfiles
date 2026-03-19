@@ -364,23 +364,6 @@
         "type": "indirect"
       }
     },
-    "pantheon": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1773705717,
-        "narHash": "sha256-zoaJutIIX+MwInauZZ/Dh6uykWZOsxcwFBwd77P9wGA=",
-        "path": "/home/cjm/pantheon-nix",
-        "type": "path"
-      },
-      "original": {
-        "path": "/home/cjm/pantheon-nix",
-        "type": "path"
-      }
-    },
     "root": {
       "inputs": {
         "ghostty": "ghostty",
@@ -392,8 +375,7 @@
         "niri": "niri",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_3",
-        "nixpkgs-unstable": "nixpkgs-unstable",
-        "pantheon": "pantheon"
+        "nixpkgs-unstable": "nixpkgs-unstable"
       }
     },
     "systems": {

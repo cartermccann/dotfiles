@@ -4,7 +4,6 @@
   pkgs,
   user,
   matugen,
-  pantheon,
   ...
 }:
 
@@ -20,8 +19,6 @@
     ./theme.nix
     ./themes
     ./spotify.nix
-    pantheon.homeManagerModules.default
-    ./pantheon.nix
   ];
 
   home.username = user;

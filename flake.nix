@@ -32,10 +32,6 @@
       url = "github:ideasman42/nerd-dictation";
       flake = false;
     };
-    pantheon = {
-      url = "path:/home/cjm/pantheon-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
@@ -51,7 +47,6 @@
       ghostty,
       neovim-nightly-overlay,
       nerd-dictation,
-      pantheon,
       ...
     }:
     let
@@ -77,13 +72,11 @@
               matugen
               nerd-dictation
               pkgs-unstable
-              pantheon
               ;
           };
           modules = [
             ./hosts/${hostname}/configuration.nix
             home-manager.nixosModules.home-manager
-            pantheon.nixosModules.default
             niri.nixosModules.niri
             (
               { pkgs, ... }:
@@ -101,7 +94,6 @@
             (
               { pkgs, ... }:
               {
-                # User account
                 users.users.${user} = {
                   isNormalUser = true;
                   shell = pkgs.fish;
@@ -112,7 +104,6 @@
                     "input"
                   ];
                   openssh.authorizedKeys.keys = [
-                    # Add your public SSH key here
                   ];
                 };
 
@@ -120,7 +111,7 @@
                   useGlobalPkgs = true;
                   useUserPackages = true;
                   users.${user} = import ./home/common.nix;
-                  extraSpecialArgs = { inherit user google-workspace-cli matugen pantheon; };
+                  extraSpecialArgs = { inherit user google-workspace-cli matugen; };
                   backupFileExtension = "hm-bak";
                 };
               }
