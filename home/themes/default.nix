@@ -22,31 +22,34 @@ let
   # Convert a theme attrset to JSON for runtime scripts
   themeToJson =
     theme:
-    builtins.toJSON ({
-      inherit (theme)
-        slug
-        name
-        primary
-        secondary
-        tertiary
-        surface
-        surface_container
-        surface_container_high
-        on_surface
-        on_surface_variant
-        error
-        outline
-        outline_variant
-        on_primary_container
-        on_tertiary_container
-        nvim_colorscheme
-        delta_theme
-        bat_theme
-        ;
-    } // {
-      border_radius = theme.border_radius or null;
-      background_opacity = theme.background_opacity or null;
-    });
+    builtins.toJSON (
+      {
+        inherit (theme)
+          slug
+          name
+          primary
+          secondary
+          tertiary
+          surface
+          surface_container
+          surface_container_high
+          on_surface
+          on_surface_variant
+          error
+          outline
+          outline_variant
+          on_primary_container
+          on_tertiary_container
+          nvim_colorscheme
+          delta_theme
+          bat_theme
+          ;
+      }
+      // {
+        border_radius = theme.border_radius or null;
+        background_opacity = theme.background_opacity or null;
+      }
+    );
 
   # ── theme-apply: non-interactive, applies a named theme everywhere ──
   theme-apply = pkgs.writeShellScriptBin "theme-apply" ''
@@ -170,23 +173,29 @@ let
     }
 
     window#waybar {
-      background-color: rgba(0, 0, 0, 1.0);
-      color: $ON_SURFACE_VARIANT;
-      border-radius: 0;
-      border-bottom: 1px solid $OUTLINE;
+      background-color: transparent;
+      color: $ON_SURFACE;
+    }
+
+    window#waybar > box {
+      background-color: $SURFACE;
+      margin: 6px 10px 0 10px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      border: 1px solid $SURFACE_CONTAINER;
     }
 
     #workspaces {
-      margin: 0;
-      padding: 0 4px;
+      margin: 4px 0;
+      padding: 0;
     }
 
     #workspaces button {
-      padding: 0 8px;
-      color: $OUTLINE;
+      padding: 0 10px;
+      margin: 0 2px;
+      color: $ON_SURFACE_VARIANT;
       border: none;
-      border-radius: 0;
-      margin: 0;
+      border-radius: 8px;
     }
 
     #workspaces button:hover {
@@ -195,21 +204,64 @@ let
     }
 
     #workspaces button.active {
-      color: $PRIMARY;
-      background: $SURFACE_CONTAINER;
+      color: $SURFACE;
+      background: $PRIMARY;
+      font-weight: bold;
     }
 
-    #cpu, #memory, #network, #pulseaudio, #bluetooth, #clock, #tray {
-      padding: 0 10px;
-      margin: 0;
+    #cpu,
+    #memory,
+    #network,
+    #pulseaudio,
+    #bluetooth,
+    #clock,
+    #tray {
+      padding: 0 12px;
+      margin: 4px 2px;
+      border-radius: 8px;
       color: $ON_SURFACE_VARIANT;
     }
 
-    #cpu, #memory, #network, #pulseaudio, #bluetooth {
-      border-right: 1px solid $OUTLINE;
+    #cpu:hover,
+    #memory:hover,
+    #network:hover,
+    #pulseaudio:hover,
+    #bluetooth:hover {
+      background: $SURFACE_CONTAINER;
+      color: $ON_SURFACE;
     }
 
-    #clock { color: $ON_SURFACE; }
+    #clock {
+      color: $PRIMARY;
+      font-weight: bold;
+    }
+
+    #pulseaudio {
+      color: $TERTIARY;
+    }
+
+    #network {
+      color: $SECONDARY;
+    }
+
+    #tray {
+      margin-right: 4px;
+    }
+
+    #tray > .passive {
+      -gtk-icon-effect: dim;
+    }
+
+    #tray > .needs-attention {
+      -gtk-icon-effect: highlight;
+    }
+
+    tooltip {
+      background: $SURFACE_CONTAINER;
+      border: 1px solid $OUTLINE;
+      border-radius: 8px;
+      color: $ON_SURFACE;
+    }
     WAYBAR
 
     pkill -SIGUSR2 waybar 2>/dev/null || true

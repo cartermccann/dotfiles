@@ -145,46 +145,95 @@ in
     }
 
     window#waybar {
-      background-color: rgba(0, 0, 0, 1.0);
-      color: #AAAAAA;
-      border-radius: 0;
-      border-bottom: 1px solid #555555;
+      background-color: transparent;
+      color: {{colors.on_surface.default.hex}};
+    }
+
+    window#waybar > box {
+      background-color: {{colors.surface.default.hex}};
+      margin: 6px 10px 0 10px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      border: 1px solid {{colors.surface_container.default.hex}};
     }
 
     #workspaces {
-      margin: 0;
-      padding: 0 4px;
+      margin: 4px 0;
+      padding: 0;
     }
 
     #workspaces button {
-      padding: 0 8px;
-      color: #888888;
+      padding: 0 10px;
+      margin: 0 2px;
+      color: {{colors.on_surface_variant.default.hex}};
       border: none;
-      border-radius: 0;
-      margin: 0;
+      border-radius: 8px;
     }
 
     #workspaces button:hover {
-      background: #333333;
-      color: #CCCCCC;
+      background: {{colors.surface_container.default.hex}};
+      color: {{colors.on_surface.default.hex}};
     }
 
     #workspaces button.active {
-      color: #FFFFFF;
-      background: #333333;
+      color: {{colors.surface.default.hex}};
+      background: {{colors.primary.default.hex}};
+      font-weight: bold;
     }
 
-    #cpu, #memory, #network, #pulseaudio, #bluetooth, #clock, #tray {
-      padding: 0 10px;
-      margin: 0;
-      color: #AAAAAA;
+    #cpu,
+    #memory,
+    #network,
+    #pulseaudio,
+    #bluetooth,
+    #clock,
+    #tray {
+      padding: 0 12px;
+      margin: 4px 2px;
+      border-radius: 8px;
+      color: {{colors.on_surface_variant.default.hex}};
     }
 
-    #cpu, #memory, #network, #pulseaudio, #bluetooth {
-      border-right: 1px solid #555555;
+    #cpu:hover,
+    #memory:hover,
+    #network:hover,
+    #pulseaudio:hover,
+    #bluetooth:hover {
+      background: {{colors.surface_container.default.hex}};
+      color: {{colors.on_surface.default.hex}};
     }
 
-    #clock { color: #CCCCCC; }
+    #clock {
+      color: {{colors.primary.default.hex}};
+      font-weight: bold;
+    }
+
+    #pulseaudio {
+      color: {{colors.tertiary.default.hex}};
+    }
+
+    #network {
+      color: {{colors.secondary.default.hex}};
+    }
+
+    #tray {
+      margin-right: 4px;
+    }
+
+    #tray > .passive {
+      -gtk-icon-effect: dim;
+    }
+
+    #tray > .needs-attention {
+      -gtk-icon-effect: highlight;
+    }
+
+    tooltip {
+      background: {{colors.surface_container.default.hex}};
+      border: 1px solid {{colors.outline.default.hex}};
+      border-radius: 8px;
+      color: {{colors.on_surface.default.hex}};
+    }
   '';
 
   # Mako notifications template
