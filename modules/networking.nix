@@ -3,6 +3,7 @@
 {
   # Tailscale VPN (works with Headscale too)
   services.tailscale.enable = true;
+  services.tailscale.useRoutingFeatures = "both"; # exit node + subnet routing
 
   # Firewall
   networking.firewall = {
