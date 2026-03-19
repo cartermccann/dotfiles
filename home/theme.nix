@@ -33,8 +33,8 @@ let
       if [ -L "$NIRI_CONFIG" ]; then
         cp --remove-destination "$(readlink -f "$NIRI_CONFIG")" "$NIRI_CONFIG"
       fi
-      ${pkgs.gnused}/bin/sed -i "s/active-color \"#[0-9A-Fa-f]\{6\}\"/active-color \"$NIRI_ACTIVE_COLOR\"/" "$NIRI_CONFIG"
-      ${pkgs.gnused}/bin/sed -i "s/inactive-color \"#[0-9A-Fa-f]\{6\}\"/inactive-color \"$NIRI_INACTIVE_COLOR\"/" "$NIRI_CONFIG"
+      ${pkgs.gnused}/bin/sed -i "s/active-gradient from=\"#[0-9A-Fa-f]\{6\}\" to=\"#[0-9A-Fa-f]\{6\}\"/active-gradient from=\"$NIRI_ACTIVE_FROM\" to=\"$NIRI_ACTIVE_TO\"/" "$NIRI_CONFIG"
+      ${pkgs.gnused}/bin/sed -i "s/inactive-gradient from=\"#[0-9A-Fa-f]\{6\}\" to=\"#[0-9A-Fa-f]\{6\}\"/inactive-gradient from=\"$NIRI_INACTIVE_FROM\" to=\"$NIRI_INACTIVE_TO\"/" "$NIRI_CONFIG"
       niri msg action reload-config 2>/dev/null || true
     fi
 
@@ -128,6 +128,10 @@ in
     [templates.gtk4-css]
     input_path = "${config.home.homeDirectory}/.config/matugen/templates/gtk.css"
     output_path = "${config.home.homeDirectory}/.config/gtk-4.0/gtk.css"
+
+    [templates.cava]
+    input_path = "${config.home.homeDirectory}/.config/matugen/templates/cava"
+    output_path = "${config.home.homeDirectory}/.config/cava/config"
   '';
 
   # ── Matugen Templates (used in dynamic mode) ──
@@ -141,7 +145,7 @@ in
     }
 
     window#waybar {
-      background-color: rgba(0, 0, 0, 0.85);
+      background-color: rgba(0, 0, 0, 1.0);
       color: #AAAAAA;
       border-radius: 0;
       border-bottom: 1px solid #555555;
@@ -186,7 +190,7 @@ in
   # Mako notifications template
   xdg.configFile."matugen/templates/mako".text = ''
     font=JetBrainsMono Nerd Font 11
-    background-color={{colors.surface.default.hex}}C8
+    background-color={{colors.surface.default.hex}}
     text-color={{colors.on_surface.default.hex}}
     border-color={{colors.outline_variant.default.hex}}80
     border-size=2
@@ -223,7 +227,7 @@ in
     placeholder=Search apps...
 
     [colors]
-    background={{colors.surface.default.hex_stripped}}CC
+    background={{colors.surface.default.hex_stripped}}ff
     text={{colors.on_surface.default.hex_stripped}}ff
     match={{colors.primary.default.hex_stripped}}ff
     selection={{colors.surface_container.default.hex_stripped}}80
@@ -270,8 +274,8 @@ in
     selection-foreground = {{colors.surface.default.hex}}
     selection-background = {{colors.primary.default.hex}}
 
-    background-opacity = 0.88
-    background-blur = true
+    background-opacity = 1.0
+    background-blur = false
     cursor-style = bar
     cursor-style-blink = true
     adjust-cell-height = 2
@@ -290,8 +294,10 @@ in
 
   # Niri colors template
   xdg.configFile."matugen/templates/niri-colors".text = ''
-    NIRI_ACTIVE_COLOR={{colors.primary.default.hex}}
-    NIRI_INACTIVE_COLOR={{colors.surface_container.default.hex}}
+    NIRI_ACTIVE_FROM={{colors.primary.default.hex}}
+    NIRI_ACTIVE_TO={{colors.tertiary.default.hex}}
+    NIRI_INACTIVE_FROM={{colors.surface_container.default.hex}}
+    NIRI_INACTIVE_TO={{colors.outline_variant.default.hex}}
   '';
 
   # Tmux matugen theme template
@@ -312,7 +318,11 @@ in
 
   # Swaylock template
   xdg.configFile."matugen/templates/swaylock".text = ''
-    color=000000
+    image=/home/${user}/wallpaper.png
+    effect-blur=20x3
+    effect-vignette=0.3:0.8
+    scaling=fill
+
     indicator
     indicator-radius=80
     indicator-thickness=6
@@ -324,31 +334,31 @@ in
 
     font=JetBrainsMono Nerd Font
 
-    bs-hl-color=888888
-    key-hl-color=AAAAAA
+    bs-hl-color={{colors.outline.default.hex_stripped}}
+    key-hl-color={{colors.on_surface_variant.default.hex_stripped}}
     separator-color=00000000
     layout-bg-color=00000000
-    layout-text-color=AAAAAA
+    layout-text-color={{colors.on_surface_variant.default.hex_stripped}}
 
-    inside-color=000000AA
-    inside-clear-color=000000AA
-    inside-ver-color=000000AA
-    inside-wrong-color=000000AA
+    inside-color=00000088
+    inside-clear-color=00000088
+    inside-ver-color=00000088
+    inside-wrong-color=00000088
 
-    ring-color=555555
-    ring-clear-color=555555
-    ring-ver-color=AAAAAA
-    ring-wrong-color=884444
+    ring-color={{colors.outline.default.hex_stripped}}
+    ring-clear-color={{colors.outline.default.hex_stripped}}
+    ring-ver-color={{colors.primary.default.hex_stripped}}
+    ring-wrong-color={{colors.error.default.hex_stripped}}
 
     line-color=00000000
     line-clear-color=00000000
     line-ver-color=00000000
     line-wrong-color=00000000
 
-    text-color=AAAAAA
-    text-clear-color=AAAAAA
-    text-ver-color=CCCCCC
-    text-wrong-color=AA4444
+    text-color={{colors.on_surface.default.hex_stripped}}
+    text-clear-color={{colors.on_surface_variant.default.hex_stripped}}
+    text-ver-color={{colors.on_surface.default.hex_stripped}}
+    text-wrong-color={{colors.error.default.hex_stripped}}
   '';
 
   # fzf colors template
@@ -392,6 +402,33 @@ in
     @define-color dialog_fg_color {{colors.on_surface.default.hex}};
     @define-color destructive_bg_color {{colors.error.default.hex}};
     @define-color borders alpha({{colors.outline.default.hex}}, 0.5);
+  '';
+
+  # cava audio visualizer template
+  xdg.configFile."matugen/templates/cava".text = ''
+    [general]
+    framerate = 60
+    bars = 0
+    bar_width = 2
+    bar_spacing = 1
+
+    [input]
+    method = pipewire
+    source = auto
+
+    [output]
+    method = noncurses
+    channels = stereo
+
+    [color]
+    gradient = 1
+    gradient_count = 3
+    gradient_color_1 = '{{colors.primary.default.hex}}'
+    gradient_color_2 = '{{colors.tertiary.default.hex}}'
+    gradient_color_3 = '{{colors.secondary.default.hex}}'
+
+    [smoothing]
+    noise_reduction = 77
   '';
 
   # Clean stale HM backup files before link checking

@@ -30,6 +30,7 @@ let
     ll = "eza -la --icons";
     cat = "bat";
     grep = "rg";
+    y = "yazi";
 
     # Ollama (runs in docker container as root)
     ollama = "sudo docker exec -it ollama ollama";

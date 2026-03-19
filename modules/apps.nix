@@ -26,6 +26,16 @@ let
   };
 in
 {
+  programs._1password = {
+    enable = true;
+    package = pkgs-unstable._1password-cli;
+  };
+  programs._1password-gui = {
+    enable = true;
+    package = pkgs-unstable._1password-gui;
+    polkitPolicyOwners = [ "cjm" ];
+  };
+
   programs.chromium.enable = true;
   environment.systemPackages = with pkgs; [
     google-chrome-wrapped

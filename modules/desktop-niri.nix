@@ -67,5 +67,8 @@
     wlsunset
     swaylock-effects
     swayidle
+    cliphist
+    satty
+    swayosd
   ];
 }

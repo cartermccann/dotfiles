@@ -5,13 +5,40 @@
   ...
 }:
 
+let
+  rice-dashboard = pkgs.writeShellScriptBin "rice-dashboard" ''
+    ${pkgs.tmux}/bin/tmux new-session -d -s rice -x "$(tput cols)" -y "$(tput lines)"
+    ${pkgs.tmux}/bin/tmux send-keys -t rice 'btop' Enter
+    ${pkgs.tmux}/bin/tmux split-window -h -t rice -p 40
+    ${pkgs.tmux}/bin/tmux send-keys -t rice 'cava' Enter
+    ${pkgs.tmux}/bin/tmux split-window -v -t rice -p 50
+    ${pkgs.tmux}/bin/tmux send-keys -t rice 'yazi' Enter
+    ${pkgs.tmux}/bin/tmux select-pane -t rice:1.1
+    ${pkgs.tmux}/bin/tmux attach -t rice
+  '';
+
+  power-menu = pkgs.writeShellScriptBin "power-menu" ''
+    CHOICE=$(printf "Lock\nLogout\nSuspend\nReboot\nShutdown" | ${pkgs.fuzzel}/bin/fuzzel --dmenu --prompt=" ")
+    case "$CHOICE" in
+      Lock)     swaylock -f ;;
+      Logout)   niri msg action quit ;;
+      Suspend)  systemctl suspend ;;
+      Reboot)   systemctl reboot ;;
+      Shutdown) systemctl poweroff ;;
+    esac
+  '';
+in
 {
+  home.packages = [ power-menu rice-dashboard ];
   # Niri config (KDL format)
   xdg.configFile."niri/config.kdl".force = true;
   xdg.configFile."niri/config.kdl".text = ''
     // Startup — env import + restart failed portal services, then launch GUI apps
     spawn-at-startup "bash" "-c" "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && systemctl --user restart xdg-desktop-portal-gtk xdg-desktop-portal 2>/dev/null; waybar & mako & nm-applet &"
     spawn-at-startup "swww-daemon"
+    spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
+    spawn-at-startup "swayosd-server"
+    spawn-at-startup "wlsunset" "-t" "3500" "-T" "6500"
     spawn-at-startup "bash" "-c" "sleep 1 && wallpaper-set /home/${user}/wallpaper.png"
     spawn-at-startup "xwayland-satellite"
     spawn-at-startup "easyeffects" "--gapplication-service"
@@ -43,8 +70,8 @@
       }
       border {
         width 2
-        active-color "#81A1C1"
-        inactive-color "#3B4252"
+        active-gradient from="#81A1C1" to="#8FBCBB" angle=45
+        inactive-gradient from="#3B4252" to="#434C5E" angle=45
       }
     }
 
@@ -94,6 +121,11 @@
       }
     }
 
+    // Overview backdrop — show wallpaper behind workspace overview
+    overview {
+      backdrop-color "#00000080"
+    }
+
     // Layer rules
     layer-rule {
       match namespace="^waybar$"
@@ -101,23 +133,15 @@
 
     layer-rule {
       match namespace="^mako$"
-      opacity 0.92
       shadow {
         on
-      }
-      background-effect {
-        blur true
       }
     }
 
     layer-rule {
       match namespace="^fuzzel$"
-      opacity 0.95
       shadow {
         on
-      }
-      background-effect {
-        blur true
       }
     }
 
@@ -130,9 +154,15 @@
       // ── Programs ──
       Mod+Return { spawn "ghostty"; }
       Mod+Space { spawn "fuzzel"; }
-      Mod+Shift+S { screenshot; }
+      Mod+Shift+S { spawn "bash" "-c" "grim -g \"$(slurp)\" - | satty -f -"; }
       Mod+Shift+P { screenshot-screen; }
       Print { screenshot; }
+
+      // ── Clipboard history ──
+      Mod+V { spawn "bash" "-c" "cliphist list | fuzzel --dmenu --prompt='Clipboard: ' | cliphist decode | wl-copy"; }
+
+      // ── Power menu ──
+      Mod+Shift+X { spawn "power-menu"; }
 
       // ── Window management ──
       Mod+W { close-window; }
@@ -219,6 +249,7 @@
       Mod+Ctrl+A { spawn "pavucontrol"; }                   // audio controls
       Mod+Ctrl+B { spawn "bluetui"; }                        // bluetooth
       Mod+Ctrl+T { spawn "ghostty" "-e" "btop"; }         // system monitor
+      Mod+Ctrl+D { spawn "ghostty" "-e" "rice-dashboard"; } // rice dashboard (btop + cava + yazi)
 
       // ── Wallpaper & Theme ──
       Mod+Shift+W { spawn "wallpaper-pick"; }
@@ -228,22 +259,22 @@
       Mod+Shift+E { quit; }
       Mod+Shift+Slash { show-hotkey-overlay; }
 
-      // ── Audio (media keys) ──
-      XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"; }
-      XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-"; }
-      XF86AudioMute allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
-      XF86AudioMicMute allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+      // ── Audio (media keys — swayosd for visual feedback) ──
+      XF86AudioRaiseVolume allow-when-locked=true { spawn "swayosd-client" "--output-volume" "raise"; }
+      XF86AudioLowerVolume allow-when-locked=true { spawn "swayosd-client" "--output-volume" "lower"; }
+      XF86AudioMute allow-when-locked=true { spawn "swayosd-client" "--output-volume" "mute-toggle"; }
+      XF86AudioMicMute allow-when-locked=true { spawn "swayosd-client" "--input-volume" "mute-toggle"; }
       XF86AudioPlay { spawn "playerctl" "play-pause"; }
       XF86AudioNext { spawn "playerctl" "next"; }
       XF86AudioPrev { spawn "playerctl" "previous"; }
 
-      // ── Brightness ──
-      XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "set" "5%+"; }
-      XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "set" "5%-"; }
+      // ── Brightness (swayosd for visual feedback) ──
+      XF86MonBrightnessUp allow-when-locked=true { spawn "swayosd-client" "--brightness" "raise"; }
+      XF86MonBrightnessDown allow-when-locked=true { spawn "swayosd-client" "--brightness" "lower"; }
     }
   '';
 
-  # Fuzzel, mako, swaylock, ghostty configs are generated by matugen templates
+  # Fuzzel, mako, swaylock, ghostty, cava configs are generated by matugen templates
   # See home/theme.nix for template definitions
 
   # Waybar config (JSON — not templated, only CSS changes with theme)

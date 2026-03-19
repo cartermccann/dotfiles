@@ -95,7 +95,7 @@ let
 
     BG_OPACITY=$(get background_opacity)
     if [ "$BG_OPACITY" = "null" ] || [ -z "$BG_OPACITY" ]; then
-      BG_OPACITY=0.88
+      BG_OPACITY=1.0
     fi
 
     # Strip # from hex for formats that need it
@@ -104,6 +104,7 @@ let
     mkdir -p "$HOME/.config/ghostty"
     mkdir -p "$HOME/.config/waybar"
     mkdir -p "$HOME/.config/mako"
+    mkdir -p "$HOME/.config/cava"
     mkdir -p "$HOME/.config/fuzzel"
     mkdir -p "$HOME/.config/tmux"
     mkdir -p "$HOME/.config/swaylock"
@@ -143,7 +144,7 @@ let
     selection-background = $PRIMARY
 
     background-opacity = $BG_OPACITY
-    background-blur = true
+    background-blur = false
     cursor-style = bar
     cursor-style-blink = true
     adjust-cell-height = 2
@@ -169,7 +170,7 @@ let
     }
 
     window#waybar {
-      background-color: rgba(0, 0, 0, 0.85);
+      background-color: rgba(0, 0, 0, 1.0);
       color: $ON_SURFACE_VARIANT;
       border-radius: 0;
       border-bottom: 1px solid $OUTLINE;
@@ -216,7 +217,7 @@ let
     # ── Mako ──
     cat > "$HOME/.config/mako/config" <<MAKO
     font=JetBrainsMono Nerd Font 11
-    background-color=''${SURFACE}C8
+    background-color=$SURFACE
     text-color=$ON_SURFACE
     border-color=''${OUTLINE_VARIANT}80
     border-size=2
@@ -255,7 +256,7 @@ let
     placeholder=Search apps...
 
     [colors]
-    background=$(strip $SURFACE)CC
+    background=$(strip $SURFACE)ff
     text=$(strip $ON_SURFACE)ff
     match=$(strip $PRIMARY)ff
     selection=$(strip $SURFACE_CONTAINER)80
@@ -292,7 +293,11 @@ let
 
     # ── Swaylock ──
     cat > "$HOME/.config/swaylock/config" <<SWAYLOCK
-    color=000000
+    image=$HOME/wallpaper.png
+    effect-blur=20x3
+    effect-vignette=0.3:0.8
+    scaling=fill
+
     indicator
     indicator-radius=80
     indicator-thickness=6
@@ -310,14 +315,14 @@ let
     layout-bg-color=00000000
     layout-text-color=$(strip $ON_SURFACE_VARIANT)
 
-    inside-color=000000AA
-    inside-clear-color=000000AA
-    inside-ver-color=000000AA
-    inside-wrong-color=000000AA
+    inside-color=00000088
+    inside-clear-color=00000088
+    inside-ver-color=00000088
+    inside-wrong-color=00000088
 
     ring-color=$(strip $OUTLINE)
     ring-clear-color=$(strip $OUTLINE)
-    ring-ver-color=$(strip $ON_SURFACE_VARIANT)
+    ring-ver-color=$(strip $PRIMARY)
     ring-wrong-color=$(strip $ERROR)
 
     line-color=00000000
@@ -325,7 +330,7 @@ let
     line-ver-color=00000000
     line-wrong-color=00000000
 
-    text-color=$(strip $ON_SURFACE_VARIANT)
+    text-color=$(strip $ON_SURFACE)
     text-clear-color=$(strip $ON_SURFACE_VARIANT)
     text-ver-color=$(strip $ON_SURFACE)
     text-wrong-color=$(strip $ERROR)
@@ -397,8 +402,8 @@ let
         cp --remove-destination "$(readlink -f "$NIRI_CONFIG")" "$NIRI_CONFIG"
       fi
       chmod u+w "$NIRI_CONFIG" 2>/dev/null || true
-      ${pkgs.gnused}/bin/sed -i "s/active-color \"#[0-9A-Fa-f]\{6\}\"/active-color \"$PRIMARY\"/" "$NIRI_CONFIG"
-      ${pkgs.gnused}/bin/sed -i "s/inactive-color \"#[0-9A-Fa-f]\{6\}\"/inactive-color \"$SURFACE_CONTAINER\"/" "$NIRI_CONFIG"
+      ${pkgs.gnused}/bin/sed -i "s/active-gradient from=\"#[0-9A-Fa-f]\{6\}\" to=\"#[0-9A-Fa-f]\{6\}\"/active-gradient from=\"$PRIMARY\" to=\"$TERTIARY\"/" "$NIRI_CONFIG"
+      ${pkgs.gnused}/bin/sed -i "s/inactive-gradient from=\"#[0-9A-Fa-f]\{6\}\" to=\"#[0-9A-Fa-f]\{6\}\"/inactive-gradient from=\"$SURFACE_CONTAINER\" to=\"$OUTLINE_VARIANT\"/" "$NIRI_CONFIG"
       ${pkgs.gnused}/bin/sed -i "s/geometry-corner-radius [0-9]\+/geometry-corner-radius $NIRI_RADIUS/" "$NIRI_CONFIG"
       niri msg action reload-config 2>/dev/null || true
     fi
@@ -413,6 +418,34 @@ let
     # ── Bat theme (persist for future shell sessions) ──
     mkdir -p "$HOME/.config/bat"
     echo "--theme=\"$BAT_THEME\"" > "$HOME/.config/bat/config"
+
+    # ── cava audio visualizer ──
+    mkdir -p "$HOME/.config/cava"
+    cat > "$HOME/.config/cava/config" <<CAVA
+    [general]
+    framerate = 60
+    bars = 0
+    bar_width = 2
+    bar_spacing = 1
+
+    [input]
+    method = pipewire
+    source = auto
+
+    [output]
+    method = noncurses
+    channels = stereo
+
+    [color]
+    gradient = 1
+    gradient_count = 3
+    gradient_color_1 = '$PRIMARY'
+    gradient_color_2 = '$TERTIARY'
+    gradient_color_3 = '$SECONDARY'
+
+    [smoothing]
+    noise_reduction = 77
+    CAVA
 
     # ── Neovim signal ──
     # Write colorscheme name so Neovim can pick it up

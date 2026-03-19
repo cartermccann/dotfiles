@@ -17,6 +17,8 @@
     dust
     tldr
     tree-sitter
+    yazi
+    cava
 
     # Dev workflow
     nodejs
@@ -37,6 +39,9 @@
     opencode
     codex
     piper-tts
+
+    # Recording
+    obs-studio
 
     # Networking
     whois
