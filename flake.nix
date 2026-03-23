@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -42,142 +43,9 @@
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      nixpkgs-unstable,
-      home-manager,
-      google-workspace-cli,
-      nixos-hardware,
-      matugen,
-      niri,
-      noctalia,
-      ghostty,
-      neovim-nightly-overlay,
-      nerd-dictation,
-      zen-browser,
-      ...
-    }:
-    let
-      mkHost =
-        hostname:
-        {
-          system ? "x86_64-linux",
-          user ? "carter",
-          extraModules ? [ ],
-        }:
-        let
-          pkgs-unstable = import nixpkgs-unstable {
-            inherit system;
-            config.allowUnfree = true;
-          };
-        in
-        nixpkgs.lib.nixosSystem {
-          inherit system;
-          specialArgs = {
-            inherit
-              user
-              google-workspace-cli
-              matugen
-              noctalia
-              nerd-dictation
-              zen-browser
-              pkgs-unstable
-              ;
-          };
-          modules = [
-            ./hosts/${hostname}/configuration.nix
-            home-manager.nixosModules.home-manager
-            niri.nixosModules.niri
-            (
-              { pkgs, ... }:
-              {
-                nixpkgs.overlays = [
-                  niri.overlays.niri
-                  (final: prev: { ghostty = ghostty.packages.${prev.stdenv.hostPlatform.system}.default; })
-                  neovim-nightly-overlay.overlays.default
-                ];
-                programs.niri.package = pkgs.niri-unstable.overrideAttrs (old: {
-                  doCheck = false;
-                });
-              }
-            )
-            (
-              { pkgs, ... }:
-              {
-                users.users.${user} = {
-                  isNormalUser = true;
-                  shell = pkgs.fish;
-                  extraGroups = [
-                    "wheel"
-                    "docker"
-                    "networkmanager"
-                    "input"
-                  ];
-                  openssh.authorizedKeys.keys = [
-                  ];
-                };
-
-                home-manager = {
-                  useGlobalPkgs = true;
-                  useUserPackages = true;
-                  users.${user} = import ./home/common.nix;
-                  extraSpecialArgs = { inherit user google-workspace-cli matugen; };
-                  backupFileExtension = "hm-bak";
-                };
-              }
-            )
-          ]
-          ++ extraModules;
-        };
-    in
-    {
-      nixosConfigurations.atlas = mkHost "atlas" {
-        extraModules = [ nixos-hardware.nixosModules.microsoft-surface-common ];
-      };
-      nixosConfigurations.kronos = mkHost "kronos" { user = "cjm"; };
-
-      templates = {
-        node = {
-          path = ./templates/node;
-          description = "Node.js + pnpm + TypeScript";
-        };
-        python = {
-          path = ./templates/python;
-          description = "Python 3 + uv";
-        };
-        elixir = {
-          path = ./templates/elixir;
-          description = "Elixir + Erlang/OTP";
-        };
-        zig = {
-          path = ./templates/zig;
-          description = "Zig";
-        };
-        go = {
-          path = ./templates/go;
-          description = "Go";
-        };
-        ruby = {
-          path = ./templates/ruby;
-          description = "Ruby";
-        };
-        java = {
-          path = ./templates/java;
-          description = "Java (JDK)";
-        };
-        c = {
-          path = ./templates/c;
-          description = "C/C++ with gcc, cmake, llvm";
-        };
-        rust = {
-          path = ./templates/rust;
-          description = "Rust (rustup)";
-        };
-        deno = {
-          path = ./templates/deno;
-          description = "Deno";
-        };
-      };
+    inputs@{ flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [ "x86_64-linux" ];
+      imports = [ ./parts ];
     };
 }
