@@ -13,6 +13,7 @@
     ./git.nix
     ./neovim.nix
     ./niri.nix
+    ./niri-noctalia.nix
     ./tmux.nix
     ./dictation.nix
     ./tools.nix

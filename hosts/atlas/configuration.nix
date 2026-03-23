@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     ../../modules/common.nix
     ../../modules/desktop-niri.nix
+    ../../modules/desktop-niri-noctalia.nix
     ../../modules/ollama.nix
     ../../modules/audio.nix
     ../../modules/bluetooth.nix

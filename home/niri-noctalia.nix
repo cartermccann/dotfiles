@@ -5,44 +5,17 @@
   ...
 }:
 
-let
-  rice-dashboard = pkgs.writeShellScriptBin "rice-dashboard" ''
-    ${pkgs.tmux}/bin/tmux new-session -d -s rice -x "$(tput cols)" -y "$(tput lines)"
-    ${pkgs.tmux}/bin/tmux send-keys -t rice 'btop' Enter
-    ${pkgs.tmux}/bin/tmux split-window -h -t rice -p 40
-    ${pkgs.tmux}/bin/tmux send-keys -t rice 'cava' Enter
-    ${pkgs.tmux}/bin/tmux split-window -v -t rice -p 50
-    ${pkgs.tmux}/bin/tmux send-keys -t rice 'yazi' Enter
-    ${pkgs.tmux}/bin/tmux select-pane -t rice:1.1
-    ${pkgs.tmux}/bin/tmux attach -t rice
-  '';
-
-  power-menu = pkgs.writeShellScriptBin "power-menu" ''
-    CHOICE=$(printf "Lock\nLogout\nSuspend\nReboot\nShutdown" | ${pkgs.fuzzel}/bin/fuzzel --dmenu --prompt=" ")
-    case "$CHOICE" in
-      Lock)     swaylock -f ;;
-      Logout)   niri msg action quit ;;
-      Suspend)  systemctl suspend ;;
-      Reboot)   systemctl reboot ;;
-      Shutdown) systemctl poweroff ;;
-    esac
-  '';
-in
 {
-  home.packages = [ power-menu rice-dashboard ];
-  # Niri config (KDL format)
-  xdg.configFile."niri/config.kdl".force = true;
-  xdg.configFile."niri/config.kdl".text = ''
-    // Startup — env import + restart failed portal services, then launch GUI apps
-    spawn-at-startup "bash" "-c" "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && systemctl --user restart xdg-desktop-portal-gtk xdg-desktop-portal 2>/dev/null; waybar & mako & nm-applet &"
+  # Noctalia-specific Niri config — spawns noctalia-shell instead of waybar/fuzzel/mako/etc.
+  xdg.configFile."niri/config-noctalia.kdl".text = ''
+    // Startup — env import + restart failed portal services, then launch noctalia-shell
+    spawn-at-startup "bash" "-c" "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && systemctl --user restart xdg-desktop-portal-gtk xdg-desktop-portal 2>/dev/null; noctalia-shell &"
     spawn-at-startup "swww-daemon"
     spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
-    spawn-at-startup "swayosd-server"
     spawn-at-startup "wlsunset" "-t" "3500" "-T" "6500"
     spawn-at-startup "bash" "-c" "sleep 1 && wallpaper-set /home/${user}/wallpaper.png"
     spawn-at-startup "xwayland-satellite"
     spawn-at-startup "easyeffects" "--gapplication-service"
-    spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f" "timeout" "600" "niri msg action power-off-monitors" "before-sleep" "swaylock -f"
 
     // Input
     input {
@@ -110,7 +83,7 @@ in
 
     // Window rules
     window-rule {
-      geometry-corner-radius 16
+      geometry-corner-radius 20
       clip-to-geometry true
       shadow {
         on
@@ -126,25 +99,6 @@ in
       backdrop-color "#00000080"
     }
 
-    // Layer rules
-    layer-rule {
-      match namespace="^waybar$"
-    }
-
-    layer-rule {
-      match namespace="^mako$"
-      shadow {
-        on
-      }
-    }
-
-    layer-rule {
-      match namespace="^fuzzel$"
-      shadow {
-        on
-      }
-    }
-
     // Screenshots
     screenshot-path "~/Pictures/Screenshots/%Y-%m-%d_%H-%M-%S.png"
 
@@ -153,7 +107,6 @@ in
 
       // ── Programs ──
       Mod+Return { spawn "ghostty"; }
-      Mod+Space { spawn "fuzzel"; }
       Mod+Shift+S { spawn "bash" "-c" "grim -g \"$(slurp)\" - | satty -f -"; }
       Mod+Shift+P { screenshot-screen; }
       Print { screenshot; }
@@ -161,14 +114,11 @@ in
       // ── Clipboard history ──
       Mod+V { spawn "bash" "-c" "cliphist list | fuzzel --dmenu --prompt='Clipboard: ' | cliphist decode | wl-copy"; }
 
-      // ── Power menu ──
-      Mod+Shift+X { spawn "power-menu"; }
-
       // ── Window management ──
       Mod+W { close-window; }
       Mod+Q { close-window; }
 
-      // ── Vim-style focus (from your niri config) ──
+      // ── Vim-style focus ──
       Mod+H { focus-column-left; }
       Mod+J { focus-window-down; }
       Mod+K { focus-window-up; }
@@ -230,26 +180,17 @@ in
       Mod+Tab { focus-workspace-down; }
       Mod+Shift+Tab { focus-workspace-up; }
 
-      // ── Notifications ──
-      Mod+Comma { spawn "makoctl" "dismiss"; }
-      Mod+Shift+Comma { spawn "makoctl" "dismiss" "--all"; }
-      Mod+Alt+Comma { spawn "makoctl" "invoke"; }
-
       // ── Utilities ──
-      Mod+Shift+Space { spawn "bash" "-c" "pkill waybar || waybar"; }  // toggle waybar
-      Mod+Ctrl+L { spawn "swaylock" "-f"; }                            // lock screen
-
-      // ── Night shift ──
       Mod+Ctrl+N { spawn "bash" "-c" "pkill wlsunset || wlsunset -t 3500 -T 6500"; }
 
       // ── Dictation ──
       Mod+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
 
       // ── Control panels ──
-      Mod+Ctrl+A { spawn "pavucontrol"; }                   // audio controls
-      Mod+Ctrl+B { spawn "bluetui"; }                        // bluetooth
-      Mod+Ctrl+T { spawn "ghostty" "-e" "btop"; }         // system monitor
-      Mod+Ctrl+D { spawn "ghostty" "-e" "rice-dashboard"; } // rice dashboard (btop + cava + yazi)
+      Mod+Ctrl+A { spawn "pavucontrol"; }
+      Mod+Ctrl+B { spawn "bluetui"; }
+      Mod+Ctrl+T { spawn "ghostty" "-e" "btop"; }
+      Mod+Ctrl+D { spawn "ghostty" "-e" "rice-dashboard"; }
 
       // ── Wallpaper & Theme ──
       Mod+Shift+W { spawn "wallpaper-pick"; }
@@ -259,7 +200,7 @@ in
       Mod+Shift+E { quit; }
       Mod+Shift+Slash { show-hotkey-overlay; }
 
-      // ── Audio (media keys — swayosd for visual feedback) ──
+      // ── Audio (media keys) ──
       XF86AudioRaiseVolume allow-when-locked=true { spawn "swayosd-client" "--output-volume" "raise"; }
       XF86AudioLowerVolume allow-when-locked=true { spawn "swayosd-client" "--output-volume" "lower"; }
       XF86AudioMute allow-when-locked=true { spawn "swayosd-client" "--output-volume" "mute-toggle"; }
@@ -268,81 +209,9 @@ in
       XF86AudioNext { spawn "playerctl" "next"; }
       XF86AudioPrev { spawn "playerctl" "previous"; }
 
-      // ── Brightness (swayosd for visual feedback) ──
+      // ── Brightness ──
       XF86MonBrightnessUp allow-when-locked=true { spawn "swayosd-client" "--brightness" "raise"; }
       XF86MonBrightnessDown allow-when-locked=true { spawn "swayosd-client" "--brightness" "lower"; }
     }
   '';
-
-  # Fuzzel, mako, swaylock, ghostty, cava configs are generated by matugen templates
-  # See home/theme.nix for template definitions
-
-  # Waybar config (JSON — not templated, only CSS changes with theme)
-  xdg.configFile."waybar/config".text = builtins.toJSON {
-    layer = "top";
-    position = "top";
-    height = 30;
-    spacing = 4;
-    modules-left = [ "niri/workspaces" ];
-    modules-center = [ "clock" ];
-    modules-right = [
-      "cpu"
-      "memory"
-      "network"
-      "battery"
-      "pulseaudio"
-      "bluetooth"
-      "tray"
-    ];
-
-    "niri/workspaces" = {
-      format = "{index}";
-    };
-    cpu = {
-      format = " {usage}%";
-      interval = 5;
-    };
-    memory = {
-      format = " {percentage}%";
-      interval = 5;
-    };
-    network = {
-      format-wifi = " {essid}";
-      format-ethernet = " {ifname}";
-      format-disconnected = " Disconnected";
-    };
-    battery = {
-      format = "{icon} {capacity}%";
-      format-charging = " {capacity}%";
-      format-icons = [ "" "" "" "" "" ];
-      states = {
-        warning = 30;
-        critical = 15;
-      };
-      interval = 30;
-    };
-    pulseaudio = {
-      format = "{icon} {volume}%";
-      format-muted = " Muted";
-      format-icons.default = [
-        ""
-        ""
-        ""
-      ];
-      on-click = "pavucontrol";
-    };
-    bluetooth = {
-      format = " {status}";
-      format-connected = " {device_alias}";
-      on-click = "bluetui";
-    };
-    clock = {
-      format = " {:%H:%M   %a %b %d}";
-    };
-    tray = {
-      spacing = 10;
-    };
-  };
-
-  # Waybar CSS is generated by matugen (see theme.nix)
 }

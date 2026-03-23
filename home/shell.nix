@@ -46,7 +46,7 @@ in
     inherit shellAliases;
     interactiveShellInit = ''
       set -g fish_greeting
-      fish_add_path $HOME/.local/bin $HOME/.cargo/bin
+      fish_add_path $HOME/.local/bin $HOME/.cargo/bin $HOME/.npm-global/bin
 
       # Autosuggestion color — visible but subtle on dark backgrounds
       set -U fish_color_autosuggestion 90909a
@@ -73,7 +73,7 @@ in
     enable = true;
     inherit shellAliases;
     initExtra = ''
-      export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+      export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.npm-global/bin:$PATH"
       # Load matugen-generated fzf colors
       [ -f "$HOME/.config/fzf/colors" ] && export FZF_DEFAULT_OPTS="$(cat "$HOME/.config/fzf/colors")"
     '';

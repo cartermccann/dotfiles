@@ -28,6 +28,9 @@
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    noctalia = {
+      url = "github:noctalia-dev/noctalia-shell";
+    };
     nerd-dictation = {
       url = "github:ideasman42/nerd-dictation";
       flake = false;
@@ -44,6 +47,7 @@
       nixos-hardware,
       matugen,
       niri,
+      noctalia,
       ghostty,
       neovim-nightly-overlay,
       nerd-dictation,
@@ -70,6 +74,7 @@
               user
               google-workspace-cli
               matugen
+              noctalia
               nerd-dictation
               pkgs-unstable
               ;
