@@ -43,7 +43,7 @@ in
     chromium-wrapped
 
     # Design-focused browsers
-    zen-browser.packages.${pkgs.system}.default
+    zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
     floorp-bin
     vivaldi
 

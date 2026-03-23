@@ -7,7 +7,7 @@
 
 {
   environment.systemPackages = [
-    noctalia.packages.${pkgs.system}.default
+    noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
   # Battery / power management (needed by Noctalia's built-in widgets)

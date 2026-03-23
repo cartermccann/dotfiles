@@ -94,7 +94,7 @@
               {
                 nixpkgs.overlays = [
                   niri.overlays.niri
-                  (final: prev: { ghostty = ghostty.packages.${prev.system}.default; })
+                  (final: prev: { ghostty = ghostty.packages.${prev.stdenv.hostPlatform.system}.default; })
                   neovim-nightly-overlay.overlays.default
                 ];
                 programs.niri.package = pkgs.niri-unstable.overrideAttrs (old: {

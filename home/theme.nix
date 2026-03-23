@@ -7,7 +7,7 @@
 }:
 
 let
-  matugenPkg = matugen.packages.${pkgs.system}.default;
+  matugenPkg = matugen.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   theme-apply-colors = pkgs.writeShellScript "theme-apply-colors" ''
     # Merge matugen-generated palette into starship.toml
