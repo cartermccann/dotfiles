@@ -35,6 +35,10 @@
       url = "github:ideasman42/nerd-dictation";
       flake = false;
     };
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -51,6 +55,7 @@
       ghostty,
       neovim-nightly-overlay,
       nerd-dictation,
+      zen-browser,
       ...
     }:
     let
@@ -76,6 +81,7 @@
               matugen
               noctalia
               nerd-dictation
+              zen-browser
               pkgs-unstable
               ;
           };

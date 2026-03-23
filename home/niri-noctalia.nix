@@ -106,6 +106,7 @@
     binds {
 
       // ── Programs ──
+      Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
       Mod+Return { spawn "ghostty"; }
       Mod+Shift+S { spawn "bash" "-c" "grim -g \"$(slurp)\" - | satty -f -"; }
       Mod+Shift+P { screenshot-screen; }

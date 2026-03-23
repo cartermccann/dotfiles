@@ -3,6 +3,7 @@
   lib,
   pkgs,
   pkgs-unstable,
+  zen-browser,
   ...
 }:
 
@@ -40,6 +41,11 @@ in
   environment.systemPackages = with pkgs; [
     google-chrome-wrapped
     chromium-wrapped
+
+    # Design-focused browsers
+    zen-browser.packages.${pkgs.system}.default
+    floorp-bin
+    vivaldi
 
     # Communication
     slack
