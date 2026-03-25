@@ -57,5 +57,6 @@ in
     gnome-calculator
     fastfetch
     inxi
+    blanket
   ];
 }
