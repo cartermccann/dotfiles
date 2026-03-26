@@ -22,9 +22,6 @@ let
     ];
   };
 
-  chromium-wrapped = pkgs.chromium.override {
-    commandLineArgs = waylandFlags;
-  };
 in
 {
   programs._1password = {
@@ -37,10 +34,8 @@ in
     polkitPolicyOwners = [ "cjm" ];
   };
 
-  programs.chromium.enable = true;
   environment.systemPackages = with pkgs; [
     google-chrome-wrapped
-    chromium-wrapped
 
     # Design-focused browsers
     zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default

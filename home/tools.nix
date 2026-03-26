@@ -39,7 +39,6 @@ in
     flyctl
     stripe-cli
     git-lfs
-    mise
     google-cloud-sdk
     awscli2
 
@@ -53,14 +52,12 @@ in
     # AI / LLM
     opencode
     codex
-    piper-tts
 
     # Recording
     obs-studio
 
     # Networking
     whois
-    inetutils
     netcat-openbsd
 
     # Google Workspace CLI
