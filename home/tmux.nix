@@ -48,19 +48,6 @@
 
             # True color support
             set -ag terminal-overrides ",xterm-256color:RGB"
-
-            # Source matugen-generated theme if available, otherwise use fallback Nord
-            if-shell "test -f ~/.config/tmux/matugen-theme.conf" \
-              "source-file ~/.config/tmux/matugen-theme.conf" \
-              "set -g status-style 'bg=#2E3440,fg=#D8DEE9'; \
-               set -g pane-border-style 'fg=#3B4252'; \
-               set -g pane-active-border-style 'fg=#88C0D0'; \
-               set -g window-status-current-style 'bg=#434C5E,fg=#88C0D0,bold'; \
-               set -g window-status-style 'fg=#D8DEE9'; \
-               set -g message-style 'bg=#2E3440,fg=#D8DEE9'; \
-               set -g mode-style 'bg=#434C5E,fg=#D8DEE9'; \
-               set -g status-left '#[bg=#5E81AC,fg=#2E3440,bold] #S #[default] '; \
-      "
     '';
   };
 }

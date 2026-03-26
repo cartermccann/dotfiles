@@ -1,4 +1,4 @@
-{ config, pkgs, user, ... }:
+{ config, lib, pkgs, user, ... }:
 
 let
   shellAliases = {
@@ -36,8 +36,6 @@ let
     ollama = "sudo docker exec -it ollama ollama";
     ai = "sudo docker exec -it ollama ollama run qwen3.5:9b";
 
-    # OpenClaw
-    claw = "openclaw";
   };
 in
 {
@@ -51,11 +49,6 @@ in
 
       # Autosuggestion color — visible but subtle on dark backgrounds
       set -U fish_color_autosuggestion 90909a
-
-      # Load matugen-generated fzf colors
-      if test -f $HOME/.config/fzf/colors
-        set -gx FZF_DEFAULT_OPTS (cat $HOME/.config/fzf/colors | string collect)
-      end
 
       # tmux dev layout
       function dev
@@ -74,22 +67,22 @@ in
     enable = true;
     inherit shellAliases;
     initExtra = ''
-      export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.npm-global/bin:$PATH"
-      # Load matugen-generated fzf colors
-      [ -f "$HOME/.config/fzf/colors" ] && export FZF_DEFAULT_OPTS="$(cat "$HOME/.config/fzf/colors")"
+      export PATH="$HOME/.local/bin:$PATH"
     '';
   };
 
-  # Starship prompt — static config with palette color references.
-  # Palette values are overwritten by matugen via wallpaper-set (see theme.nix).
+  stylix.targets.starship.enable = false;
+  stylix.targets.neovim.enable = false;
+  stylix.targets.niri.enable = false;
+
   programs.starship = {
     enable = true;
     settings = let
-      # Use JSON unicode escapes to reliably get PUA glyphs into Nix strings
-      sep = builtins.fromJSON ''"\uE0B4"'';   # round right powerline
-      nix = builtins.fromJSON ''"\uF313"'';   # nix logo
+      sep = builtins.fromJSON ''"\uE0B4"'';
+      nix = builtins.fromJSON ''"\uF313"'';
+      c = config.lib.stylix.colors.withHashtag;
     in {
-      palette = "matugen";
+      palette = "stylix";
       format = builtins.concatStringsSep "" [
         "[░▒▓](color_primary)"
         "[${nix} ](bg:color_primary fg:#090c0c)"
@@ -114,7 +107,7 @@ in
 
       directory = {
         format = "[ $path ]($style)";
-        style = "fg:#e3e5e5 bg:color_secondary";
+        style = "fg:${c.base05} bg:color_secondary";
         truncation_length = 3;
         truncation_symbol = "…/";
         substitutions = {
@@ -169,21 +162,19 @@ in
 
       aws.disabled = true;
 
-      # Fallback palette (used before first wallpaper-set)
-      palettes.matugen = {
-        color_primary = "#81A1C1";
-        color_secondary = "#88C0D0";
-        color_tertiary = "#8FBCBB";
-        color_surface = "#2E3440";
-        color_surface_container = "#3B4252";
-        color_on_surface = "#D8DEE9";
-        color_on_surface_variant = "#a0a9cb";
-        color_error = "#BF616A";
+      palettes.stylix = {
+        color_primary = c.base0D;
+        color_secondary = c.base0C;
+        color_tertiary = c.base0B;
+        color_surface = c.base01;
+        color_surface_container = c.base02;
+        color_on_surface = c.base05;
+        color_on_surface_variant = c.base04;
+        color_error = c.base08;
       };
     };
   };
 
-  # fzf integration — colors loaded from matugen-generated file at runtime
   programs.fzf = {
     enable = true;
     enableBashIntegration = true;

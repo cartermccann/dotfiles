@@ -1,20 +1,7 @@
 -- UI configuration — multi-theme support
--- Reads theme from ~/.config/theme/nvim-colorscheme (set by theme-select)
+-- Change colorscheme by editing the `current` variable below
 
--- Helper: read the current theme from the state file
-local function get_current_theme()
-  local f = io.open(vim.fn.expand("~/.config/theme/nvim-colorscheme"), "r")
-  if f then
-    local theme = f:read("*l")
-    f:close()
-    if theme and theme ~= "" then
-      return theme
-    end
-  end
-  return "catppuccin-mocha" -- default fallback
-end
-
-local current = get_current_theme()
+local current = "catppuccin-mocha"
 
 return {
   -- ── Catppuccin ──
@@ -166,7 +153,7 @@ return {
     },
   },
 
-  -- Set colorscheme based on theme state file
+  -- Set colorscheme
   {
     "LazyVim/LazyVim",
     opts = {

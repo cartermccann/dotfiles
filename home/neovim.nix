@@ -10,7 +10,7 @@
       # LSP servers — Nix-provided so Mason isn't needed
       pyright
       nodePackages.typescript-language-server
-      nil
+      nixd
       elixir-ls
       zls
       rust-analyzer

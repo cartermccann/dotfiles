@@ -1,0 +1,18 @@
+{
+  "nixd": {
+    "nixpkgs": {
+      "expr": "import <nixpkgs> { }"
+    },
+    "formatting": {
+      "command": ["nixfmt"]
+    },
+    "options": {
+      "nixos": {
+        "expr": "(builtins.getFlake \"/home/cjm/dotfiles\").nixosConfigurations.kronos.options"
+      },
+      "home_manager": {
+        "expr": "(builtins.getFlake \"/home/cjm/dotfiles\").nixosConfigurations.kronos.options.home-manager.users.type.getSubOptions []"
+      }
+    }
+  }
+}

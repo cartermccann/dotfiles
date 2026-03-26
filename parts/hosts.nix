@@ -23,7 +23,6 @@ let
           ;
         inherit (inputs)
           google-workspace-cli
-          matugen
           noctalia
           nerd-dictation
           zen-browser
@@ -33,6 +32,8 @@ let
         ../hosts/${hostname}/configuration.nix
         inputs.home-manager.nixosModules.home-manager
         inputs.niri.nixosModules.niri
+        inputs.stylix.nixosModules.stylix
+        ../modules/stylix.nix
         (
           { pkgs, ... }:
           {
@@ -64,7 +65,7 @@ let
               users.${user} = import ../home/common.nix;
               extraSpecialArgs = {
                 inherit user;
-                inherit (inputs) google-workspace-cli matugen fenix;
+                inherit (inputs) google-workspace-cli fenix;
               };
               backupFileExtension = "hm-bak";
             };

@@ -1,53 +1,6 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
-  themes = {
-    square = import ./themes/square.nix;
-    nord = import ./themes/nord.nix;
-    tokyo-night = import ./themes/tokyo-night.nix;
-    kanagawa = import ./themes/kanagawa.nix;
-    gruvbox-dark = import ./themes/gruvbox-dark.nix;
-    rose-pine = import ./themes/rose-pine.nix;
-    catppuccin-mocha = import ./themes/catppuccin-mocha.nix;
-  };
-
-  # Change this to switch spotify-player's theme at rebuild time
-  activeTheme = themes.catppuccin-mocha;
-
-  mkTheme = name: t: {
-    inherit name;
-    palette = {
-      background = t.surface;
-      foreground = t.on_surface;
-      black = t.surface;
-      red = t.error;
-      green = t.tertiary;
-      yellow = t.secondary;
-      blue = t.primary;
-      magenta = t.tertiary;
-      cyan = t.secondary;
-      white = t.on_surface;
-      bright_black = t.outline;
-      bright_red = t.error;
-      bright_green = t.tertiary;
-      bright_yellow = t.secondary;
-      bright_blue = t.primary;
-      bright_magenta = t.on_tertiary_container;
-      bright_cyan = t.on_primary_container;
-      bright_white = t.on_surface;
-    };
-    component_style = {
-      block_title = { fg = "Blue"; modifiers = ["Bold"]; };
-      border = { fg = "BrightBlack"; };
-      playback_track = { fg = "White"; modifiers = ["Bold"]; };
-      playback_artists = { fg = "BrightBlack"; };
-      playback_album = { fg = "BrightBlack"; };
-      playback_progress_bar = { fg = "Blue"; };
-      current_playing = { fg = "Blue"; modifiers = ["Bold"]; };
-      page_desc = { fg = "BrightBlack"; };
-      table_header = { fg = "BrightBlack"; modifiers = ["Bold"]; };
-      selection = { fg = "Blue"; modifiers = ["Bold"]; };
-    };
-  };
+  c = config.lib.stylix.colors.withHashtag;
 in
 {
   home.packages = [ pkgs.spotify ];
@@ -55,7 +8,7 @@ in
   programs.spotify-player = {
     enable = true;
     settings = {
-      theme = activeTheme.slug;
+      theme = "stylix";
       playback_window_position = "Top";
       copy_command = {
         command = "${pkgs.wl-clipboard}/bin/wl-copy";
@@ -66,6 +19,42 @@ in
         normalization = false;
       };
     };
-    themes = builtins.map (name: mkTheme name themes.${name}) (builtins.attrNames themes);
+    themes = [
+      {
+        name = "stylix";
+        palette = {
+          background = c.base00;
+          foreground = c.base05;
+          black = c.base01;
+          red = c.base08;
+          green = c.base0B;
+          yellow = c.base0A;
+          blue = c.base0D;
+          magenta = c.base0E;
+          cyan = c.base0C;
+          white = c.base05;
+          bright_black = c.base03;
+          bright_red = c.base08;
+          bright_green = c.base0B;
+          bright_yellow = c.base0A;
+          bright_blue = c.base0D;
+          bright_magenta = c.base0E;
+          bright_cyan = c.base0C;
+          bright_white = c.base07;
+        };
+        component_style = {
+          block_title = { fg = "Blue"; modifiers = ["Bold"]; };
+          border = { fg = "BrightBlack"; };
+          playback_track = { fg = "White"; modifiers = ["Bold"]; };
+          playback_artists = { fg = "BrightBlack"; };
+          playback_album = { fg = "BrightBlack"; };
+          playback_progress_bar = { fg = "Blue"; };
+          current_playing = { fg = "Blue"; modifiers = ["Bold"]; };
+          page_desc = { fg = "BrightBlack"; };
+          table_header = { fg = "BrightBlack"; modifiers = ["Bold"]; };
+          selection = { fg = "Blue"; modifiers = ["Bold"]; };
+        };
+      }
+    ];
   };
 }

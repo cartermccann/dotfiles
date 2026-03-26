@@ -4,7 +4,9 @@
   user,
   ...
 }:
-
+let
+  c = config.lib.stylix.colors.withHashtag;
+in
 {
   # Noctalia-specific Niri config — spawns noctalia-shell instead of waybar/fuzzel/mako/etc.
   xdg.configFile."niri/config-noctalia.kdl".text = ''
@@ -13,7 +15,7 @@
     spawn-at-startup "swww-daemon"
     spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
     spawn-at-startup "wlsunset" "-t" "3500" "-T" "6500"
-    spawn-at-startup "bash" "-c" "sleep 1 && wallpaper-set /home/${user}/wallpaper.png"
+    spawn-at-startup "bash" "-c" "sleep 1 && swww img /home/${user}/wallpaper.png --transition-type fade --transition-duration 1"
     spawn-at-startup "xwayland-satellite"
     spawn-at-startup "easyeffects" "--gapplication-service"
 
@@ -43,8 +45,8 @@
       }
       border {
         width 2
-        active-gradient from="#81A1C1" to="#8FBCBB" angle=45
-        inactive-gradient from="#3B4252" to="#434C5E" angle=45
+        active-gradient from="${c.base0D}" to="${c.base0C}" angle=45
+        inactive-gradient from="${c.base02}" to="${c.base03}" angle=45
       }
     }
 
@@ -195,7 +197,6 @@
 
       // ── Wallpaper & Theme ──
       Mod+Shift+W { spawn "wallpaper-pick"; }
-      Mod+Shift+T { spawn "ghostty" "-e" "theme-select"; }
 
       // ── Session ──
       Mod+Shift+E { quit; }

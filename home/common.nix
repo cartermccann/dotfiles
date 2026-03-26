@@ -3,7 +3,6 @@
   lib,
   pkgs,
   user,
-  matugen,
   ...
 }:
 
@@ -17,36 +16,16 @@
     ./tmux.nix
     ./dictation.nix
     ./tools.nix
-    ./theme.nix
-    ./themes
     ./spotify.nix
   ];
 
   home.username = user;
   home.homeDirectory = "/home/${user}";
 
-  home.pointerCursor = {
-    name = "Bibata-Modern-Ice";
-    package = pkgs.bibata-cursors;
-    size = 24;
-    gtk.enable = true;
+  gtk.iconTheme = {
+    name = "Papirus-Dark";
+    package = pkgs.papirus-icon-theme;
   };
-
-  gtk = {
-    enable = true;
-    theme = {
-      name = "adw-gtk3-dark";
-      package = pkgs.adw-gtk3;
-    };
-    iconTheme = {
-      name = "Papirus-Dark";
-      package = pkgs.papirus-icon-theme;
-    };
-  };
-
-  # Prevent Home Manager from managing gtk.css — theme-apply and matugen write it at runtime
-  xdg.configFile."gtk-3.0/gtk.css".enable = lib.mkForce false;
-  xdg.configFile."gtk-4.0/gtk.css".enable = lib.mkForce false;
 
   dconf.settings = {
     "org/gnome/desktop/interface" = {
@@ -54,7 +33,6 @@
     };
   };
 
-  # Wallpapers directory (wallpaper-set manages ~/wallpaper.png at runtime)
   home.file."wallpapers".source = ../wallpaper;
 
   # Figma (Chrome web app)
