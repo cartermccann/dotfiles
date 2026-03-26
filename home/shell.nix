@@ -22,8 +22,8 @@ let
     dlog = "docker logs";
 
     # Nix
-    nrs = "sudo nixos-rebuild switch --flake ~/dotfiles#$(hostname | tr 'A-Z' 'a-z')";
-    update = "sudo nixos-rebuild switch --flake ~/dotfiles#$(hostname | tr 'A-Z' 'a-z') --upgrade";
+    nrs = "nh os switch ~/dotfiles";
+    update = "nh os switch ~/dotfiles --update";
 
     # Modern replacements
     ls = "eza --icons";
@@ -46,7 +46,8 @@ in
     inherit shellAliases;
     interactiveShellInit = ''
       set -g fish_greeting
-      fish_add_path $HOME/.local/bin $HOME/.cargo/bin $HOME/.npm-global/bin
+      set -gx NH_FLAKE $HOME/dotfiles
+      fish_add_path $HOME/.local/bin
 
       # Autosuggestion color — visible but subtle on dark backgrounds
       set -U fish_color_autosuggestion 90909a

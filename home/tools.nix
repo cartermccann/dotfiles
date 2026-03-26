@@ -47,6 +47,8 @@ in
 
     # Nix tooling
     nixfmt-rfc-style
+    nh
+    nix-output-monitor
 
     # AI / LLM
     opencode
