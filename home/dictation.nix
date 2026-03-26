@@ -1,7 +1,6 @@
 { config, pkgs, user, ... }:
 
 {
-  # Dictation toggle script
   home.file.".local/bin/toggle-dictation.sh" = {
     executable = true;
     text = ''
@@ -24,7 +23,6 @@
     '';
   };
 
-  # Setup script to download VOSK model on first run
   home.file.".local/bin/setup-dictation.sh" = {
     executable = true;
     text = ''

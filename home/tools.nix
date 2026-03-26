@@ -43,7 +43,6 @@ in
     google-cloud-sdk
     awscli2
 
-    # Rust
     rust-toolchain
 
     # Nix tooling

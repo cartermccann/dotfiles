@@ -41,16 +41,14 @@ let
   };
 in
 {
-  # Dictation tools
   environment.systemPackages = with pkgs; [
     nerd-dictation-pkg
-    libnotify # for notify-send in toggle script
-    ydotool # for typing output
-    wtype # Wayland text input
+    libnotify
+    ydotool
+    wtype
   ];
 
-  # ydotool daemon for simulating keyboard input
-  # Runs as root (needs /dev/uinput) with socket accessible to input group
+  # ydotoold needs root for /dev/uinput; socket is group=input so user can reach it
   systemd.services.ydotoold = {
     description = "ydotoold - ydotool daemon";
     wantedBy = [ "multi-user.target" ];
