@@ -64,7 +64,7 @@ let
               users.${user} = import ../home/common.nix;
               extraSpecialArgs = {
                 inherit user;
-                inherit (inputs) google-workspace-cli matugen;
+                inherit (inputs) google-workspace-cli matugen fenix;
               };
               backupFileExtension = "hm-bak";
             };

@@ -2,8 +2,19 @@
   config,
   pkgs,
   google-workspace-cli,
+  fenix,
   ...
 }:
+let
+  rust-toolchain = fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable.withComponents [
+    "cargo"
+    "clippy"
+    "rustc"
+    "rustfmt"
+    "rust-analyzer"
+    "rust-src"
+  ];
+in
 
 {
   home.packages = with pkgs; [
@@ -21,7 +32,7 @@
     cava
 
     # Dev workflow
-    nodejs
+    nodejs_24
     lazygit
     lazydocker
     uv
@@ -31,6 +42,9 @@
     mise
     google-cloud-sdk
     awscli2
+
+    # Rust
+    rust-toolchain
 
     # Nix tooling
     nixfmt-rfc-style

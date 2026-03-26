@@ -35,7 +35,7 @@
     };
     rust = {
       path = ../templates/rust;
-      description = "Rust (rustup)";
+      description = "Rust (fenix stable)";
     };
     deno = {
       path = ../templates/deno;

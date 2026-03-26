@@ -45,7 +45,9 @@ in
     # Design-focused browsers
     zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
     floorp-bin
-    vivaldi
+
+    #Linter
+    statix
 
     # Communication
     slack

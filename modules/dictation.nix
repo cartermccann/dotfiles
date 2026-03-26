@@ -50,12 +50,16 @@ in
   ];
 
   # ydotool daemon for simulating keyboard input
+  # Runs as root (needs /dev/uinput) with socket accessible to input group
   systemd.services.ydotoold = {
     description = "ydotoold - ydotool daemon";
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
-      ExecStart = "${pkgs.ydotool}/bin/ydotoold";
+      ExecStart = "${pkgs.ydotool}/bin/ydotoold --socket-path=/run/ydotoold/socket --socket-perm=0660";
+      RuntimeDirectory = "ydotoold";
+      RuntimeDirectoryMode = "0750";
       Restart = "on-failure";
+      Group = "input";
     };
   };
 }

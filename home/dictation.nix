@@ -6,13 +6,19 @@
     executable = true;
     text = ''
       #!/bin/bash
-      if pgrep -f "nerd-dictation begin" > /dev/null; then
+      export YDOTOOL_SOCKET=/run/ydotoold/socket
+      PIDFILE="$HOME/.local/share/nerd-dictation/pid"
+      if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
         nerd-dictation end
+        rm -f "$PIDFILE"
         notify-send "Dictation" "Dictation stopped" -i audio-input-microphone-symbolic -t 2000
       else
         nerd-dictation begin \
           --vosk-model-dir="$HOME/.local/share/nerd-dictation/model" \
+          --simulate-input-tool=YDOTOOL \
+          --input=PW-CAT \
           --numbers-as-digits &
+        echo $! > "$PIDFILE"
         notify-send "Dictation" "Dictation started - speak now" -i audio-input-microphone-symbolic -t 2000
       fi
     '';
