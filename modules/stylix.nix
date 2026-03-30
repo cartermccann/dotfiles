@@ -5,7 +5,8 @@
     enable = true;
     polarity = "dark";
     image = ../wallpaper/fam.jpg;
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine.yaml";
+    # Run: ls $(nix eval --raw nixpkgs#base16-schemes)/share/themes/ to view all avlaible themes
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
 
     fonts = {
       monospace = {

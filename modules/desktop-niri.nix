@@ -19,9 +19,9 @@
       hide_version_string = true;
       bigclock = "en";
       clock = "%A, %B %d";
-      bg = "0x00000000";
-      fg = "0x00AAAAAA";
-      border_fg = "0x00555555";
+      bg = "0x0024273a"; # Catppuccin Macchiato base
+      fg = "0x00cad3f5"; # Catppuccin Macchiato text
+      border_fg = "0x00363a4f"; # Catppuccin Macchiato surface0
       input_len = 40;
       clear_password = true;
       save = true;

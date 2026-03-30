@@ -16,11 +16,26 @@
     ./tmux.nix
     ./dictation.nix
     ./tools.nix
+    ./ghostty.nix
+    ./swaylock.nix
     ./spotify.nix
   ];
 
   home.username = user;
   home.homeDirectory = "/home/${user}";
+
+  # XDG user directories — keep the ones we use, redirect the rest
+  xdg.userDirs = {
+    enable = true;
+    desktop = "$HOME/Desktop";
+    documents = "$HOME/Documents";
+    download = "$HOME/Downloads";
+    pictures = "$HOME/Pictures";
+    videos = "$HOME/Videos";
+    music = "$HOME/.local/share/Music";
+    publicShare = "$HOME/.local/share/Public";
+    templates = "$HOME/.local/share/Templates";
+  };
 
   gtk.iconTheme = {
     name = "Papirus-Dark";

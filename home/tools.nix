@@ -18,6 +18,10 @@ in
 
 {
   home.packages = with pkgs; [
+    # Languages (globally available)
+    python3
+    go
+
     # Modern CLI
     ripgrep
     fd
@@ -30,6 +34,25 @@ in
     tree-sitter
     yazi
     cava
+    glow # markdown reader
+    xh # modern httpie
+    ouch # universal compress/decompress
+    duf # prettier df
+    procs # modern ps
+    bandwhich # per-process network bandwidth
+    doggo # DNS lookup
+    gping # graphical ping
+
+    # Dev workflow tools
+    just # command runner
+    watchexec # file watcher
+    tokei # code statistics
+    hyperfine # CLI benchmarking
+    sd # modern sed
+
+    # Rice
+    pipes-rs
+    cbonsai
 
     # Dev workflow
     nodejs_24

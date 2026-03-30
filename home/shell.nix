@@ -31,6 +31,9 @@ let
     cat = "bat";
     grep = "rg";
     y = "yazi";
+    df = "duf";
+    http = "xh";
+    md = "glow";
 
     # Ollama (runs in docker container as root)
     ollama = "sudo docker exec -it ollama ollama";
@@ -45,6 +48,8 @@ in
     interactiveShellInit = ''
       set -g fish_greeting
       set -gx NH_FLAKE $HOME/dotfiles
+      set -gx GOPATH $HOME/.local/share/go
+      set -gx GOBIN $HOME/.local/bin
       fish_add_path $HOME/.local/bin
 
       # Autosuggestion color — visible but subtle on dark backgrounds
@@ -78,36 +83,35 @@ in
   programs.starship = {
     enable = true;
     settings = let
-      sep = builtins.fromJSON ''"\uE0B4"'';
+      sep = builtins.fromJSON ''"\uE0B0"'';
       nix = builtins.fromJSON ''"\uF313"'';
       c = config.lib.stylix.colors.withHashtag;
     in {
       palette = "stylix";
       format = builtins.concatStringsSep "" [
-        "[░▒▓](color_primary)"
-        "[${nix} ](bg:color_primary fg:#090c0c)"
-        "[${sep}](bg:color_secondary fg:color_primary)"
+        "[${nix} ](bg:color_accent fg:color_accent_fg)"
+        "[${sep}](bg:color_dir fg:color_accent)"
         "$directory"
-        "[${sep}](fg:color_secondary bg:color_surface_container)"
+        "[${sep}](fg:color_dir bg:color_muted)"
         "$git_branch"
         "$git_status"
-        "[${sep}](fg:color_surface_container bg:color_surface)"
+        "[${sep}](fg:color_muted bg:color_deep)"
         "$nodejs"
         "$rust"
         "$golang"
         "$php"
-        "[${sep}](fg:color_surface)"
+        "[${sep}](fg:color_deep)"
         "$character"
       ];
 
       character = {
-        success_symbol = "[${sep}](fg:color_primary) ";
-        error_symbol = "[${sep}](fg:color_error) ";
+        success_symbol = " ";
+        error_symbol = "[](fg:color_error) ";
       };
 
       directory = {
         format = "[ $path ]($style)";
-        style = "fg:${c.base05} bg:color_secondary";
+        style = "fg:color_dir_fg bg:color_dir";
         truncation_length = 3;
         truncation_symbol = "…/";
         substitutions = {
@@ -120,56 +124,62 @@ in
 
       git_branch = {
         symbol = "";
-        style = "bg:color_surface_container";
-        format = "[[ $symbol $branch ](fg:color_primary bg:color_surface_container)]($style)";
+        style = "bg:color_muted";
+        format = "[[ $symbol $branch ](fg:color_muted_fg bg:color_muted)]($style)";
       };
 
       git_status = {
-        style = "bg:color_surface_container";
-        format = "[[($all_status$ahead_behind )](fg:color_primary bg:color_surface_container)]($style)";
+        style = "bg:color_muted";
+        format = "[[($all_status$ahead_behind )](fg:color_muted_fg bg:color_muted)]($style)";
       };
 
       nodejs = {
         symbol = "";
-        style = "bg:color_surface";
-        format = "[[ $symbol ($version) ](fg:color_primary bg:color_surface)]($style)";
+        style = "bg:color_deep";
+        format = "[[ $symbol ($version) ](fg:color_deep_fg bg:color_deep)]($style)";
       };
 
       rust = {
         symbol = "";
-        style = "bg:color_surface";
-        format = "[[ $symbol ($version) ](fg:color_primary bg:color_surface)]($style)";
+        style = "bg:color_deep";
+        format = "[[ $symbol ($version) ](fg:color_deep_fg bg:color_deep)]($style)";
       };
 
       golang = {
         symbol = "";
-        style = "bg:color_surface";
-        format = "[[ $symbol ($version) ](fg:color_primary bg:color_surface)]($style)";
+        style = "bg:color_deep";
+        format = "[[ $symbol ($version) ](fg:color_deep_fg bg:color_deep)]($style)";
       };
 
       php = {
         symbol = "";
-        style = "bg:color_surface";
-        format = "[[ $symbol ($version) ](fg:color_primary bg:color_surface)]($style)";
+        style = "bg:color_deep";
+        format = "[[ $symbol ($version) ](fg:color_deep_fg bg:color_deep)]($style)";
       };
 
       time = {
         disabled = false;
         time_format = "%R";
-        style = "bg:color_surface";
-        format = "[[  $time ](fg:color_on_surface_variant bg:color_surface)]($style)";
+        style = "bg:color_deep";
+        format = "[[  $time ](fg:color_deep_fg bg:color_deep)]($style)";
       };
 
       aws.disabled = true;
 
       palettes.stylix = {
-        color_primary = c.base0D;
-        color_secondary = c.base0C;
-        color_tertiary = c.base0B;
-        color_surface = c.base01;
-        color_surface_container = c.base02;
-        color_on_surface = c.base05;
-        color_on_surface_variant = c.base04;
+        # Segment 1: Nix icon — bold accent
+        color_accent = c.base0D;
+        color_accent_fg = c.base00;
+        # Segment 2: Directory — secondary accent, still distinct from primary
+        color_dir = c.base02;
+        color_dir_fg = c.base0C;
+        # Segment 3: Git — muted surface
+        color_muted = c.base01;
+        color_muted_fg = c.base0D;
+        # Segment 4: Language — deepest, near terminal bg
+        color_deep = c.base00;
+        color_deep_fg = c.base04;
+        # Utility
         color_error = c.base08;
       };
     };
