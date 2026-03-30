@@ -4,7 +4,7 @@
   stylix = {
     enable = true;
     polarity = "dark";
-    image = ../wallpaper/nord-landscape.png;
+    image = ../wallpaper/fam.jpg;
     base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine.yaml";
 
     fonts = {

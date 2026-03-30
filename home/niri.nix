@@ -45,7 +45,7 @@ in
     spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
     spawn-at-startup "swayosd-server"
     spawn-at-startup "wlsunset" "-t" "3500" "-T" "6500"
-    spawn-at-startup "bash" "-c" "sleep 1 && swww img /home/${user}/wallpaper.png --transition-type fade --transition-duration 1"
+    spawn-at-startup "bash" "-c" "sleep 1 && swww img ${config.stylix.image} --transition-type fade --transition-duration 1"
     spawn-at-startup "xwayland-satellite"
     spawn-at-startup "easyeffects" "--gapplication-service"
     spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f" "timeout" "600" "niri msg action power-off-monitors" "before-sleep" "swaylock -f"
