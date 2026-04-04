@@ -84,103 +84,155 @@ in
     enable = true;
     settings = let
       sep = builtins.fromJSON ''"\uE0B0"'';
-      nix = builtins.fromJSON ''"\uF313"'';
       c = config.lib.stylix.colors.withHashtag;
     in {
       palette = "stylix";
       format = builtins.concatStringsSep "" [
-        "[${nix} ](bg:color_accent fg:color_accent_fg)"
-        "[${sep}](bg:color_dir fg:color_accent)"
+        # Segment 1: OS + user (mauve)
+        "[](color_mauve)"
+        "$os"
+        "$username"
+        "[${sep}](bg:color_red fg:color_mauve)"
+        # Segment 2: Directory (red/peach)
         "$directory"
-        "[${sep}](fg:color_dir bg:color_muted)"
+        "[${sep}](fg:color_red bg:color_peach)"
+        # Segment 3: Git (peach/yellow)
         "$git_branch"
         "$git_status"
-        "[${sep}](fg:color_muted bg:color_deep)"
+        "[${sep}](fg:color_peach bg:color_green)"
+        # Segment 4: Languages (green)
         "$nodejs"
         "$rust"
         "$golang"
+        "$python"
         "$php"
-        "[${sep}](fg:color_deep)"
+        "$java"
+        "[${sep}](fg:color_green bg:color_blue)"
+        # Segment 5: Docker/env (blue)
+        "$docker_context"
+        "[${sep}](fg:color_blue bg:color_surface)"
+        # Segment 6: Time (surface)
+        "$time"
+        "[${sep}](fg:color_surface)"
         "$character"
       ];
 
-      character = {
-        success_symbol = " ";
-        error_symbol = "[](fg:color_error) ";
+      os = {
+        disabled = false;
+        style = "bg:color_mauve fg:color_base";
+      };
+
+      os.symbols = {
+        NixOS = " ";
+        Linux = "󰌽 ";
+        Arch = "󰣇 ";
+        Ubuntu = "󰕈 ";
+        Fedora = "󰣛 ";
+        Debian = "󰣚 ";
+        Macos = "󰀵 ";
+        Windows = "󰍲 ";
+      };
+
+      username = {
+        show_always = true;
+        style_user = "bg:color_mauve fg:color_base";
+        style_root = "bg:color_mauve fg:color_base";
+        format = "[ $user ]($style)";
       };
 
       directory = {
         format = "[ $path ]($style)";
-        style = "fg:color_dir_fg bg:color_dir";
+        style = "fg:color_base bg:color_red";
         truncation_length = 3;
         truncation_symbol = "…/";
         substitutions = {
           "Documents" = "󰈙 ";
           "Downloads" = " ";
-          "Music" = " ";
+          "Music" = "󰝚 ";
           "Pictures" = " ";
         };
       };
 
       git_branch = {
         symbol = "";
-        style = "bg:color_muted";
-        format = "[[ $symbol $branch ](fg:color_muted_fg bg:color_muted)]($style)";
+        style = "bg:color_peach";
+        format = "[[ $symbol $branch ](fg:color_base bg:color_peach)]($style)";
       };
 
       git_status = {
-        style = "bg:color_muted";
-        format = "[[($all_status$ahead_behind )](fg:color_muted_fg bg:color_muted)]($style)";
+        style = "bg:color_peach";
+        format = "[[($all_status$ahead_behind )](fg:color_base bg:color_peach)]($style)";
       };
 
       nodejs = {
         symbol = "";
-        style = "bg:color_deep";
-        format = "[[ $symbol ($version) ](fg:color_deep_fg bg:color_deep)]($style)";
+        style = "bg:color_green";
+        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
       };
 
       rust = {
         symbol = "";
-        style = "bg:color_deep";
-        format = "[[ $symbol ($version) ](fg:color_deep_fg bg:color_deep)]($style)";
+        style = "bg:color_green";
+        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
       };
 
       golang = {
         symbol = "";
-        style = "bg:color_deep";
-        format = "[[ $symbol ($version) ](fg:color_deep_fg bg:color_deep)]($style)";
+        style = "bg:color_green";
+        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
+      };
+
+      python = {
+        symbol = "";
+        style = "bg:color_green";
+        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
       };
 
       php = {
         symbol = "";
-        style = "bg:color_deep";
-        format = "[[ $symbol ($version) ](fg:color_deep_fg bg:color_deep)]($style)";
+        style = "bg:color_green";
+        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
+      };
+
+      java = {
+        symbol = "";
+        style = "bg:color_green";
+        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
+      };
+
+      docker_context = {
+        symbol = "";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $context) ](fg:color_teal bg:color_blue)]($style)";
       };
 
       time = {
         disabled = false;
         time_format = "%R";
-        style = "bg:color_deep";
-        format = "[[  $time ](fg:color_deep_fg bg:color_deep)]($style)";
+        style = "bg:color_surface";
+        format = "[[  $time ](fg:color_text bg:color_surface)]($style)";
+      };
+
+      character = {
+        success_symbol = " ";
+        error_symbol = "[](fg:color_red) ";
       };
 
       aws.disabled = true;
 
       palettes.stylix = {
-        # Segment 1: Nix icon — bold accent
-        color_accent = c.base0D;
-        color_accent_fg = c.base00;
-        # Segment 2: Directory — secondary accent, still distinct from primary
-        color_dir = c.base02;
-        color_dir_fg = c.base0C;
-        # Segment 3: Git — muted surface
-        color_muted = c.base01;
-        color_muted_fg = c.base0D;
-        # Segment 4: Language — deepest, near terminal bg
-        color_deep = c.base00;
-        color_deep_fg = c.base04;
-        # Utility
-        color_error = c.base08;
+        # Rainbow segments (warm → cool)
+        color_mauve = c.base0E;    # segment 1: OS + user
+        color_red = c.base08;      # segment 2: directory
+        color_peach = c.base09;    # segment 3: git
+        color_yellow = c.base0A;   # character vim visual
+        color_green = c.base0B;    # segment 4: languages
+        color_blue = c.base0D;     # segment 5: docker
+        color_teal = c.base0C;     # docker fg accent
+        # Backgrounds
+        color_base = c.base00;     # dark fg on colored segments
+        color_surface = c.base02;  # segment 6: time
+        color_text = c.base05;     # light text on dark bg
       };
     };
   };

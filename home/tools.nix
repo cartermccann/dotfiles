@@ -56,6 +56,7 @@ in
 
     # Dev workflow
     nodejs_24
+    bun
     lazygit
     lazydocker
     uv

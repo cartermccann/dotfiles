@@ -14,7 +14,7 @@ in
     spawn-at-startup "bash" "-c" "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && systemctl --user restart xdg-desktop-portal-gtk xdg-desktop-portal 2>/dev/null; noctalia-shell &"
     spawn-at-startup "swww-daemon"
     spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
-    spawn-at-startup "wlsunset" "-t" "3500" "-T" "6500"
+    spawn-at-startup "wlsunset" "-t" "3500" "-T" "6500" "-l" "40.76" "-L" "-111.89"
     spawn-at-startup "bash" "-c" "sleep 1 && swww img /home/${user}/wallpaper.png --transition-type fade --transition-duration 1"
     spawn-at-startup "xwayland-satellite"
     spawn-at-startup "easyeffects" "--gapplication-service"
@@ -184,7 +184,7 @@ in
       Mod+Shift+Tab { focus-workspace-up; }
 
       // ── Utilities ──
-      Mod+Ctrl+N { spawn "bash" "-c" "pkill wlsunset || wlsunset -t 3500 -T 6500"; }
+      Mod+Ctrl+N { spawn "bash" "-c" "pkill wlsunset || wlsunset -t 3500 -T 6500 -l 40.76 -L -111.89"; }
 
       // ── Dictation ──
       Mod+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }

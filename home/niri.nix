@@ -44,7 +44,7 @@ in
     spawn-at-startup "swww-daemon"
     spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
     spawn-at-startup "swayosd-server"
-    spawn-at-startup "wlsunset" "-t" "3500" "-T" "6500"
+    spawn-at-startup "wlsunset" "-t" "3500" "-T" "6500" "-l" "40.76" "-L" "-111.89"
     spawn-at-startup "bash" "-c" "sleep 1 && swww img ${config.stylix.image} --transition-type fade --transition-duration 1"
     spawn-at-startup "xwayland-satellite"
     spawn-at-startup "easyeffects" "--gapplication-service"
@@ -246,7 +246,7 @@ in
       Mod+Ctrl+L { spawn "swaylock" "-f"; }                            // lock screen
 
       // ── Night shift ──
-      Mod+Ctrl+N { spawn "bash" "-c" "pkill wlsunset || wlsunset -t 3500 -T 6500"; }
+      Mod+Ctrl+N { spawn "bash" "-c" "pkill wlsunset || wlsunset -t 3500 -T 6500 -l 40.76 -L -111.89"; }
 
       // ── Dictation ──
       Mod+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
