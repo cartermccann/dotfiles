@@ -26,6 +26,7 @@ let
           noctalia
           nerd-dictation
           zen-browser
+          helium
           ;
       };
       modules = [
@@ -71,7 +72,8 @@ let
             };
           }
         )
-      ] ++ extraModules;
+      ]
+      ++ extraModules;
     };
 in
 {

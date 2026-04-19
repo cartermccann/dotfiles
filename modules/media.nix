@@ -10,6 +10,7 @@
     obs-studio
     kdePackages.kdenlive
     gpu-screen-recorder
+    davinci-resolve
 
     # Image tools
     imagemagick

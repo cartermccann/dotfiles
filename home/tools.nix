@@ -57,6 +57,10 @@ in
     # Dev workflow
     nodejs_24
     bun
+    pnpm
+    deno
+    nodePackages.typescript
+    biome
     lazygit
     lazydocker
     uv

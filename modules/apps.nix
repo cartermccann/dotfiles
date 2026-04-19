@@ -4,6 +4,7 @@
   pkgs,
   pkgs-unstable,
   zen-browser,
+  helium,
   ...
 }:
 
@@ -40,7 +41,7 @@ in
     # Design-focused browsers
     zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
     floorp-bin
-
+    helium.packages.${pkgs.stdenv.hostPlatform.system}.default
     #Linter
     statix
 
