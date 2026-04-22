@@ -11,6 +11,7 @@
     ../../modules/common.nix
     ../../modules/desktop-niri.nix
     ../../modules/desktop-niri-noctalia.nix
+    ../../modules/desktop-niri-caelestia.nix
     ../../modules/nvidia.nix
     ../../modules/ollama.nix
     ../../modules/audio.nix

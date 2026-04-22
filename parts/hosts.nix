@@ -63,7 +63,12 @@ let
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-              users.${user} = import ../home/common.nix;
+              users.${user} = {
+                imports = [
+                  ../home/common.nix
+                  inputs.caelestia-shell.homeManagerModules.default
+                ];
+              };
               extraSpecialArgs = {
                 inherit user;
                 inherit (inputs) google-workspace-cli fenix;

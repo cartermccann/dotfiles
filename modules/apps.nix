@@ -56,5 +56,8 @@ in
     fastfetch
     inxi
     blanket
+
+    # Notes
+    obsidian
   ];
 }
