@@ -13,7 +13,6 @@
     ./neovim.nix
     ./niri.nix
     ./niri-noctalia.nix
-    ./niri-caelestia.nix
     ./tmux.nix
     ./dictation.nix
     ./tools.nix

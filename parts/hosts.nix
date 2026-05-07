@@ -24,7 +24,6 @@ let
         inherit (inputs)
           google-workspace-cli
           noctalia
-          nerd-dictation
           zen-browser
           helium
           ;
@@ -66,7 +65,6 @@ let
               users.${user} = {
                 imports = [
                   ../home/common.nix
-                  inputs.caelestia-shell.homeManagerModules.default
                 ];
               };
               extraSpecialArgs = {

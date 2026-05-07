@@ -32,13 +32,6 @@
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
     };
-    caelestia-shell = {
-      url = "github:caelestia-dots/shell";
-      # Intentionally does NOT follow our nixpkgs — caelestia pins its own
-      # nixos-unstable and ships its own quickshell git pin.
-      # An overlay in lib/overlays.nix rebuilds it against nixpkgs' cached
-      # quickshell to avoid a moc segfault on caelestia's git-HEAD qs.
-    };
     nerd-dictation = {
       url = "github:ideasman42/nerd-dictation";
       flake = false;
