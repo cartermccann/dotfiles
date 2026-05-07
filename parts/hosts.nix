@@ -68,7 +68,7 @@ let
                 ];
               };
               extraSpecialArgs = {
-                inherit user;
+                inherit user pkgs-unstable;
                 inherit (inputs) google-workspace-cli fenix;
               };
               backupFileExtension = "hm-bak";

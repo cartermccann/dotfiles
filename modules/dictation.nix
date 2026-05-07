@@ -1,26 +1,10 @@
-{ config, lib, pkgs, ... }:
+{ pkgs, pkgs-unstable, ... }:
 
 {
-  environment.systemPackages = with pkgs; [
-    libnotify
-    ydotool
-    wtype
-    socat        # toggle script talks to worker over UNIX socket
-    sox          # convenience for audio inspection
-  ];
-
-  # nix-ld libraries needed for PyTorch / NeMo wheels installed via uv venv
-  programs.nix-ld.libraries = with pkgs; [
-    stdenv.cc.cc.lib
-    zlib
-    bzip2
-    xz
-    openssl
-    libGL
-    glib
-    libsndfile
-    ffmpeg
-    libxcrypt-legacy
+  environment.systemPackages = [
+    pkgs.libnotify
+    pkgs.ydotool
+    pkgs-unstable.sherpa-onnx
   ];
 
   # ydotoold needs root for /dev/uinput; socket is group=input so user can reach it
