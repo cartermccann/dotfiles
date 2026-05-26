@@ -21,6 +21,7 @@
     ../../modules/dev.nix
     ../../modules/media.nix
     ../../modules/apps.nix
+    ../../modules/oom-protection.nix
   ];
 
   networking.hostName = "kronos";

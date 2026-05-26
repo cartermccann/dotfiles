@@ -67,10 +67,30 @@ in
         fi
       fi
 
+      # Detect stale state from a previous session (e.g. nrs killed the parent
+      # shell mid-recording, leaving pw-record orphaned under PID 1, or the
+      # pid file points at a process that's no longer pw-record).
+      if [ -f "$RECPID" ]; then
+        STALE_PID=$(cat "$RECPID" 2>/dev/null || true)
+        if [ -z "$STALE_PID" ] || ! kill -0 "$STALE_PID" 2>/dev/null; then
+          # Process gone but pid file lingered.
+          rm -f "$RECPID" "$WAV"
+        elif ! grep -q pw-record "/proc/$STALE_PID/comm" 2>/dev/null; then
+          # PID got recycled by an unrelated process.
+          rm -f "$RECPID" "$WAV"
+        fi
+      fi
+
       if [ -f "$RECPID" ] && kill -0 "$(cat "$RECPID")" 2>/dev/null; then
         # ── STOP path ────────────────────────────────────────────────
-        kill -INT "$(cat "$RECPID")" 2>/dev/null || true
-        wait "$(cat "$RECPID")" 2>/dev/null || true
+        STOP_PID=$(cat "$RECPID")
+        kill -INT "$STOP_PID" 2>/dev/null || true
+        # `wait` only works on direct children, so poll until pw-record exits
+        # (and finishes flushing the wav header) before transcribing.
+        for _ in $(seq 1 30); do
+          kill -0 "$STOP_PID" 2>/dev/null || break
+          sleep 0.1
+        done
         rm -f "$RECPID"
         notify "Transcribing…"
 
