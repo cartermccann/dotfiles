@@ -3,6 +3,7 @@
   pkgs,
   google-workspace-cli,
   fenix,
+  herdr,
   ...
 }:
 let
@@ -90,5 +91,8 @@ in
 
     # Google Workspace CLI
     google-workspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
+
+    # herdr — terminal workspace manager for AI coding agents
+    herdr.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 }
