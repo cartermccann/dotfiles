@@ -84,7 +84,8 @@ in
             resize_on_border = true,
           },
           dwindle = {
-            pseudotile = true,
+            -- `pseudotile` is no longer a dwindle config option in 0.55 — it's a
+            -- per-window state via the `pseudo` dispatcher (bound to SUPER+P below).
             preserve_split = true,
           },
           -- ── Glassy blur + rounding + soft shadows ──
@@ -142,11 +143,12 @@ in
         hl.curve("easeOutQuad", { type = "bezier", points = { { 0.25, 0.46 }, { 0.45, 0.94 } } })
         hl.curve("snappy",      { type = "bezier", points = { { 0.2, 1.0 },   { 0.3, 1.0 } } })
 
-        hl.animation({ leaf = "windows",    enabled = true, speed = 2.5, curve = "snappy",      style = "popin 6%" })
-        hl.animation({ leaf = "windowsOut", enabled = true, speed = 2.5, curve = "easeOutQuad", style = "popin 6%" })
-        hl.animation({ leaf = "border",     enabled = true, speed = 5,   curve = "easeOutQuad" })
-        hl.animation({ leaf = "fade",       enabled = true, speed = 3,   curve = "easeOutQuad" })
-        hl.animation({ leaf = "workspaces", enabled = true, speed = 3,   curve = "snappy",      style = "slide" })
+        -- hl.animation references a named bezier/spring via `bezier =` (not `curve =`).
+        hl.animation({ leaf = "windows",    enabled = true, speed = 2.5, bezier = "snappy",      style = "popin 6%" })
+        hl.animation({ leaf = "windowsOut", enabled = true, speed = 2.5, bezier = "easeOutQuad", style = "popin 6%" })
+        hl.animation({ leaf = "border",     enabled = true, speed = 5,   bezier = "easeOutQuad" })
+        hl.animation({ leaf = "fade",       enabled = true, speed = 3,   bezier = "easeOutQuad" })
+        hl.animation({ leaf = "workspaces", enabled = true, speed = 3,   bezier = "snappy",      style = "slide" })
 
         -- ── Touchpad gesture: 3-finger horizontal swipe → switch workspace ──
         hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
@@ -204,8 +206,9 @@ in
         hl.bind(mod .. " + SHIFT + right", hl.dsp.window.move({ direction = "r" }))
 
         -- Resize (relative; percent of dimension)
-        hl.bind(mod .. " + minus", hl.dsp.window.resize({ x = "-10%", y = "0", relative = true }))
-        hl.bind(mod .. " + equal", hl.dsp.window.resize({ x = "10%",  y = "0", relative = true }))
+        -- resize takes numeric pixel deltas (x/y), not percent strings.
+        hl.bind(mod .. " + minus", hl.dsp.window.resize({ x = -100, y = 0, relative = true }))
+        hl.bind(mod .. " + equal", hl.dsp.window.resize({ x = 100,  y = 0, relative = true }))
 
         -- Workspaces 1-10 (focus + move-window-to)
         for i = 1, 10 do
@@ -287,7 +290,13 @@ in
         margin-right = 12;
         modules-left = [ "hyprland/workspaces" ];
         modules-center = [ "clock" ];
-        modules-right = [ "cpu" "memory" "network" "pulseaudio" "tray" ];
+        modules-right = [
+          "cpu"
+          "memory"
+          "network"
+          "pulseaudio"
+          "tray"
+        ];
 
         "hyprland/workspaces" = {
           format = "{name}";
@@ -352,7 +361,7 @@ in
         #workspaces button.active {
           color: ${cc.base05};
           background: rgba(123, 123, 255, 0.14);
-          box-shadow: inset 0 -2px ${cc.accent}; /* azure underline */
+
         }
         #workspaces button:hover {
           background: rgba(232, 228, 223, 0.06);
@@ -424,7 +433,11 @@ in
         timeout-low = 5;
         timeout-critical = 0;
         fit-to-screen = true;
-        widgets = [ "title" "dnd" "notifications" ];
+        widgets = [
+          "title"
+          "dnd"
+          "notifications"
+        ];
         widget-config = {
           title = {
             text = "comcreate";
