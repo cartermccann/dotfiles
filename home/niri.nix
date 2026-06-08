@@ -19,7 +19,7 @@ let
   '';
 
   wallpaper-pick = pkgs.writeShellScriptBin "wallpaper-pick" ''
-    PICK=$(find ~/wallpapers -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) | ${pkgs.fuzzel}/bin/fuzzel --dmenu --prompt="Wallpaper: ")
+    PICK=$(find -L ~/wallpapers -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) | ${pkgs.fuzzel}/bin/fuzzel --dmenu --prompt="Wallpaper: ")
     [ -n "$PICK" ] && cp "$PICK" ~/wallpaper.png && swww img "$PICK" --transition-type fade --transition-duration 1
   '';
 

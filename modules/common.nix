@@ -48,6 +48,42 @@
   ];
   nixpkgs.config.allowUnfree = true;
   programs.nix-ld.enable = true;
+  # Runtime libs for prebuilt/dynamically-linked binaries run via nix-ld.
+  # Covers the locally-built `hermes desktop` Electron shell (Chromium) and
+  # any uv-fetched interpreters or Playwright Chromium.
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc.lib
+    zlib
+    openssl
+    glib
+    nss
+    nspr
+    # Electron / Chromium runtime
+    atk
+    at-spi2-atk
+    at-spi2-core
+    cups
+    dbus
+    expat
+    libdrm
+    gtk3
+    pango
+    cairo
+    gdk-pixbuf
+    xorg.libX11
+    xorg.libxcb
+    xorg.libXcomposite
+    xorg.libXdamage
+    xorg.libXext
+    xorg.libXfixes
+    xorg.libXrandr
+    xorg.libxshmfence
+    mesa
+    libGL
+    libxkbcommon
+    alsa-lib
+    systemd
+  ];
 
   # Symlink /bin/bash for FHS compatibility (e.g. Claude Code plugin hooks)
   system.activationScripts.binbash = ''
