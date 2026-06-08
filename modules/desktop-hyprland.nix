@@ -3,22 +3,29 @@
   lib,
   pkgs,
   user,
+  hyprland,
   ...
 }:
 
+let
+  hyprPkgs = hyprland.packages.${pkgs.system};
+in
 {
-  # Hyprland compositor (from nixpkgs 25.11 → matches the home-manager module version,
-  # portal comes from the same nixpkgs eval, cached on cache.nixos.org = no local compile).
+  # Hyprland compositor — pinned 0.55.x from the upstream flake (Lua config era).
+  # portalPackage is taken from the same flake eval so the compositor and its
+  # portal stay version-matched; both come prebuilt from hyprland.cachix.org.
   programs.hyprland = {
     enable = true;
+    package = hyprPkgs.hyprland;
+    portalPackage = hyprPkgs.xdg-desktop-portal-hyprland;
     xwayland.enable = true;
   };
 
-  # Hyprland's own portal, in ADDITION to the gtk/wlr portals from desktop-niri.nix.
-  # Keyed under `hyprland` (XDG_CURRENT_DESKTOP the compositor sets) so it does NOT collide
-  # with the `common` portal config the niri module already defines.
+  # Hyprland's portal is already installed via programs.hyprland.portalPackage above;
+  # here we only declare the portal routing. Keyed under `hyprland` (the
+  # XDG_CURRENT_DESKTOP the compositor sets) so it does NOT collide with the
+  # `common` portal config the niri module already defines.
   xdg.portal = {
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
     config.hyprland = {
       default = [ "hyprland" "gtk" ];
       "org.freedesktop.impl.portal.ScreenCast" = [ "hyprland" ];
@@ -37,18 +44,9 @@
     swaynotificationcenter
   ];
 
-  # Register a "Hyprland (Comcreate)" login tile next to "Niri (Noctalia)" — same writeTextDir
-  # pattern the niri-noctalia module uses. Ly reads sessionPackages automatically, no greeter change.
-  # Exec=Hyprland reads ~/.config/hypr/hyprland.conf, which home/hyprland-comcreate.nix writes.
-  services.displayManager.sessionPackages = [
-    ((pkgs.writeTextDir "share/wayland-sessions/hyprland-comcreate.desktop" ''
-      [Desktop Entry]
-      Name=Hyprland (Comcreate)
-      Comment=Minimalist comcreate-themed Hyprland session
-      Exec=Hyprland
-      Type=Application
-    '').overrideAttrs (_: {
-      passthru.providedSessions = [ "hyprland-comcreate" ];
-    }))
-  ];
+  # No custom login tile: programs.hyprland already registers a plain "Hyprland"
+  # session (Exec=start-hyprland, the upstream-recommended launcher). Since the
+  # comcreate theming lives entirely in the user-global ~/.config/hypr/hyprland.lua,
+  # that stock "Hyprland" tile loads this exact look — so we drop the former
+  # "Hyprland (Comcreate)" tile rather than show a redundant, differently-named one.
 }

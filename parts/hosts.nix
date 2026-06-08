@@ -26,6 +26,7 @@ let
           noctalia
           zen-browser
           helium
+          hyprland
           ;
       };
       modules = [
@@ -69,7 +70,7 @@ let
               };
               extraSpecialArgs = {
                 inherit user pkgs-unstable;
-                inherit (inputs) google-workspace-cli fenix herdr;
+                inherit (inputs) google-workspace-cli fenix herdr hyprland;
               };
               backupFileExtension = "hm-bak";
             };

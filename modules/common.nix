@@ -42,10 +42,18 @@
   i18n.defaultLocale = "en_US.UTF-8";
 
   # Nix settings
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
+  nix.settings = {
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+    # Hyprland's binary cache — without this the pinned 0.55.x flake build
+    # compiles from source (heavy; risks OOM on this host).
+    substituters = [ "https://hyprland.cachix.org" ];
+    trusted-public-keys = [
+      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+    ];
+  };
   nixpkgs.config.allowUnfree = true;
   programs.nix-ld.enable = true;
   # Runtime libs for prebuilt/dynamically-linked binaries run via nix-ld.

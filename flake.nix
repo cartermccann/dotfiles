@@ -22,6 +22,12 @@
       url = "github:sodiboo/niri-flake";
       inputs.niri-unstable.url = "github:niri-wm/niri?ref=wip/branch";
     };
+    # Hyprland 0.55+ (Lua config). Pinned to a release tag; intentionally NOT
+    # following nixpkgs so prebuilt artifacts hit hyprland.cachix.org rather than
+    # forcing a local source compile (substituter added in modules/common.nix).
+    hyprland = {
+      url = "github:hyprwm/Hyprland?ref=v0.55.3&submodules=1";
+    };
     ghostty = {
       url = "github:ghostty-org/ghostty";
     };
