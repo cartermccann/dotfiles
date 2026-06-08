@@ -15,7 +15,9 @@ let
   # protocol matches. In 0.55, `hyprctl dispatch` takes the Lua dispatcher form.
   hyprctl = "${hyprland.packages.${pkgs.system}.hyprland}/bin/hyprctl";
 
-  waybarCmd = "waybar -c ${cfgHome}/waybar/comcreate-config.jsonc -s ${cfgHome}/waybar/comcreate-style.css";
+  # comcreate is now the default waybar config (~/.config/waybar/{config,style.css}),
+  # so launch it bare — no -c/-s needed.
+  waybarCmd = "waybar";
 
   # Power menu (Hyprland variant of the niri power-menu — uses hyprlock + hyprctl)
   hypr-power-menu = pkgs.writeShellScriptBin "hypr-power-menu" ''
@@ -271,7 +273,11 @@ in
 
       # ── Waybar: dedicated comcreate config/style (separate filenames so it never clobbers
       #    the Stylix-themed default waybar that the niri session uses) ──
-      xdg.configFile."waybar/comcreate-config.jsonc".text = builtins.toJSON {
+      # Stylix used to own ~/.config/waybar/style.css (for the now-removed plain-Niri
+      # bar); disable that target so our comcreate style.css is the sole default.
+      stylix.targets.waybar.enable = false;
+
+      xdg.configFile."waybar/config".text = builtins.toJSON {
         layer = "top";
         position = "top";
         height = 34;
@@ -315,7 +321,7 @@ in
         };
       };
 
-      xdg.configFile."waybar/comcreate-style.css".text = ''
+      xdg.configFile."waybar/style.css".text = ''
         * {
           font-family: "JetBrainsMono Nerd Font", monospace;
           font-size: 13px;
