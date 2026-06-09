@@ -284,7 +284,7 @@ in
         hl.window_rule({ match = { title = "^(Picture-in-Picture)$" }, float = true })
         hl.window_rule({ match = { title = "^(Open File|Save File|File Upload)" }, float = true, center = true })
         -- XWayland legacy junk: no shadow artifacts on undecorated floats.
-        hl.window_rule({ match = { xwayland = true, floating = true }, no_shadow = true })
+        hl.window_rule({ match = { xwayland = true, float = true }, no_shadow = true })
         -- Scratchpad: slightly translucent so it reads as an overlay.
         hl.window_rule({ match = { workspace = "special:scratch" }, opacity = "0.92 0.92" })
         hl.window_rule({ match = { class = ".*" }, suppress_event = "maximize" })
