@@ -22,7 +22,12 @@ let
 
   wallpaper-pick = pkgs.writeShellScriptBin "wallpaper-pick" ''
     PICK=$(find -L ~/wallpapers -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) | ${pkgs.fuzzel}/bin/fuzzel --dmenu --prompt="Wallpaper: ")
-    [ -n "$PICK" ] && cp "$PICK" ~/wallpaper.png && swww img "$PICK" --transition-type fade --transition-duration 1
+    # ~/wallpaper.png is a cross-session contract (hyprlock reads it too) — `magick`
+    # writes real PNG bytes regardless of the source format, where `cp` lied about
+    # the extension for jpg picks.
+    [ -n "$PICK" ] || exit 0
+    ${pkgs.imagemagick}/bin/magick "$PICK" ~/wallpaper.png
+    swww img ~/wallpaper.png --transition-type fade --transition-duration 1
   '';
 in
 {
