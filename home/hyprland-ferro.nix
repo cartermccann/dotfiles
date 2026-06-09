@@ -486,24 +486,24 @@ in
         };
         "custom/gpu" = {
           exec = "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits";
-          format = "gpu {}°";
+          format = "GPU {}°";
           interval = 10;
           on-click = "ghostty --class=TUI.float -e btop";
         };
         cpu = {
-          format = "cpu {usage}%";
+          format = "CPU {usage}%";
           interval = 5;
           on-click = "ghostty --class=TUI.float -e btop";
         };
         memory = {
-          format = "mem {percentage}%";
+          format = "MEM {percentage}%";
           interval = 5;
           on-click = "ghostty --class=TUI.float -e btop";
         };
         network = {
           format-wifi = "{essid} {signalStrength}%";
-          format-ethernet = "eth";
-          format-disconnected = "offline";
+          format-ethernet = "ETH";
+          format-disconnected = "OFFLINE";
           tooltip-format-ethernet = "{ifname}: {ipaddr}/{cidr}\n↓ {bandwidthDownBytes}  ↑ {bandwidthUpBytes}";
           tooltip-format-wifi = "{essid} ({signalStrength}%): {ipaddr}";
           interval = 2;
@@ -519,8 +519,8 @@ in
           on-click = "ghostty --class=TUI.float -e bluetui";
         };
         pulseaudio = {
-          format = "vol {volume}%";
-          format-muted = "muted";
+          format = "VOL {volume}%";
+          format-muted = "MUTED";
           scroll-step = 3;
           on-click = "pavucontrol";
           on-click-right = "swayosd-client --output-volume mute-toggle";
@@ -624,8 +624,8 @@ in
         #idle_inhibitor.activated {
           color: ${cc.base0D};
         }
-        /* Uppercase micro-labels with wide tracking — the sites' HUD-label convention.
-           (mpris is exempt: song titles keep their case.) */
+        /* HUD micro-labels: uppercase comes from the module format strings (GTK CSS
+           has no text-transform); tracking lives here. mpris exempt — titles keep case. */
         #custom-gpu,
         #cpu,
         #memory,
@@ -635,7 +635,6 @@ in
           color: ${cc.base06};
           padding: 0 9px;
           font-size: 11px;
-          text-transform: uppercase;
           letter-spacing: 0.08em;
         }
         #pulseaudio.muted,
