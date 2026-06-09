@@ -220,31 +220,35 @@ in
         -- ── Animation curves + tree ──
         -- Philosophy: decel-heavy In, fast-linear Out, In > Out asymmetry, spring for
         -- windows, nothing over 4.5ds. (1ds = 100ms)
-        hl.curve("emphasizedDecel", { type = "bezier", points = { { 0.05, 0.7 },  { 0.1, 1 }    } }) -- MD3: the workhorse
-        hl.curve("menuDecel",       { type = "bezier", points = { { 0.1, 1 },     { 0, 1 }      } }) -- instant-feel layers
+        hl.curve("emphasizedDecel", { type = "bezier", points = { { 0.05, 0.7 },  { 0.1, 1 }    } }) -- MD3 decel (scratchpad drop-in)
+        hl.curve("menuDecel",       { type = "bezier", points = { { 0.1, 1 },     { 0, 1 }      } }) -- instant-feel layer fades
         hl.curve("menuAccel",       { type = "bezier", points = { { 0.52, 0.03 }, { 0.72, 0.08 } } }) -- layer exit
-        hl.curve("easeOutExpo",     { type = "bezier", points = { { 0.16, 1 },    { 0.3, 1 }    } }) -- canonical, border
         hl.curve("almostLinear",    { type = "bezier", points = { { 0.5, 0.5 },   { 0.75, 1 }   } }) -- upstream fade default
+        -- Site-exact easing tokens from comcreate.io's tokens.css — the design language
+        -- ferro is built on. The desktop moves like the site.
+        hl.curve("ferroReveal", { type = "bezier", points = { { 0.19, 1 },    { 0.22, 1 }  } }) -- --ease-reveal: aggressive expo-like decel
+        hl.curve("ferroSnap",   { type = "bezier", points = { { 0.65, 0.05 }, { 0, 1 }     } }) -- --ease-snap: late accel, hard settle
+        hl.curve("ferroStage",  { type = "bezier", points = { { 0.77, 0 },    { 0.175, 1 } } }) -- --ease-stage: deliberate in-out
         -- Upstream default spring, near-critically damped (verified against the 0.55.3
         -- default config: referenced via `spring = "easy"` in hl.animation).
         hl.curve("easy", { type = "spring", mass = 1, stiffness = 71.2633, dampening = 15.8273644 })
 
         hl.animation({ leaf = "windows",     enabled = true, speed = 3.5, spring = "easy" })
-        hl.animation({ leaf = "windowsIn",   enabled = true, speed = 3,   bezier = "emphasizedDecel", style = "popin 85%" })
-        hl.animation({ leaf = "windowsOut",  enabled = true, speed = 1.8, bezier = "almostLinear",    style = "popin 90%" }) -- close gets out of the way
-        hl.animation({ leaf = "windowsMove", enabled = true, speed = 3,   bezier = "emphasizedDecel", style = "slide" })
-        hl.animation({ leaf = "border",      enabled = true, speed = 3,   bezier = "easeOutExpo" })
+        hl.animation({ leaf = "windowsIn",   enabled = true, speed = 3,   bezier = "ferroReveal", style = "popin 85%" })
+        hl.animation({ leaf = "windowsOut",  enabled = true, speed = 1.8, bezier = "almostLinear", style = "popin 90%" }) -- close gets out of the way
+        hl.animation({ leaf = "windowsMove", enabled = true, speed = 3,   bezier = "ferroSnap",   style = "slide" })
+        hl.animation({ leaf = "border",      enabled = true, speed = 3,   bezier = "ferroReveal" })
         hl.animation({ leaf = "fade",        enabled = true, speed = 2,   bezier = "almostLinear" })
         hl.animation({ leaf = "fadeIn",      enabled = true, speed = 1.7, bezier = "almostLinear" })
         hl.animation({ leaf = "fadeOut",     enabled = true, speed = 1.5, bezier = "almostLinear" })
         hl.animation({ leaf = "fadeDim",     enabled = true, speed = 2,   bezier = "almostLinear" })
         -- Layers: bar / fuzzel / swaync / swayosd get real entrances instead of defaults.
-        hl.animation({ leaf = "layersIn",      enabled = true, speed = 2.5, bezier = "emphasizedDecel", style = "popin 93%" })
+        hl.animation({ leaf = "layersIn",      enabled = true, speed = 2.5, bezier = "ferroReveal", style = "popin 93%" })
         hl.animation({ leaf = "layersOut",     enabled = true, speed = 1.6, bezier = "menuAccel",       style = "popin 94%" })
         hl.animation({ leaf = "fadeLayersIn",  enabled = true, speed = 1.6, bezier = "menuDecel" })
         hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 1.8, bezier = "menuAccel" })
-        -- Workspaces: long-but-decelerating reads smooth, not slow.
-        hl.animation({ leaf = "workspaces", enabled = true, speed = 4.5, bezier = "menuDecel", style = "slide" })
+        -- Workspaces: the site's "stage transition" in-out — deliberate, cinematic slide.
+        hl.animation({ leaf = "workspaces", enabled = true, speed = 4, bezier = "ferroStage", style = "slide" })
         -- Scratchpad drop-in/out (see SUPER+grave below).
         hl.animation({ leaf = "specialWorkspaceIn",  enabled = true, speed = 2.8, bezier = "emphasizedDecel", style = "slidefadevert 15%" })
         hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 1.5, bezier = "menuAccel",       style = "slidefadevert 15%" })
@@ -563,18 +567,21 @@ in
         }
         tooltip {
           background: rgba(${cssRgb cc.base01}, 0.95);
-          border: 1px solid rgba(${cssRgb cc.base0D}, 0.18);
+          border: 1px solid rgba(${cssRgb cc.base05}, 0.08);
           border-radius: 10px;
         }
         tooltip label {
           color: ${cc.base05};
         }
-        /* Floating frosted-glass module groups (Hyprland layer blur does the frosting) */
+        /* Floating frosted-glass module groups (Hyprland layer blur does the frosting).
+           Site language: borders are NEUTRAL hairlines; accent only where focus lives.
+           The inset top highlight is comcreate.io's PillNav "liquid sheen". */
         .modules-left,
         .modules-center,
         .modules-right {
           background: rgba(${cssRgb cc.base01}, 0.45);
-          border: 1px solid rgba(${cssRgb cc.base0D}, 0.18);
+          border: 1px solid rgba(${cssRgb cc.base05}, 0.07);
+          box-shadow: inset 0 1px 0 rgba(${cssRgb cc.base05}, 0.06);
           border-radius: 14px;
           padding: 1px 10px;
           margin: 0 4px;
@@ -617,6 +624,8 @@ in
         #idle_inhibitor.activated {
           color: ${cc.base0D};
         }
+        /* Uppercase micro-labels with wide tracking — the sites' HUD-label convention.
+           (mpris is exempt: song titles keep their case.) */
         #custom-gpu,
         #cpu,
         #memory,
@@ -625,7 +634,9 @@ in
         #pulseaudio {
           color: ${cc.base06};
           padding: 0 9px;
-          font-size: 12px;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
         }
         #pulseaudio.muted,
         #bluetooth.disabled,
@@ -690,7 +701,7 @@ in
       xdg.configFile."swayosd/style.css".text = ''
         window {
           background: rgba(${cssRgb cc.base01}, 0.55);
-          border: 1px solid rgba(${cssRgb cc.base0D}, 0.18);
+          border: 1px solid rgba(${cssRgb cc.base05}, 0.08);
           border-radius: 14px;
         }
         label {
@@ -750,7 +761,7 @@ in
         .control-center {
           background: rgba(${cssRgb cc.base00}, 0.60);
           color: ${cc.base05};
-          border: 1px solid rgba(${cssRgb cc.base0D}, 0.18);
+          border: 1px solid rgba(${cssRgb cc.base05}, 0.08);
           border-radius: 16px;
           margin: 8px;
           padding: 12px;
@@ -758,7 +769,7 @@ in
         .notification-row .notification-background .notification {
           background: rgba(${cssRgb cc.base01}, 0.65);
           color: ${cc.base05};
-          border: 1px solid rgba(${cssRgb cc.base0D}, 0.14);
+          border: 1px solid rgba(${cssRgb cc.base05}, 0.08);
           border-radius: 14px;
           margin: 6px 4px;
           padding: 4px;

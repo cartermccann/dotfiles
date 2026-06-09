@@ -613,3 +613,33 @@ Explicitly excluded so the plan stays a minimalism/glass/motion/dev-cohesion pla
 - **Per-tool theme files for yazi/delta/btop-main** — stylix covers bat/fzf/lazygit; ⚠ VERIFY whether its yazi/delta targets fire after the Tier 3 flip and only hand-theme what it misses.
 - **Wallpaper curation / generated gradient wallpaper** — `fam.jpg` stays; the manifesto already decouples the palette from the wallpaper, and `xray = true` + hyprlock blur make the wallpaper a texture, not a color source.
 - **Deferred branches** (unchanged from draft): Noctalia-on-Hyprland convergence (wait for v5); vicinae launcher swap; matugen accent-only experiments; HM `wayland.windowManager.hyprland` + `configType = "lua"` + `extraLuaFiles` migration (do after the rice settles).
+
+---
+
+## Design Language Sources (added 2026-06-09)
+
+Extracted from the two inspo codebases; applied to Tiers 1-2, binding for Tiers 3-4.
+
+### Source A: `~/projects/work/comcreate-org/svelte` (comcreate.io — ferro's origin)
+
+**Easing tokens (tokens.css) — now the rice's curves:**
+| token | cubic-bezier | desktop use |
+|---|---|---|
+| `--ease-reveal` | (0.19, 1, 0.22, 1) | windowsIn, layersIn, border (`ferroReveal`) |
+| `--ease-snap` | (0.65, 0.05, 0, 1) | windowsMove (`ferroSnap`) |
+| `--ease-stage` | (0.77, 0, 0.175, 1) | workspaces slide (`ferroStage`) |
+| `--ease-page-in` | (0.65, 0.05, 0.36, 1) | unused (reserve for nvim/tmux motion) |
+| `--ease-page-out` | (0.22, 1, 0.36, 1) | unused |
+
+**Glass recipe (PillNav, dark zone):** bg `rgba(20,20,20,0.55)` + `blur(48px) saturate(140%)` + inset top sheen `inset 0 1px 0 rgba(255,255,255,0.12)` → maps to waybar pill 0.45-0.55 alpha + compositor blur + vibrancy + the inset sheen (applied).
+
+**Border philosophy:** neutral hairlines (`--subtle-border` = white@0.06, `--terminal-border` #2e2c29); accent appears ONLY on focus/interaction. Applied: waybar/swaync/swayosd borders → cream@0.07-0.08; azure stays on active window border, active workspace pill, fuzzel ring, OSD fill.
+
+**Type system:** IBM Plex Sans display / Inter body / JetBrains Mono code / **Geist Pixel** (`/fonts/GeistPixel-Square.woff2` in the repo) for h2s — the pixel font is a signature. Labels: 11-12px mono, 600, 0.14-0.16em tracking, UPPERCASE, sometimes `[ BRACKETED ]`.
+- Tier 3/4 option: install GeistPixel-Square locally → hyprlock clock + waybar workspace numbers.
+
+**Motifs for later tiers:** film-grain noise (matches blur `noise = 0.02`), HUD dot-matrix + crosshairs, blinking-caret, `[ CORNER ]` labels, phosphor/C64 retro modes (palette already carries `#33ff33`/`#7b7bff`), 12s morphing blob (ferro-purple/teal/coral oklch). Note: the site's *primary* accent is teal `oklch(0.50 0.18 235)`; desktop azure `#7b7bff` is its C64 mode — deliberate choice, keep azure.
+
+### Source B: `~/projects/Personal/designlang-clones-archive/techweek`
+
+Black/white monochrome + single cyan #00e1ff; **0px radius everywhere** (rejected for the rice — glass needs rounding); 1px alpha-white borders (0.10-0.15) — reinforced the neutral-border decision; dashed 1px dividers (tmux statusline candidate); vertical pinstripe texture (1px #212121 every 7px — btop/zellij/hyprlock background candidate); UPPERCASE labels with wide tracking (applied to waybar micro-labels); invert-on-hover buttons (fuzzel selection candidate); flat — no shadows (rejected; rice uses glass depth).
