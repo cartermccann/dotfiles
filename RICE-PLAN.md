@@ -1,10 +1,10 @@
-# Comcreate Rice Upgrade Plan — kronos / Hyprland 0.55.3 (Lua era) — FINAL
+# Ferro Rice Upgrade Plan — kronos / Hyprland 0.55.3 (Lua era) — FINAL
 
 ## Vision
 
-**One material, one light source, one color.** The desktop is a single sheet of warm espresso glass (`#141210` → `#211e1a` tonal steps), warm cream type (`#e8e4df`), and exactly one accent — comcreate azure `#7b7bff` — which appears only where focus lives: the active border, the focused workspace, the input caret, the match highlight. Depth comes from tonal elevation and restrained blur, not from color. Motion is the spice: fast, decelerating, physical — everything lands in under ~300ms perceived, opens eagerly, closes out of the way. Nothing rainbow, nothing wallpaper-driven; the comcreate palette in `lib/comcreate-palette.nix` is the single source of truth, interpolated by Nix into every artifact. NVIDIA-aware, dev-first: the terminal is the centerpiece and stays readable at all times.
+**One material, one light source, one color.** The desktop is a single sheet of warm espresso glass (`#141210` → `#211e1a` tonal steps), warm cream type (`#e8e4df`), and exactly one accent — ferro azure `#7b7bff` — which appears only where focus lives: the active border, the focused workspace, the input caret, the match highlight. Depth comes from tonal elevation and restrained blur, not from color. Motion is the spice: fast, decelerating, physical — everything lands in under ~300ms perceived, opens eagerly, closes out of the way. Nothing rainbow, nothing wallpaper-driven; the ferro palette in `lib/ferro-palette.nix` is the single source of truth, interpolated by Nix into every artifact. NVIDIA-aware, dev-first: the terminal is the centerpiece and stays readable at all times.
 
-**Two-session reality check (new, load-bearing):** kronos runs *two* login sessions sharing one home-manager config — niri+noctalia and Hyprland (Comcreate). Several components are shared (`~/wallpaper.png`, swww/awww, swayosd package, rice-dashboard script). **Every change below is scoped so it cannot leak into or break the niri session.** Rules of thumb baked into this plan:
+**Two-session reality check (new, load-bearing):** kronos runs *two* login sessions sharing one home-manager config — niri+noctalia and Hyprland (Ferro). Several components are shared (`~/wallpaper.png`, swww/awww, swayosd package, rice-dashboard script). **Every change below is scoped so it cannot leak into or break the niri session.** Rules of thumb baked into this plan:
 
 - No session-agnostic HM systemd user services for daemons that niri already covers via noctalia (notifications, OSD, gamma). Hyprland-only services bind to `hyprland-session.target` or stay as `hl.on("hyprland.start")` autostarts.
 - Shared files (`~/wallpaper.png`, the wallpaper-pick script, rice-dashboard) are edited once, compatibly for both sessions — never forked.
@@ -14,14 +14,14 @@
 
 ## What to Keep (already good)
 
-- **The Lua dialect and file architecture.** `hyprland-comcreate.nix` → `xdg.configFile."hypr/hyprland.lua".text` with the `hl.*` API is current-era and correct. Keep the workspace `for` loop, the `hl.on("hyprland.start", ...)` autostart, the bind-option tables (`{ repeating = true }`, `{ locked = true }`, `{ mouse = true }`).
+- **The Lua dialect and file architecture.** `hyprland-ferro.nix` → `xdg.configFile."hypr/hyprland.lua".text` with the `hl.*` API is current-era and correct. Keep the workspace `for` loop, the `hl.on("hyprland.start", ...)` autostart, the bind-option tables (`{ repeating = true }`, `{ locked = true }`, `{ mouse = true }`).
 - **The floating frosted-pill waybar geometry** — transparent `window#waybar`, three pill groups, 14px radius, layer_rule blur. This is exactly the ML4W "glass center" look the ecosystem converged on. We tune it, we don't replace it.
 - **The waybar relaunch bind as-is.** `pkill waybar || waybar` is fine: the niri session runs noctalia-shell, not waybar (plain-niri waybar retired 2026-06-08), so there is no cross-session collision to guard. Do not add a `$XDG_CURRENT_DESKTOP` test — the draft's guard was logically inverted anyway.
 - **Keybind layout**: HJKL + arrows, TAB/SHIFT+TAB workspace cycling, fuzzel power menu, satty screenshot pipeline, swayosd repeating/locked binds. The muscle memory is right.
 - **hypridle policy** (300s lock / 360s dpms / no suspend for Hermes reachability) and the flake-pinned `hyprctl` with the **Lua dispatcher string form** (`${hyprctl} dispatch 'hl.dsp.…'`) for dpms — keep, it's deliberate, and it's the canonical pattern every exec-dispatch in this plan reuses.
 - **NVIDIA env strategy**: vars in `modules/nvidia.nix` `environment.sessionVariables` + the import-environment autostart, `cursor.no_hardware_cursors = 1` in-config. Correct division of labor. ⚠ VERIFY `NIXOS_OZONE_WL = "1"` is among them — without it Electron/Chromium apps land on blurry XWayland and the window-rule classes in 1.5 never match.
 - **Portal routing** in `desktop-hyprland.nix` (hyprland/gtk split, niri non-collision) and the version-matched compositor + portalPackage pinning via the Hyprland flake + cachix.
-- **The palette file itself.** `comcreate-palette.nix` with `raw.*` and semantic aliases is exactly the right design — the problem is nothing consumes it (see Jank #1).
+- **The palette file itself.** `ferro-palette.nix` with `raw.*` and semantic aliases is exactly the right design — the problem is nothing consumes it (see Jank #1).
 - **Fonts**: JetBrainsMono Nerd Font everywhere already. Cohesion's hardest layer is done.
 - **fuzzel as launcher** — keep it (minimalist's pick per research). It just needs its alpha lowered so the glass actually shows.
 - **swaync via `xdg.configFile` + hyprland autostart** — this is *correct*, not legacy: the niri session's notification daemon is noctalia-shell, and the HM `services.swaync` module would ship a session-agnostic systemd service that races noctalia for the `org.freedesktop.Notifications` D-Bus name. Palette interpolation works fine in `xdg.configFile`; keep it there.
@@ -34,7 +34,7 @@
 
 ## Jank to Fix (audited & corrected — all addressed in tiers below)
 
-1. **Palette bypass (the big one).** Every rgba/hex in hyprland.lua, fuzzel ini, hyprlock, waybar CSS, swaync CSS is hard-coded. Fix: every color literal becomes a Nix interpolation from `cc` — `rgba(${cc.raw.base0D}ee)`, `rgba(${cssRgb cc.base01}, 0.55)`. The `cssRgb` helper, concretely (goes in `lib/comcreate-palette.nix`):
+1. **Palette bypass (the big one).** Every rgba/hex in hyprland.lua, fuzzel ini, hyprlock, waybar CSS, swaync CSS is hard-coded. Fix: every color literal becomes a Nix interpolation from `cc` — `rgba(${cc.raw.base0D}ee)`, `rgba(${cssRgb cc.base01}, 0.55)`. The `cssRgb` helper, concretely (goes in `lib/ferro-palette.nix`):
 
    ```nix
    cssRgb = hex:
@@ -51,15 +51,15 @@
 7. **CSS cosmetics** — stray blank line, no-op `box-shadow: none`.
 8. **hypridle dpms Lua-string coupling** — keep, but add a comment block with the 0.54 fallback string so a version bump is a one-line revert.
 9. **`border` speed-5/easeOutQuad oddity** — replaced wholesale by the Tier 1 animation tree.
-10. **Memory staleness** ("Hyprland (Comcreate)" tile) — update `project_hyprland_comcreate_session.md` after implementation; the rig is still "not yet live-tested" — Tier 1 is the first live test.
+10. **Memory staleness** ("Hyprland (Ferro)" tile) — update `project_hyprland_ferro_session.md` after implementation; the rig is still "not yet live-tested" — Tier 1 is the first live test.
 11. **`~/Pictures/Screenshots` missing** — `home.file."Pictures/Screenshots/.keep".text = "";` so `Print` never fails.
-12. **swww → awww rename — gated, not "when convenient."** The currently pinned nixpkgs (fef9403a, 2026-02-08) still ships *real* swww (`swww`, `swww-daemon` both in `/run/current-system/sw/bin`); renaming now breaks **both** sessions. When the flake update lands awww, sweep **all four** reference sites in one commit: `hyprland-comcreate.nix`, `niri-noctalia.nix:15,18`, `niri.nix:25`, `desktop-niri.nix:58`. ⚠ VERIFY the binary name at that time (`nix eval nixpkgs#awww.meta.mainProgram`).
+12. **swww → awww rename — gated, not "when convenient."** The currently pinned nixpkgs (fef9403a, 2026-02-08) still ships *real* swww (`swww`, `swww-daemon` both in `/run/current-system/sw/bin`); renaming now breaks **both** sessions. When the flake update lands awww, sweep **all four** reference sites in one commit: `hyprland-ferro.nix`, `niri-noctalia.nix:15,18`, `niri.nix:25`, `desktop-niri.nix:58`. ⚠ VERIFY the binary name at that time (`nix eval nixpkgs#awww.meta.mainProgram`).
 
 ---
 
 ## Tier 1 — Core Feel (animations + blur + decoration)
 
-*Biggest visual payoff per line of config. All in `hyprland-comcreate.nix`'s Lua template, all colors via `${cc.raw.*}`.*
+*Biggest visual payoff per line of config. All in `hyprland-ferro.nix`'s Lua template, all colors via `${cc.raw.*}`.*
 
 ### 1.1 Animation tree rebuild
 
@@ -269,7 +269,7 @@ hl.layer_rule({ match = { namespace = "waybar" }, blur = true, ignore_alpha = 0.
 
 ### 2.2 Fuzzel — make the glass real
 
-Current bg `141210ee` (93%) defeats the blur. In `fuzzel/comcreate.ini`:
+Current bg `141210ee` (93%) defeats the blur. In `fuzzel/ferro.ini`:
 
 ```ini
 [colors]
@@ -299,7 +299,7 @@ style.css: control center `rgba(${cssRgb cc.base00}, 0.60)` (down from 0.7), not
 
 ### 2.4 swayosd — style it (it's already installed and autostarted)
 
-Installation is a non-issue (system package via desktop-niri.nix:72; autostart at hyprland.lua:268). **Do not adopt `services.swayosd`** without first checking noctalia's own OSD in the niri session — the session-agnostic HM service would risk double OSDs there. Instead: keep the autostart, add `--style` pointing at a comcreate CSS shipped via `xdg.configFile."swayosd/style.css"`:
+Installation is a non-issue (system package via desktop-niri.nix:72; autostart at hyprland.lua:268). **Do not adopt `services.swayosd`** without first checking noctalia's own OSD in the niri session — the session-agnostic HM service would risk double OSDs there. Instead: keep the autostart, add `--style` pointing at a ferro CSS shipped via `xdg.configFile."swayosd/style.css"`:
 
 ```css
 window {
@@ -328,7 +328,7 @@ programs.hyprlock.settings = {
                  blur_passes = 3; blur_size = 8; noise = 2.0e-2; contrast = 0.9; brightness = 0.7; vibrancy = 0.17; };
   input-field = { outer_color = "rgba(${cc.raw.base0D}ee)"; inner_color = "rgba(${cc.raw.base01}cc)";
                   font_color = "rgb(${cc.raw.base05})"; rounding = 14; outline_thickness = 2;
-                  placeholder_text = "<span foreground=\"##${cc.raw.base04}\">comcreate</span>";  # keep pango form
+                  placeholder_text = "<span foreground=\"##${cc.raw.base04}\">ferro</span>";  # keep pango form
                   fade_on_empty = false;                                                          # keep current behavior
                   check_color = "rgba(${cc.raw.base0C}ee)"; fail_color = "rgba(${cc.raw.base08}ee)"; };
   label = [ /* keep 64pt $TIME + 18pt date, fonts unchanged */ ];
@@ -372,13 +372,13 @@ swww img ~/wallpaper.png \
 
 ## Tier 3 — Cohesion (terminal · tmux · nvim · system palette · prompt)
 
-**The strategic move: comcreate becomes the Stylix scheme.** Today app interiors are Catppuccin Macchiato inside an espresso/azure shell — the single biggest aesthetic fracture. Stylix accepts an inline base16 attrset, and the palette lib already *is* base16-shaped.
+**The strategic move: ferro becomes the Stylix scheme.** Today app interiors are Catppuccin Macchiato inside an espresso/azure shell — the single biggest aesthetic fracture. Stylix accepts an inline base16 attrset, and the palette lib already *is* base16-shaped.
 
 ### 3.1 Stylix flip — `modules/stylix.nix`
 
 ```nix
-# Source FROM lib/comcreate-palette.nix (strip '#'), never duplicated:
-stylix.base16Scheme = { scheme = "comcreate"; author = "comcreate"; }
+# Source FROM lib/ferro-palette.nix (strip '#'), never duplicated:
+stylix.base16Scheme = { scheme = "ferro"; author = "ferro"; }
   // lib.mapAttrs (_: v: lib.removePrefix "#" v) cc.raw;
 # Reference values: base00=141210 base01=1b1917 base02=211e1a base03=6b655d
 # base04=8a847c base05=e8e4df base06=c5bfb5 base07=f2efe9 base08=e06c5e
@@ -386,7 +386,7 @@ stylix.base16Scheme = { scheme = "comcreate"; author = "comcreate"; }
 # base0E=a98bff base0F=2d8a4e
 ```
 
-Effects: GTK, Qt, bat, fzf, lazygit, dconf — everything not opted out — snaps to comcreate for free. Keep existing opt-outs (`waybar`, guarded `hyprland`, `ghostty` already off) and **add**: `stylix.targets.tmux.enable = false`, `stylix.targets.neovim.enable = false` (if it fires). Wallpaper: `stylix.image` can stay `fam.jpg` (scheme no longer derived from it). Note stylix's hyprland target now supports Lua configType (PR #2316) — keep your opt-out; hand-tuned borders beat its generic base0D border.
+Effects: GTK, Qt, bat, fzf, lazygit, dconf — everything not opted out — snaps to ferro for free. Keep existing opt-outs (`waybar`, guarded `hyprland`, `ghostty` already off) and **add**: `stylix.targets.tmux.enable = false`, `stylix.targets.neovim.enable = false` (if it fires). Wallpaper: `stylix.image` can stay `fam.jpg` (scheme no longer derived from it). Note stylix's hyprland target now supports Lua configType (PR #2316) — keep your opt-out; hand-tuned borders beat its generic base0D border.
 
 **Beyond-GTK3 coverage (new — the classic theming gaps):**
 
@@ -403,9 +403,9 @@ Effects: GTK, Qt, bat, fzf, lazygit, dconf — everything not opted out — snap
   ⚠ VERIFY this doesn't collide with a stylix-managed gtk-4.0/gtk.css (use `lib.mkForce` or stylix's extraCss hook if it does).
 - **Portal dark-mode signal**: confirm `stylix.polarity = "dark"` sets dconf `color-scheme = prefer-dark` and that `xdg-desktop-portal-gtk` serves the settings portal in the hyprland/gtk split. Test: `busctl --user call org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop org.freedesktop.portal.Settings ReadOne ss org.freedesktop.appearance color-scheme`.
 
-**Side effect to embrace**: swaylock (niri session) is hand-mapped to macchiato — remap its hex values to comcreate in the same pass (`inside #141210cc`, ring `#211e1a`, verify `#7b7bff`, wrong `#e06c5e`, key-hl `#7b7bff`).
+**Side effect to embrace**: swaylock (niri session) is hand-mapped to macchiato — remap its hex values to ferro in the same pass (`inside #141210cc`, ring `#211e1a`, verify `#7b7bff`, wrong `#e06c5e`, key-hl `#7b7bff`).
 
-### 3.2 Ghostty — comcreate palette (the remaining work only)
+### 3.2 Ghostty — ferro palette (the remaining work only)
 
 Already done in `home/ghostty.nix` and needing **no change**: `background-opacity = 1.0`, `background-blur = false`, stylix target off. The actual diff:
 
@@ -453,16 +453,16 @@ Plugins — corrected for nixpkgs reality (`programs.tmux.plugins` takes nixpkgs
 
 If the waybar `custom/tmux` module from 2.1 ships, go further: `set -g status off` + prefix-toggle `bind b set status`.
 
-### 3.4 Neovim — square.lua becomes comcreate.lua
+### 3.4 Neovim — square.lua becomes ferro.lua
 
 The orphaned `colors/square.lua` is 90% of the work already done; it just speaks the wrong dialect (`#0055ff` on pure black). Port, don't rewrite:
 
-1. **Copy `colors/square.lua` → `colors/comcreate.lua`** and remap the palette table: bg stays `NONE` (transparent — now it actually buys something: ghostty alpha + compositor blur underneath), fg `#e8e4df`, white `#f2efe9`, greys → warm ramp `#c5bfb5 / #8a847c / #6b655d / #211e1a / #1b1917`, comment `#6b655d` (square's `#3a3a3a` is too dark on espresso), panels `#141210 / #1b1917`, **accent `#7b7bff`** (+dark `#4a4ab8`, tint `#1a1a2e`), semantic red `#e06c5e`, yellow `#cbb46a`, green `#3ddc84`. All Telescope/Neo-tree/Noice/Snacks/Blink/Flash/grey-rainbow-remap coverage carries over verbatim.
-2. **`ui.lua`: `current = "comcreate"`.** Mocha and the flavor split die.
+1. **Copy `colors/square.lua` → `colors/ferro.lua`** and remap the palette table: bg stays `NONE` (transparent — now it actually buys something: ghostty alpha + compositor blur underneath), fg `#e8e4df`, white `#f2efe9`, greys → warm ramp `#c5bfb5 / #8a847c / #6b655d / #211e1a / #1b1917`, comment `#6b655d` (square's `#3a3a3a` is too dark on espresso), panels `#141210 / #1b1917`, **accent `#7b7bff`** (+dark `#4a4ab8`, tint `#1a1a2e`), semantic red `#e06c5e`, yellow `#cbb46a`, green `#3ddc84`. All Telescope/Neo-tree/Noice/Snacks/Blink/Flash/grey-rainbow-remap coverage carries over verbatim.
+2. **`ui.lua`: `current = "ferro"`.** Mocha and the flavor split die.
 3. **lualine**: custom theme table from the same palette (square has none — this is why lualine falls back to `auto`):
    ```lua
    local cc = { bg = "NONE", surface = "#1b1917", text = "#e8e4df", dim = "#8a847c", accent = "#7b7bff" }
-   local comcreate_lualine = {
+   local ferro_lualine = {
      normal  = { a = { fg = "#141210", bg = cc.accent, gui = "bold" }, b = { fg = cc.text, bg = cc.surface }, c = { fg = cc.dim, bg = cc.bg } },
      insert  = { a = { fg = "#141210", bg = "#3ddc84", gui = "bold" } },
      visual  = { a = { fg = "#141210", bg = "#a98bff", gui = "bold" } },
@@ -473,7 +473,7 @@ The orphaned `colors/square.lua` is 90% of the work already done; it just speaks
    ```
    (Drop the powerline `` separators — separator-less is the 2025 minimal idiom and avoids bg-pair math over transparency.)
 4. **bufferline**: either drop it for incline-only (more minimal), or give it explicit highlight overrides (`fill.bg = "NONE"`, `buffer_selected.fg = "#e8e4df"` bold, indicator `#7b7bff`) — the catppuccin integration won't fire anymore.
-5. **Rainbow neutralization**: comcreate.lua inherits square's grey RainbowDelimiter remaps — keep the plugins installed, they render as structure-greys. Set ibl scope highlight to a single group: `scope.highlight = "IblScopeChar"` linked to fg `#7b7bff` — *one* accent scope line instead of a 7-color cycle.
+5. **Rainbow neutralization**: ferro.lua inherits square's grey RainbowDelimiter remaps — keep the plugins installed, they render as structure-greys. Set ibl scope highlight to a single group: `scope.highlight = "IblScopeChar"` linked to fg `#7b7bff` — *one* accent scope line instead of a 7-color cycle.
 6. **colorful-winsep** fallback `#b4befe` → `#7b7bff`; incline colors via `Normal`-linked groups; float windows: `NormalFloat`/`FloatBorder` bg `NONE`, `winblend = 0` (required over blur or floats look doubled).
 7. **Smooth motion (the spice, in-editor)**: you already run snacks — enable `snacks.scroll` (scrolloff-correct smooth scrolling). Cursor smear: choose ONE layer — either `sphamba/smear-cursor.nvim` *or* the Tier 4 ghostty shader, never both.
 
@@ -481,9 +481,9 @@ The orphaned `colors/square.lua` is 90% of the work already done; it just speaks
 
 The terminal is the centerpiece, but the prompt still wears default colors. Add:
 
-- **starship** with a comcreate palette block: directory/branch in `#e8e4df`, the prompt character and active segment in `#7b7bff`, dim metadata `#6b655d`, error state `#e06c5e`. Single-line, no powerline blocks (matches the separator-less lualine idiom).
+- **starship** with a ferro palette block: directory/branch in `#e8e4df`, the prompt character and active segment in `#7b7bff`, dim metadata `#6b655d`, error state `#e06c5e`. Single-line, no powerline blocks (matches the separator-less lualine idiom).
 - **fish**: `set -U fish_color_command e8e4df`, `fish_color_param c5bfb5`, `fish_color_autosuggestion 6b655d`, `fish_color_error e06c5e`, selection/search-match on `#211e1a`/`#7b7bff`.
-- **LS_COLORS**: `vivid` with a comcreate theme (or accept eza defaults — they're tame). ⚠ VERIFY whether stylix already themes fish before hand-setting (avoid fighting it).
+- **LS_COLORS**: `vivid` with a ferro theme (or accept eza defaults — they're tame). ⚠ VERIFY whether stylix already themes fish before hand-setting (avoid fighting it).
 
 ### 3.6 Fonts — no change, one addition
 
@@ -569,7 +569,7 @@ One slow 45°→405° sweep of the azure→warm-white gradient on config reload 
 - **Papirus folders → azure-adjacent**: `papirus-folders -C indigo --theme Papirus-Dark` via a `home.activation` script (closest stock color to `#7b7bff`); one-liner, kills the blue-folder mismatch.
 - **Login greeter on-palette** (first pixel of the session): tuigreet flags → `greetd.tuigreet --time --remember-session --theme 'border=#7b7bff;text=#e8e4df;prompt=#8a847c'`. Small, system-level, cheap.
 - **Group/tabbed windows**: `hl.bind(mod .. " + G", hl.dsp.layout("togglegroup"))` ⚠ VERIFY dispatcher form — groupbar themed by `general.col.*group*` keys (locked-active `base0C`, rest surface tones).
-- **The phosphor easter egg**: `phosphorBg`/`phosphorText` (`#0a1a0a`/`#33ff33`) are defined and unused — wire them into the **existing** rice-dashboard script's btop pane (`TUI.float` window rule + a btop comcreate-phosphor theme) so `SUPER+CTRL+T` drops a retro green-phosphor monitor pane. Modify the shared script compatibly — it runs under niri too. Brand motif, zero cost, pure delight.
+- **The phosphor easter egg**: `phosphorBg`/`phosphorText` (`#0a1a0a`/`#33ff33`) are defined and unused — wire them into the **existing** rice-dashboard script's btop pane (`TUI.float` window rule + a btop ferro-phosphor theme) so `SUPER+CTRL+T` drops a retro green-phosphor monitor pane. Modify the shared script compatibly — it runs under niri too. Brand motif, zero cost, pure delight.
 
 ---
 
@@ -585,21 +585,21 @@ Every tier gets a before/after capture and a known escape hatch:
 
 Ordered for payoff-per-risk; each step is independently shippable + `nrs`-testable. Tier 1 first because the box is "not yet live-tested" anyway — test the core before decorating.
 
-- [ ] **0. Plumbing pass** — add `cssRgb` helper (Jank #1, implementation given) to `comcreate-palette.nix`; sweep ALL hard-coded colors in `hyprland-comcreate.nix` (Lua, fuzzel ini, hyprlock, waybar CSS, swaync CSS) to `${cc.raw.*}` / `${cssRgb cc.*}` interpolations. Zero visual change — verify by diffing generated artifacts.
+- [ ] **0. Plumbing pass** — add `cssRgb` helper (Jank #1, implementation given) to `ferro-palette.nix`; sweep ALL hard-coded colors in `hyprland-ferro.nix` (Lua, fuzzel ini, hyprlock, waybar CSS, swaync CSS) to `${cc.raw.*}` / `${cssRgb cc.*}` interpolations. Zero visual change — verify by diffing generated artifacts.
 - [ ] **1. Quick jank batch** — drop `SUPER+W` close-bind (→ wallpaper picker); delete stale resize comment; `home.file."Pictures/Screenshots/.keep"`; wallpaper `magick`-convert in pick script + activation seed (Jank #5/#6 — keeps the shared `~/wallpaper.png` contract for both sessions); CSS cosmetics. *(No wlsunset hoist — superseded by step 6. No waybar-toggle guard — non-issue.)*
 - [ ] **2. Tier 1 animations + input** — new curve set + full leaf tree + `scroll_event_delay` + input block. Test spring (`easy`) on `windows` first; fall back to `emphasizedDecel` if the `spring =` key errors. This is the moment the rig stops feeling default. **Capture before/after.**
 - [ ] **3. Tier 1 decoration + blur** — blur block (xray!, size 6 declared), opacity strategy flip (globals 1.0 + rules), shadow/glow, border gradient, `rounding_power`. ⚠ glow key existence check.
 - [ ] **4. Tier 1 rules + special workspace + monitor pin** — window-rule set (PiP + suppress_event carried forward, dual pavucontrol pattern), idle_inhibit, scratchpad bind (native Lua dispatcher, `${hyprctl}`-string fallback), named monitor line.
 - [ ] **5. Tier 2 shell hardening** — swayosd CSS via `--style` (no HM service); fuzzel/swaync alpha drops + **edits to the four existing layer rules** + new `dim_around`/`blur_popups`/swayosd rules; waybar HM-module migration with **systemd off** + swaync-bell + GPU module + pinned geometry + tooltip CSS; hyprlock → `programs.hyprlock.settings` **removing the old xdg.configFile block**, parity preserved (fade_on_empty=false, pango placeholder).
 - [ ] **6. hyprsunset migration** — `services.hyprsunset` with `systemdTarget = "hyprland-session.target"`; remove hyprland wlsunset autostart + bind; niri's wlsunset untouched.
-- [ ] **7. Tier 3 Stylix flip** — comcreate base16 from the palette lib, new opt-outs (tmux/neovim), Qt/GTK4/portal-dark verifications, swaylock remap. Big blast radius: eyeball GTK apps, file pickers, bat, lazygit after rebuild.
-- [ ] **8. Ghostty comcreate palette** + padding 14 + `unfocused-split-opacity` + `minimum-contrast` (opacity/blur/stylix-off already in place).
+- [ ] **7. Tier 3 Stylix flip** — ferro base16 from the palette lib, new opt-outs (tmux/neovim), Qt/GTK4/portal-dark verifications, swaylock remap. Big blast radius: eyeball GTK apps, file pickers, bat, lazygit after rebuild.
+- [ ] **8. Ghostty ferro palette** + padding 14 + `unfocused-split-opacity` + `minimum-contrast` (opacity/blur/stylix-off already in place).
 - [ ] **9. tmux statusline** + vim-tmux-navigator (nixpkgs); floax only via `mkTmuxPlugin` if appetite; decide waybar-tmux-module vs in-tmux status.
-- [ ] **10. nvim**: `colors/comcreate.lua` port, `ui.lua` flip, lualine theme, ibl single-accent scope, winsep/float fixes, snacks.scroll.
-- [ ] **11. Prompt/CLI cohesion** — starship comcreate palette, fish colors, optional vivid LS_COLORS.
-- [ ] **12. swww → awww rename** — **only with the flake update that ships awww**; all four files (`hyprland-comcreate.nix`, `niri-noctalia.nix`, `niri.nix`, `desktop-niri.nix`) in one commit; add 2.7 transition flags in the same pass.
+- [ ] **10. nvim**: `colors/ferro.lua` port, `ui.lua` flip, lualine theme, ibl single-accent scope, winsep/float fixes, snacks.scroll.
+- [ ] **11. Prompt/CLI cohesion** — starship ferro palette, fish colors, optional vivid LS_COLORS.
+- [ ] **12. swww → awww rename** — **only with the flake update that ships awww**; all four files (`hyprland-ferro.nix`, `niri-noctalia.nix`, `niri.nix`, `desktop-niri.nix`) in one commit; add 2.7 transition flags in the same pass.
 - [ ] **13. Tier 4, in order of confidence**: grimblast flow → hyprpicker bind → borderangle `once` → pointerCursor + hyprcursor → papirus-folders → tuigreet theme → phosphor btop (modify existing rice-dashboard) → ghostty cursor shader (⚠ bar-cursor) → hyprexpo on SUPER+O (⚠ ABI; flake-follows wiring) → groups.
-- [ ] **14. Update memory** — `project_hyprland_comcreate_session.md`: login-tile reality, live-tested status, new component list, two-session sharing rules.
+- [ ] **14. Update memory** — `project_hyprland_ferro_session.md`: login-tile reality, live-tested status, new component list, two-session sharing rules.
 
 ## Not Doing / Out of Scope
 

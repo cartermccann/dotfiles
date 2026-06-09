@@ -46,7 +46,7 @@ in
 
   # No custom login tile: programs.hyprland already registers a plain "Hyprland"
   # session (Exec=start-hyprland, the upstream-recommended launcher). Since the
-  # comcreate theming lives entirely in the user-global ~/.config/hypr/hyprland.lua,
+  # ferro theming lives entirely in the user-global ~/.config/hypr/hyprland.lua,
   # that stock "Hyprland" tile loads this exact look — so we drop the former
-  # "Hyprland (Comcreate)" tile rather than show a redundant, differently-named one.
+  # "Hyprland (Ferro)" tile rather than show a redundant, differently-named one.
 }

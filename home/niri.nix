@@ -5,7 +5,7 @@
   ...
 }:
 # The standalone "plain Niri" session (its own config.kdl + Stylix waybar) was
-# retired 2026-06-08 — only Niri-Noctalia and Hyprland (Comcreate) remain. This
+# retired 2026-06-08 — only Niri-Noctalia and Hyprland (Ferro) remain. This
 # file now just provides the cross-session helper scripts those two sessions
 # still call (rice-dashboard from both; wallpaper-pick from Niri-Noctalia).
 let

@@ -1,9 +1,10 @@
-# comcreate brand palette — Base16 mapping derived from comcreate-org/svelte tokens.css
+# ferro palette — Base16 mapping originally derived from comcreate.io's tokens.css
+# (comcreate-org/svelte); renamed "ferro" 2026-06-09 as the rice's own identity.
 #
 # Vibe: warm espresso/cream monochrome minimalism + azure accent + retro green-phosphor
-# terminal motif. Monospace-forward. Consumed ONLY by the Hyprland (Comcreate) session's
+# terminal motif. Monospace-forward. Consumed ONLY by the Hyprland (Ferro) session's
 # components (hyprland.conf, its waybar, fuzzel, swaync, hyprlock) so the rest of the system
-# keeps its global Stylix palette. Import with: let cc = import ../lib/comcreate-palette.nix;
+# keeps its global Stylix palette. Import with: let cc = import ../lib/ferro-palette.nix;
 rec {
   # ── Base16 slots, WITH leading "#" (for GTK CSS / configs that want hex) ──
   base00 = "#141210"; # bg            (espresso black)
