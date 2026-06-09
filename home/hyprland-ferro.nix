@@ -153,15 +153,15 @@ in
             dim_strength = 0.05, -- whisper-level; the opacity cue does the rest
             blur = {
               enabled = true,
-              size = 6, -- 6/3 + brightness 0.85 reads as deep as the old 8/3, costs less
-              passes = 3, -- drop to 5/2 if the GPU runs hot
+              size = 10, -- heavy frost (was 6/3; revert to 6/3 if the GPU runs hot)
+              passes = 4,
               new_optimizations = true,
               xray = true, -- biggest NVIDIA perf lever: blur samples the wallpaper, not stacked windows
               ignore_opacity = true,
-              noise = 0.02, -- film grain sells the glass
+              noise = 0.035, -- coarser grain = the diffusion through the frost
               contrast = 0.9,
               brightness = 0.85, -- darkened backdrop = contrast for the cream type
-              vibrancy = 0.18,
+              vibrancy = 0.25,
               vibrancy_darkness = 0.0,
               popups = true, -- blurred right-click menus
               popups_ignorealpha = 0.2,
@@ -268,9 +268,10 @@ in
         hl.layer_rule({ match = { namespace = "swayosd" },                    blur = true, ignore_alpha = 0.4 })
 
         -- ── Window rules ──
-        -- The terminal is the glass centerpiece; this rule is the ONLY place terminal
-        -- alpha lives (ghostty background-opacity stays 1.0).
-        hl.window_rule({ match = { class = "^(com.mitchellh.ghostty)$" }, opacity = "0.94 0.88" })
+        -- The terminal is the glass centerpiece. Ghostty now owns its background
+        -- alpha (0.78 in home/ghostty.nix) so glyphs stay fully opaque over the
+        -- frost; this rule only adds the inactive dim step on top.
+        hl.window_rule({ match = { class = "^(com.mitchellh.ghostty)$" }, opacity = "1.0 0.94" })
         -- Content surfaces: opaque + unblurred (readability + perf; no video shimmer).
         hl.window_rule({ match = { class = "^(firefox|chromium|zen|Brave-browser)$" }, opacity = "1.0 override 1.0 override" })
         hl.window_rule({ match = { class = "^(mpv|vlc|imv)$" }, opaque = true, no_blur = true })
@@ -824,12 +825,12 @@ in
         background {
           monitor =
           path = ${config.home.homeDirectory}/wallpaper.png
-          blur_passes = 3
-          blur_size = 8
-          noise = 0.02
+          blur_passes = 4
+          blur_size = 10
+          noise = 0.035
           contrast = 0.9
           brightness = 0.7
-          vibrancy = 0.18
+          vibrancy = 0.25
         }
 
         input-field {

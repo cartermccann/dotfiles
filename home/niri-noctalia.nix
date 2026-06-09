@@ -77,9 +77,9 @@ in
 
     // Blur settings (global)
     blur {
-      passes 3
-      offset 3.0
-      noise 0.02
+      passes 4
+      offset 5.0
+      noise 0.035
       saturation 1.5
     }
 

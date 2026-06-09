@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 let
-  c = config.lib.stylix.colors.withHashtag;
+  # RICE-PLAN Tier 3.2 — ghostty is shared by both sessions, and the plan
+  # accepts ferro leaking into niri (same call as the swaylock remap in 3.1).
+  cc = import ../lib/ferro-palette.nix;
 in
 {
   stylix.targets.ghostty.enable = false;
@@ -9,32 +11,37 @@ in
     font-family = JetBrainsMono Nerd Font
     font-size = 14
 
-    background = ${c.base00}
-    foreground = ${c.base05}
+    background = ${cc.base00}
+    foreground = ${cc.base05}
 
-    palette = 0=${c.base01}
-    palette = 1=${c.base08}
-    palette = 2=${c.base0B}
-    palette = 3=${c.base0A}
-    palette = 4=${c.base0D}
-    palette = 5=${c.base0E}
-    palette = 6=${c.base0C}
-    palette = 7=${c.base05}
-    palette = 8=${c.base03}
-    palette = 9=${c.base08}
-    palette = 10=${c.base0B}
-    palette = 11=${c.base0A}
-    palette = 12=${c.base0D}
-    palette = 13=${c.base0E}
-    palette = 14=${c.base0C}
-    palette = 15=${c.base07}
+    palette = 0=${cc.base01}
+    palette = 1=${cc.base08}
+    palette = 2=${cc.base0B}
+    palette = 3=${cc.base0A}
+    palette = 4=${cc.base0D}
+    palette = 5=${cc.base0E}
+    palette = 6=${cc.base0C}
+    palette = 7=${cc.base06}
+    palette = 8=${cc.base03}
+    palette = 9=${cc.base08}
+    palette = 10=${cc.base0B}
+    palette = 11=${cc.base0A}
+    palette = 12=${cc.base0D}
+    palette = 13=${cc.base0E}
+    palette = 14=${cc.base0C}
+    palette = 15=${cc.base07}
 
-    cursor-color = ${c.base0D}
-    cursor-text = ${c.base00}
-    selection-foreground = ${c.base00}
-    selection-background = ${c.base0D}
+    cursor-color = ${cc.base0D}
+    cursor-text = ${cc.base00}
+    selection-foreground = ${cc.base07}
+    selection-background = ${cc.base02}
 
-    background-opacity = 1.0
+    # Glass: ghostty owns background alpha so text stays fully opaque;
+    # blur comes from the compositor (Hyprland decoration:blur / niri
+    # background-effect). ghostty's own background-blur stays false — it's
+    # a no-op on both (KDE-only on Linux, ghostty#4626). If hyprwm#9705
+    # bites (full transparency on tab close), pin via window rule override.
+    background-opacity = 0.78
     background-blur = false
     cursor-style = bar
     cursor-style-blink = true
@@ -43,9 +50,13 @@ in
     bold-is-bright = false
     mouse-hide-while-typing = true
     clipboard-trim-trailing-spaces = true
-    window-padding-x = 8
-    window-padding-y = 8
+    window-padding-x = 14
+    window-padding-y = 14
     window-padding-balance = true
+    window-padding-color = extend
+    minimum-contrast = 1.1
+    unfocused-split-opacity = 0.85
+    split-divider-color = ${cc.base02}
     gtk-titlebar = false
     window-decoration = false
     notify-on-command-finish = unfocused
