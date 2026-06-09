@@ -123,11 +123,11 @@ in
           general = {
             gaps_in = 6,
             gaps_out = 12,
-            border_size = 2,
-            -- Azure → warm-white shimmer: "light catching the edge" of the active pane.
-            ["col.active_border"] = { colors = { "rgba(${cc.raw.base0D}ee)", "rgba(${cc.raw.base07}44)" }, angle = 45 },
-            -- Faint warm rim instead of a dark line — glass, not gutter.
-            ["col.inactive_border"] = "rgba(${cc.raw.base07}15)",
+            -- Japandi hairline: 1px, near-invisible. The pane is defined by its
+            -- glass + shadow, not its outline; focus reads from the azure glow below.
+            border_size = 1,
+            ["col.active_border"] = "rgba(${cc.raw.base07}50)",
+            ["col.inactive_border"] = "rgba(${cc.raw.base07}0d)",
             layout = "dwindle",
             allow_tearing = false,
             resize_on_border = true,
@@ -150,15 +150,15 @@ in
             inactive_opacity = 0.95,
             fullscreen_opacity = 1.0,
             dim_inactive = true,
-            dim_strength = 0.05, -- whisper-level; the opacity cue does the rest
+            dim_strength = 0.08, -- carries more focus signal now that borders are hairlines
             blur = {
               enabled = true,
-              size = 10, -- heavy frost (was 6/3; revert to 6/3 if the GPU runs hot)
+              size = 12, -- heavy frost (was 6/3; revert to 6/3 if the GPU runs hot)
               passes = 4,
               new_optimizations = true,
               xray = true, -- biggest NVIDIA perf lever: blur samples the wallpaper, not stacked windows
               ignore_opacity = true,
-              noise = 0.035, -- coarser grain = the diffusion through the frost
+              noise = 0.055, -- coarser grain = the diffusion through the frost
               contrast = 0.9,
               brightness = 0.85, -- darkened backdrop = contrast for the cream type
               vibrancy = 0.25,
@@ -176,11 +176,13 @@ in
               offset = { 0, 4 }, -- light from above
             },
             -- Inner glow (new in 0.55): light-through-glass edge on the active pane.
+            -- With the border reduced to a hairline this IS the focus indicator,
+            -- so it breathes a little wider/brighter than before.
             glow = {
               enabled = true,
-              range = 8,
+              range = 12,
               render_power = 3,
-              color = "rgba(${cc.raw.base0D}22)", -- whisper of azure
+              color = "rgba(${cc.raw.base0D}30)", -- soft azure halo
               color_inactive = "rgba(00000000)",
             },
           },
@@ -343,6 +345,51 @@ in
         hl.bind(mod .. " + minus", hl.dsp.window.resize({ x = -100, y = 0, relative = true }))
         hl.bind(mod .. " + equal", hl.dsp.window.resize({ x = 100,  y = 0, relative = true }))
 
+        -- ── tmux prefix mode: SUPER+A ≈ C-a (ported from home/tmux.nix) ──
+        -- One-shot like tmux: each action drops back to the root keymap.
+        -- Resize (SHIFT+HJKL) repeats and stays in the mode, like tmux `bind -r`;
+        -- catchall swallows unknown keys and exits, so a mistyped prefix command
+        -- never leaks into the focused app. Waybar shows the mode while active.
+        local function oneshot(...)
+          local ds = { ... }
+          return function()
+            for _, d in ipairs(ds) do hl.dispatch(d) end
+            hl.dispatch(hl.dsp.submap("reset"))
+          end
+        end
+        hl.define_submap("tmux", function()
+          -- prefix | / - : preselect the dwindle direction, spawn the terminal there
+          hl.bind("backslash",         oneshot(hl.dsp.layout("preselect r"), hl.dsp.exec_cmd("ghostty")))
+          hl.bind("SHIFT + backslash", oneshot(hl.dsp.layout("preselect r"), hl.dsp.exec_cmd("ghostty")))
+          hl.bind("minus",             oneshot(hl.dsp.layout("preselect d"), hl.dsp.exec_cmd("ghostty")))
+          -- prefix c : new "window" → first empty workspace + terminal
+          hl.bind("C", oneshot(hl.dsp.focus({ workspace = "empty" }), hl.dsp.exec_cmd("ghostty")))
+          -- prefix hjkl : pane navigation
+          hl.bind("H", oneshot(hl.dsp.focus({ direction = "l" })))
+          hl.bind("J", oneshot(hl.dsp.focus({ direction = "d" })))
+          hl.bind("K", oneshot(hl.dsp.focus({ direction = "u" })))
+          hl.bind("L", oneshot(hl.dsp.focus({ direction = "r" })))
+          -- prefix HJKL : repeatable resize (stays in the mode; ESC to leave)
+          hl.bind("SHIFT + H", hl.dsp.window.resize({ x = -80, y = 0,   relative = true }), { repeating = true })
+          hl.bind("SHIFT + J", hl.dsp.window.resize({ x = 0,   y = 80,  relative = true }), { repeating = true })
+          hl.bind("SHIFT + K", hl.dsp.window.resize({ x = 0,   y = -80, relative = true }), { repeating = true })
+          hl.bind("SHIFT + L", hl.dsp.window.resize({ x = 80,  y = 0,   relative = true }), { repeating = true })
+          -- prefix z / x : zoom pane, kill pane
+          hl.bind("Z", oneshot(hl.dsp.window.fullscreen({ mode = "maximized" })))
+          hl.bind("X", oneshot(hl.dsp.window.close()))
+          -- prefix n / p : next / previous "window" (workspace)
+          hl.bind("N", oneshot(hl.dsp.focus({ workspace = "e+1" })))
+          hl.bind("P", oneshot(hl.dsp.focus({ workspace = "e-1" })))
+          -- prefix 1-9,0 : jump to workspace N (tmux select-window parity)
+          for i = 1, 10 do
+            local key = (i == 10) and "0" or tostring(i)
+            hl.bind(key, oneshot(hl.dsp.focus({ workspace = i })))
+          end
+          hl.bind("ESCAPE", hl.dsp.submap("reset"))
+          hl.bind("catchall", hl.dsp.submap("reset"))
+        end)
+        hl.bind(mod .. " + A", hl.dsp.submap("tmux"))
+
         -- Workspaces 1-10 (focus + move-window-to)
         for i = 1, 10 do
           local key = (i == 10) and "0" or tostring(i)
@@ -436,7 +483,10 @@ in
         margin-top = 8;
         margin-left = 12;
         margin-right = 12;
-        modules-left = [ "hyprland/workspaces" ];
+        modules-left = [
+          "hyprland/workspaces"
+          "hyprland/submap"
+        ];
         modules-center = [ "clock" ];
         modules-right = [
           "mpris"
@@ -456,6 +506,12 @@ in
           format = "{name}";
           on-click = "activate";
           all-outputs = true;
+        };
+        # Visible only while a submap is active (tmux prefix mode) — the
+        # uppercase tracking matches the other HUD micro-labels.
+        "hyprland/submap" = {
+          format = "{}";
+          tooltip = false;
         };
         clock = {
           format = "{:%H:%M  ·  %a %b %d}";
@@ -603,6 +659,12 @@ in
         }
         #workspaces button:hover {
           background: rgba(${cssRgb cc.base05}, 0.06);
+        }
+        #submap {
+          color: ${cc.base0D};
+          padding: 0 10px;
+          font-size: 11px;
+          letter-spacing: 0.08em;
         }
         #clock {
           color: ${cc.base05};

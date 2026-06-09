@@ -54,6 +54,13 @@ in
     # Rice
     pipes-rs
     cbonsai
+    cmatrix # green rain — pairs with the ferro phosphor motif
+    asciiquarium # terminal aquarium screensaver
+    sl # the train you typo into
+    figlet # big ascii banners (try: figlet ferro)
+    lolcat # rainbow pipe (figlet ferro | lolcat)
+    peaclock # zen full-screen terminal clock
+    tty-clock # minimal digital clock (tty-clock -c -C 4)
 
     # Dev workflow
     nodejs_24

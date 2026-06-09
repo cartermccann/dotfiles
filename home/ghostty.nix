@@ -41,10 +41,18 @@ in
     # background-effect). ghostty's own background-blur stays false — it's
     # a no-op on both (KDE-only on Linux, ghostty#4626). If hyprwm#9705
     # bites (full transparency on tab close), pin via window rule override.
-    background-opacity = 0.78
+    # 0.68 = heavy glass; minimum-contrast below keeps glyphs legible over it.
+    background-opacity = 0.68
     background-blur = false
     cursor-style = bar
     cursor-style-blink = true
+
+    # Smooth cursor: smear shader between previous/current cursor positions
+    # (ghostty 1.2+ cursor uniforms; relative path = next to this config file).
+    # Switch cursor-style to block for a bolder smear ribbon — bar gives a
+    # thin light-streak, which is the quieter read.
+    custom-shader = shaders/cursor_smear.glsl
+    custom-shader-animation = true
     adjust-cell-height = 2
     font-thicken = true
     bold-is-bright = false
@@ -54,7 +62,7 @@ in
     window-padding-y = 14
     window-padding-balance = true
     window-padding-color = extend
-    minimum-contrast = 1.1
+    minimum-contrast = 1.2
     unfocused-split-opacity = 0.85
     split-divider-color = ${cc.base02}
     gtk-titlebar = false
@@ -62,4 +70,6 @@ in
     notify-on-command-finish = unfocused
     notify-on-command-finish-after = 10s
   '';
+
+  xdg.configFile."ghostty/shaders/cursor_smear.glsl".source = ./ghostty-shaders/cursor_smear.glsl;
 }
