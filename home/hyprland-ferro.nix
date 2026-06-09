@@ -305,7 +305,7 @@ in
 
         -- Window management
         hl.bind(mod .. " + Q", hl.dsp.window.close())
-        hl.bind(mod .. " + W", hl.dsp.exec_cmd("hypr-wallpaper-pick")) -- was a duplicate close bind
+        hl.bind(mod .. " + W", hl.dsp.window.close())
         hl.bind(mod .. " + F",         hl.dsp.window.fullscreen({ mode = "maximized" })) -- maximize (keep gaps/bar)
         hl.bind(mod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen" })) -- true fullscreen
         hl.bind(mod .. " + T", hl.dsp.window.float())
