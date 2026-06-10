@@ -1,4 +1,10 @@
-{ config, lib, pkgs, user, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  user,
+  ...
+}:
 
 let
   shellAliases = {
@@ -40,13 +46,23 @@ let
     ai = "sudo docker exec -it ollama ollama run gemma4:12b-it-qat";
 
   };
+
+  comcreateBanner = pkgs.writeShellScriptBin "comcreate-banner" (
+    builtins.readFile ../scripts/comcreate-banner.sh
+  );
 in
 {
+  home.packages = [ comcreateBanner ];
+
   programs.fish = {
     enable = true;
     inherit shellAliases;
     interactiveShellInit = ''
-      set -g fish_greeting
+      function fish_greeting
+        if not set -q TMUX
+          comcreate-banner
+        end
+      end
       set -gx NH_FLAKE $HOME/dotfiles
       set -gx GOPATH $HOME/.local/share/go
       set -gx GOBIN $HOME/.local/bin
@@ -120,6 +136,7 @@ in
     inherit shellAliases;
     initExtra = ''
       export PATH="$HOME/.local/bin:$PATH"
+      if [[ $- == *i* && -z "$TMUX" ]]; then comcreate-banner; fi
     '';
   };
 
@@ -129,159 +146,167 @@ in
 
   programs.starship = {
     enable = true;
-    settings = let
-      sep = builtins.fromJSON ''"\uE0B0"'';
-      c = config.lib.stylix.colors.withHashtag;
-    in {
-      palette = "stylix";
-      format = builtins.concatStringsSep "" [
-        # Segment 1: OS + user (mauve)
-        "[](color_mauve)"
-        "$os"
-        "$username"
-        "[${sep}](bg:color_red fg:color_mauve)"
-        # Segment 2: Directory (red/peach)
-        "$directory"
-        "[${sep}](fg:color_red bg:color_peach)"
-        # Segment 3: Git (peach/yellow)
-        "$git_branch"
-        "$git_status"
-        "[${sep}](fg:color_peach bg:color_green)"
-        # Segment 4: Languages (green)
-        "$nodejs"
-        "$rust"
-        "$golang"
-        "$python"
-        "$php"
-        "$java"
-        "[${sep}](fg:color_green bg:color_blue)"
-        # Segment 5: Docker/env (blue)
-        "$docker_context"
-        "[${sep}](fg:color_blue bg:color_surface)"
-        # Segment 6: Time (surface)
-        "$time"
-        "[${sep}](fg:color_surface)"
-        "$character"
-      ];
+    settings =
+      let
+        # Tokyo Night theme (starship.rs preset palette): ░▒▓ periwinkle fade-in,
+        # pointed separators, segments stepping into navy, rounded cap, blue accent
+        # text. https://starship.rs/presets/tokyo-night
+        # Powerline glyphs via fromJSON so the ASCII escapes survive editing.
+        arrow = builtins.fromJSON ''"\uE0B0"'';
+        capR = builtins.fromJSON ''"\uE0B4"'';
+        dither = "░▒▓";
+      in
+      {
+        palette = "cc";
+        add_newline = true;
+        format = builtins.concatStringsSep "" [
+          "[${dither}](fg:cc1)"
+          "$os"
+          "$username"
+          "[${arrow}](fg:cc1 bg:cc2)"
+          "$directory"
+          "[${arrow}](fg:cc2 bg:cc3)"
+          "$git_branch"
+          "$git_status"
+          "[${arrow}](fg:cc3 bg:cc4)"
+          "$nodejs"
+          "$rust"
+          "$golang"
+          "$python"
+          "$php"
+          "$java"
+          "[${arrow}](fg:cc4 bg:cc5)"
+          "$docker_context"
+          "[${arrow}](fg:cc5 bg:cc6)"
+          "$time"
+          "[${capR}](fg:cc6)"
+          "$fill"
+          "$cmd_duration"
+          "$line_break"
+          "$character"
+        ];
 
-      os = {
-        disabled = false;
-        style = "bg:color_mauve fg:color_base";
-      };
+        fill.symbol = " ";
 
-      os.symbols = {
-        NixOS = " ";
-        Linux = "󰌽 ";
-        Arch = "󰣇 ";
-        Ubuntu = "󰕈 ";
-        Fedora = "󰣛 ";
-        Debian = "󰣚 ";
-        Macos = "󰀵 ";
-        Windows = "󰍲 ";
-      };
+        os = {
+          disabled = false;
+          format = "[ $symbol]($style)";
+          style = "bg:cc1 fg:cc_ink";
+        };
 
-      username = {
-        show_always = true;
-        style_user = "bg:color_mauve fg:color_base";
-        style_root = "bg:color_mauve fg:color_base";
-        format = "[ $user ]($style)";
-      };
+        os.symbols = {
+          NixOS = " ";
+          Linux = "󰌽 ";
+          Arch = "󰣇 ";
+          Ubuntu = "󰕈 ";
+          Fedora = "󰣛 ";
+          Debian = "󰣚 ";
+          Macos = "󰀵 ";
+          Windows = "󰍲 ";
+        };
 
-      directory = {
-        format = "[ $path ]($style)";
-        style = "fg:color_base bg:color_red";
-        truncation_length = 3;
-        truncation_symbol = "…/";
-        substitutions = {
-          "Documents" = "󰈙 ";
-          "Downloads" = " ";
-          "Music" = "󰝚 ";
-          "Pictures" = " ";
+        username = {
+          show_always = true;
+          style_user = "bg:cc1 fg:cc_ink";
+          style_root = "bg:cc1 fg:cc_ink";
+          format = "[ $user ]($style)";
+        };
+
+        directory = {
+          format = "[ $path ]($style)";
+          style = "fg:cc_fg bg:cc2";
+          truncation_length = 3;
+          truncation_symbol = "…/";
+          substitutions = {
+            "Documents" = "󰈙 ";
+            "Downloads" = " ";
+            "Music" = "󰝚 ";
+            "Pictures" = " ";
+          };
+        };
+
+        git_branch = {
+          symbol = "";
+          style = "bg:cc3";
+          format = "[[ $symbol $branch ](fg:cc2 bg:cc3)]($style)";
+        };
+
+        git_status = {
+          style = "bg:cc3";
+          format = "[[($all_status$ahead_behind )](fg:cc2 bg:cc3)]($style)";
+        };
+
+        nodejs = {
+          symbol = "";
+          style = "bg:cc4";
+          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
+        };
+        rust = {
+          symbol = "";
+          style = "bg:cc4";
+          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
+        };
+        golang = {
+          symbol = "";
+          style = "bg:cc4";
+          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
+        };
+        python = {
+          symbol = "";
+          style = "bg:cc4";
+          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
+        };
+        php = {
+          symbol = "";
+          style = "bg:cc4";
+          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
+        };
+        java = {
+          symbol = "";
+          style = "bg:cc4";
+          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
+        };
+
+        docker_context = {
+          symbol = "";
+          style = "bg:cc5";
+          format = "[[ $symbol( $context) ](fg:cc2 bg:cc5)]($style)";
+        };
+
+        time = {
+          disabled = false;
+          time_format = "%R";
+          style = "bg:cc6";
+          format = "[[  $time ](fg:cc_dim bg:cc6)]($style)";
+        };
+
+        cmd_duration = {
+          min_time = 500;
+          format = "[ 󰔟 $duration ](fg:cc_dim)";
+        };
+
+        character = {
+          success_symbol = "[❯](bold fg:cc_green)";
+          error_symbol = "[❯](bold fg:cc_red)";
+          vimcmd_symbol = "[❮](bold fg:cc1)";
+        };
+
+        aws.disabled = true;
+
+        palettes.cc = {
+          cc1 = "#a3aed2"; # periwinkle head
+          cc2 = "#769ff0"; # blue (directory bg + accent text)
+          cc3 = "#394260"; # git
+          cc4 = "#212736"; # languages (navy)
+          cc5 = "#212736"; # docker (navy)
+          cc6 = "#1d2230"; # time (darkest navy)
+          cc_ink = "#090c0c"; # text on periwinkle head
+          cc_fg = "#e3e5e5"; # text on directory
+          cc_dim = "#a0a9cb"; # text on time
+          cc_green = "#9ece6a"; # success prompt char
+          cc_red = "#f7768e"; # error prompt char
         };
       };
-
-      git_branch = {
-        symbol = "";
-        style = "bg:color_peach";
-        format = "[[ $symbol $branch ](fg:color_base bg:color_peach)]($style)";
-      };
-
-      git_status = {
-        style = "bg:color_peach";
-        format = "[[($all_status$ahead_behind )](fg:color_base bg:color_peach)]($style)";
-      };
-
-      nodejs = {
-        symbol = "";
-        style = "bg:color_green";
-        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
-      };
-
-      rust = {
-        symbol = "";
-        style = "bg:color_green";
-        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
-      };
-
-      golang = {
-        symbol = "";
-        style = "bg:color_green";
-        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
-      };
-
-      python = {
-        symbol = "";
-        style = "bg:color_green";
-        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
-      };
-
-      php = {
-        symbol = "";
-        style = "bg:color_green";
-        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
-      };
-
-      java = {
-        symbol = "";
-        style = "bg:color_green";
-        format = "[[ $symbol( $version) ](fg:color_base bg:color_green)]($style)";
-      };
-
-      docker_context = {
-        symbol = "";
-        style = "bg:color_blue";
-        format = "[[ $symbol( $context) ](fg:color_teal bg:color_blue)]($style)";
-      };
-
-      time = {
-        disabled = false;
-        time_format = "%R";
-        style = "bg:color_surface";
-        format = "[[  $time ](fg:color_text bg:color_surface)]($style)";
-      };
-
-      character = {
-        success_symbol = " ";
-        error_symbol = "[](fg:color_red) ";
-      };
-
-      aws.disabled = true;
-
-      palettes.stylix = {
-        # Rainbow segments (warm → cool)
-        color_mauve = c.base0E;    # segment 1: OS + user
-        color_red = c.base08;      # segment 2: directory
-        color_peach = c.base09;    # segment 3: git
-        color_yellow = c.base0A;   # character vim visual
-        color_green = c.base0B;    # segment 4: languages
-        color_blue = c.base0D;     # segment 5: docker
-        color_teal = c.base0C;     # docker fg accent
-        # Backgrounds
-        color_base = c.base00;     # dark fg on colored segments
-        color_surface = c.base02;  # segment 6: time
-        color_text = c.base05;     # light text on dark bg
-      };
-    };
   };
 
   programs.fzf = {
