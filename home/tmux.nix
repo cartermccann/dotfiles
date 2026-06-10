@@ -9,7 +9,7 @@
     keyMode = "vi";
     terminal = "tmux-256color";
     escapeTime = 0;
-    historyLimit = 10000;
+    historyLimit = 50000;
 
     plugins = with pkgs.tmuxPlugins; [
       sensible
@@ -48,6 +48,42 @@
 
             # True color support
             set -ag terminal-overrides ",xterm-256color:RGB"
+
+            # ── FERRO-NEXT B2: Omarchy tmux ports ──────────────────────────
+            # csi-u extended keys: Shift/Ctrl-modified keys reach TUI agents
+            # (Claude Code under ghostty needs this for e.g. shift+enter)
+            set -g extended-keys on
+            set -s extended-keys-format csi-u
+            set -g allow-passthrough on
+            set -g focus-events on
+            set -g renumber-windows on
+            set -g detach-on-destroy off    # killing a session falls into the next one
+
+            # Window auto-rename from cwd basename
+            set -g automatic-rename on
+            set -g automatic-rename-format '#{b:pane_current_path}'
+
+            # Prefix-free nav (Alt layer; existing C-a prefix binds untouched)
+            bind -n M-Enter   split-window -v -c "#{pane_current_path}"
+            bind -n M-S-Enter split-window -h -c "#{pane_current_path}"
+            bind -n M-1 select-window -t 1
+            bind -n M-2 select-window -t 2
+            bind -n M-3 select-window -t 3
+            bind -n M-4 select-window -t 4
+            bind -n M-5 select-window -t 5
+            bind -n M-6 select-window -t 6
+            bind -n M-7 select-window -t 7
+            bind -n M-8 select-window -t 8
+            bind -n M-9 select-window -t 9
+            bind -n M-Left  previous-window
+            bind -n M-Right next-window
+            bind -n M-Up   switch-client -p
+            bind -n M-Down switch-client -n
+
+            # Mode indicators on status-right (COPY / prefix / ZOOM). Colors use
+            # terminal palette names, so they ride the ferro ghostty palette for
+            # free until the RICE-PLAN 3.3 statusline lands.
+            set -g status-right '#{?pane_in_mode,#[fg=yellow]COPY ,}#{?client_prefix,#[fg=blue]⌘ ,}#{?window_zoomed_flag,#[fg=magenta]ZOOM ,}'
     '';
   };
 }

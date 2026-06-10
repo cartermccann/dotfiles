@@ -37,6 +37,7 @@ in
     cava
     glow # markdown reader
     xh # modern httpie
+    gum # shell prompts/confirm (gwr worktree fn, ferro-menu scripts)
     ouch # universal compress/decompress
     duf # prettier df
     procs # modern ps

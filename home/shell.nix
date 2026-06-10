@@ -52,6 +52,9 @@ in
       set -gx GOBIN $HOME/.local/bin
       fish_add_path $HOME/.local/bin
 
+      # FERRO-NEXT B3: default agent for tdl/tds/tsl layouts (override per-shell)
+      set -q FERRO_AI; or set -gx FERRO_AI hclaude
+
       # Autosuggestion color — visible but subtle on dark backgrounds
       set -U fish_color_autosuggestion 90909a
 
@@ -64,6 +67,34 @@ in
         tmux send-keys -t dev:1.1 "nvim" Enter
         tmux select-pane -t dev:1.1
         tmux attach -t dev
+      end
+
+      # FERRO-NEXT B2: one canonical session (Omarchy's `t`)
+      function t
+        tmux attach; or tmux new -s work
+      end
+
+      # FERRO-NEXT B5: git worktrees as `repo--branch` sibling dirs.
+      # (named gwa/gwr — ga/gd are taken by git add / git diff aliases)
+      function gwa --description "git worktree add -b <branch> ../<repo>--<branch>"
+        if test (count $argv) -ne 1
+          echo "usage: gwa <branch>"; return 1
+        end
+        set -l repo (basename (git rev-parse --show-toplevel)); or return 1
+        set -l dir ../$repo--$argv[1]
+        git worktree add -b $argv[1] $dir; and cd $dir
+      end
+
+      function gwr --description "remove current worktree dir + its branch"
+        set -l dir (basename $PWD)
+        set -l branch (string split --max 1 -- '--' $dir)[2]
+        if test -z "$branch"
+          echo "gwr: '$dir' is not a repo--branch worktree dir"; return 1
+        end
+        gum confirm "Remove worktree $dir and delete branch $branch?"; or return 1
+        cd ..
+        git -C (string replace -- "--$branch" "" $dir) worktree remove $dir --force
+        and git -C (string replace -- "--$branch" "" $dir) branch -D $branch
       end
     '';
   };

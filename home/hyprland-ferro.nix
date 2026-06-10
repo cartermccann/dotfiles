@@ -295,6 +295,8 @@ in
         -- ── Keybinds ──
         -- Programs
         hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("ghostty"))
+        -- FERRO-NEXT B2: canonical tmux session ("work"), same bind as niri session
+        hl.bind(mod .. " + ALT + RETURN", hl.dsp.exec_cmd("ghostty -e fish -c 'tmux attach; or tmux new -s work'"))
         hl.bind(mod .. " + SPACE",  hl.dsp.exec_cmd("fuzzel --config ${cfgHome}/fuzzel/ferro.ini"))
         hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/ferro.ini | cliphist decode | wl-copy"))
 

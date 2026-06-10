@@ -110,6 +110,8 @@ in
       // ── Programs ──
       Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
       Mod+Return { spawn "ghostty"; }
+      // FERRO-NEXT B2: canonical tmux session ("work"), same bind as Hyprland session
+      Mod+Alt+Return { spawn "ghostty" "-e" "fish" "-c" "tmux attach; or tmux new -s work"; }
       Mod+Shift+S { spawn "bash" "-c" "grim -g \"$(slurp)\" - | satty -f -"; }
       Mod+Shift+P { screenshot-screen; }
       Print { screenshot; }

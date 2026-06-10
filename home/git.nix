@@ -11,6 +11,20 @@
       init.defaultBranch = "main";
       pull.rebase = true;
       push.autoSetupRemote = true;
+      # FERRO-NEXT B4 (Omarchy git block)
+      diff = {
+        algorithm = "histogram";
+        colorMoved = "plain";
+        mnemonicPrefix = true;
+      };
+      commit.verbose = true;
+      branch.sort = "-committerdate";
+      tag.sort = "-version:refname";
+      rerere = {
+        enabled = true;
+        autoupdate = true;
+      };
+      column.ui = "auto";
       credential."https://github.com".helper = "!/run/current-system/sw/bin/gh auth git-credential";
     };
   };
