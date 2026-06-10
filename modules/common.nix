@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  user,
   ...
 }:
 
@@ -104,6 +105,21 @@
     dates = "weekly";
     options = "--delete-older-than 14d";
   };
+
+  # Passwordless rebuilds — lets coding agents apply config after validating
+  # with `nh os build`. Scoped to nixos-rebuild only; note this is still
+  # effectively root for anything that can write to ~/dotfiles.
+  security.sudo.extraRules = [
+    {
+      users = [ user ];
+      commands = [
+        {
+          command = "/run/current-system/sw/bin/nixos-rebuild";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
 
   # SSH — key-only auth
   services.openssh = {
