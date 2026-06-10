@@ -12,7 +12,7 @@ let
   # Preload only ever adds — retire old models manually via `ollama rm`.
   modelsByTier = {
     high = [
-      "gemma4:12b-it-qat" # daily chat: 7.2 GB, beats Gemma 3 27B, 256K ctx
+      "qwen3.5:9b-noThink" # daily chat fallback until the Ollama image can pull gemma4
       "qwen2.5-coder:3b-base" # FIM tab-completion (minuet): 1.9 GB, stays resident
       "qwen3.5:4b" # quick jobs (dictation cleanup, summaries): 3.4 GB
     ];
@@ -53,7 +53,15 @@ let
         echo "Already have: ${model}"
       else
         echo "Pulling: ${model}..."
-        ${pkgs.curl}/bin/curl -sf http://localhost:11434/api/pull -d '{"name": "${model}"}' > /dev/null
+        if ! RESPONSE=$(${pkgs.curl}/bin/curl -sf http://localhost:11434/api/pull -d '{"name": "${model}", "stream": false}'); then
+          echo "Failed to pull ${model}: curl request failed"
+          continue
+        fi
+        if echo "$RESPONSE" | ${pkgs.jq}/bin/jq -e '.error? // empty' > /dev/null; then
+          echo "Failed to pull ${model}:"
+          echo "$RESPONSE" | ${pkgs.jq}/bin/jq -r '.error'
+          continue
+        fi
         echo "Done: ${model}"
       fi
     '') models}
@@ -85,8 +93,8 @@ in
 
     systemd.services.ollama-preload = {
       description = "Preload Ollama models for this machine's tier";
-      after = [ "docker-ollama.service" "network-online.target" ];
-      wants = [ "docker-ollama.service" "network-online.target" ];
+      after = [ "podman-ollama.service" "network-online.target" ];
+      wants = [ "podman-ollama.service" "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";

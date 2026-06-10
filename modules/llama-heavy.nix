@@ -49,6 +49,8 @@
 
     # oci-containers wires every container into multi-user.target; heavy mode
     # must NOT start at boot — it would hold ~9 GB VRAM permanently.
+    # Keep both names here because the unit prefix follows the OCI backend.
     systemd.services.docker-llama-heavy.wantedBy = lib.mkForce [ ];
+    systemd.services.podman-llama-heavy.wantedBy = lib.mkForce [ ];
   };
 }
