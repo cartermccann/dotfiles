@@ -335,11 +335,17 @@ Architecture (one tool per layer):
   the neovim-nightly overlay, which was locked to a stale pre-0.12.0 build and
   would have jumped to 0.13-dev on update. Input removed from flake.nix.
 - **blink.cmp** stays the menu (accept `<CR>`/`<C-y>`, never Tab).
-- **Tab autocomplete**: LazyVim extras `ai.copilot-native`
-  (vim.lsp.inline_completion, 0.12 native ghost text) + `ai.sidekick`
-  (folke's Copilot NES — Cursor-style next-edit suggestions). Tab chain:
-  NES jump/apply → ghost-text accept → snippet → literal tab.
-  `vim.g.ai_cmp = false` (ghost text mode, no menu source).
+- **Tab autocomplete — REVISED 2026-06-10**: dropped Copilot for the $0 local
+  path (the fallback this doc already scoped). `minuet-ai.nvim` ghost text →
+  Ollama `qwen2.5-coder:3b-base` FIM via `openai_fim_compatible`
+  (`http://localhost:11434/v1/completions`, ~1.9 GB resident, ~instant warm).
+  `vim.g.ai_cmp = false` (ghost text mode). Tab chain handled in the blink
+  keymap: minuet accept → snippet_forward → literal tab. Alt keys are the
+  explicit controls (`<A-A>` force-accept, `<A-a>`/`<A-z>` line/N, `<A-[>`/`<A-]>`
+  cycle, `<A-e>` dismiss). Removed `ai.copilot-native` + `ai.sidekick` from
+  lazyvim.json (sidekick NES needed Copilot-LSP). Free, private, no metering.
+  Subscriptions (Claude/Codex) stay the AGENT layer — wrong tool for inline FIM
+  (1-5s latency, per-token APIs, not a completion endpoint).
 - **claudecode.nvim** (coder/) — WebSocket MCP bridge; Claude stays in tmux,
   `/ide` connects it; `<leader>cs/cb/cd/cD` send/context/diff keymaps.
 - **Deleted** gen.nvim/ollama (superseded).

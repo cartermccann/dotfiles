@@ -1,7 +1,9 @@
 -- UI configuration — multi-theme support
--- Change colorscheme by editing the `current` variable below
+-- Change colorscheme by editing the `current` variable below.
+-- "ferro" is the house theme (colors/ferro.lua, built from lib/ferro-palette.nix);
+-- the plugin themes below stay installed as the switcher roster.
 
-local current = "catppuccin-mocha"
+local current = "ferro"
 
 return {
   -- ── Catppuccin ──
