@@ -6,11 +6,15 @@
 # Avoids nixpkgs CUDA build issues (cicc crash on Blackwell/RTX 5070)
 
 let
+  # Loadout research 2026-06-09 (FERRO-NEXT D7): budget ~10 GB of the 12 GB
+  # VRAM, ~2 GB headroom for compositor/ghostty. QAT tags preferred over
+  # post-hoc Q4 quants whenever they exist (trained-to-be-quantized).
+  # Preload only ever adds — retire old models manually via `ollama rm`.
   modelsByTier = {
     high = [
-      "qwen3.5:4b"
-      "qwen3.5:9b"
-      "deepseek-r1:14b"
+      "gemma4:12b-it-qat" # daily chat: 7.2 GB, beats Gemma 3 27B, 256K ctx
+      "qwen2.5-coder:3b-base" # FIM tab-completion (minuet): 1.9 GB, stays resident
+      "qwen3.5:4b" # quick jobs (dictation cleanup, summaries): 3.4 GB
     ];
     medium = [
       "qwen3.5:4b"
@@ -67,8 +71,15 @@ in
   config = {
     virtualisation.oci-containers.containers.ollama = {
       image = "ollama/ollama";
-      ports = [ "11434:11434" ];
+      ports = [ "127.0.0.1:11434:11434" ]; # was 0.0.0.0 — nothing remote calls it
       volumes = [ "ollama:/root/.ollama" ];
+      environment = {
+        OLLAMA_FLASH_ATTENTION = "1"; # prerequisite for KV quant; free VRAM+speed
+        OLLAMA_KV_CACHE_TYPE = "q8_0"; # halves KV memory, negligible quality cost
+        OLLAMA_CONTEXT_LENGTH = "16384"; # default is only 4096
+        OLLAMA_KEEP_ALIVE = "30m"; # default 5m unloads mid-session
+        OLLAMA_MAX_LOADED_MODELS = "2"; # default 3/GPU overcommits 12 GB
+      };
       extraOptions = lib.optionals hasGpu [ "--device=nvidia.com/gpu=all" ];
     };
 

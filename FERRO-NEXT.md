@@ -298,6 +298,171 @@ Omarchy themes Plymouth/SDDM per theme. RICE-PLAN already scoped tuigreet themin
 
 ---
 
+## Workstream D — Core-stack tooling (added 2026-06-09; research round 2)
+
+### D1. `programs.claude-code` — flake-manage `~/.claude` (highest leverage)
+The HM module now covers settings, hooks, agents, commands, skills, rules,
+mcpServers, plugins, marketplaces (+ `enableMcpIntegration` sharing a global
+`programs.mcp.servers`). Today's `~/.claude` (20 plugins, GSD hook suite,
+ccstatusline, rules/) would not survive a reinstall.
+- Migrate incrementally: start with `settings` + `rules` + hooks we author
+  (D6); leave plugin-managed files (gsd-*, plugins/) alone until verified the
+  module tolerates them.
+- **Keep `settings.local.json` mutable** — symlinked settings break Claude's
+  self-edits; local stays the escape hatch.
+- ⚠ VERIFY module option names against the HM manual at implementation time.
+- Tune-up found during research: the vercel-plugin UserPromptSubmit hook
+  misfires on nearly every non-Vercel prompt (lexical matches on "workflow",
+  "loop", README reads). Scope it per-project or disable globally once
+  settings are declarative.
+
+### D2. Nix authoring QoL: nixd + treefmt-nix
+- `nixd` LSP configured with `options.nixos.expr` / `home-manager.expr`
+  pointed at this flake → autocomplete of our own option set in nvim.
+  (nixd is already in `extraPackages`; the win is the per-repo config.)
+- `treefmt-nix`: one `nix fmt` for nixfmt+stylua+fish_indent and a free
+  `nix flake check` (dotfiles CI in ~10 lines).
+- Skipped: flake-parts/import-tree restructure (single-host config, not worth
+  the churn yet — revisit if flake.nix gets gnarly), disko/impermanence
+  (install-time decisions), nvf/nixvim (LazyVim + mkOutOfStoreSymlink + Nix
+  LSPs is already the right hybrid).
+- ◐ sops-nix to replace `~/.config/credentials/` chmod-600 dir — separate
+  follow-up, touches secrets handling everywhere.
+
+### D3. AI-first nvim — IMPLEMENTED 2026-06-09
+Architecture (one tool per layer):
+- **0.12 stable** via nixpkgs-unstable overlay (`lib/overlays.nix`) — replaced
+  the neovim-nightly overlay, which was locked to a stale pre-0.12.0 build and
+  would have jumped to 0.13-dev on update. Input removed from flake.nix.
+- **blink.cmp** stays the menu (accept `<CR>`/`<C-y>`, never Tab).
+- **Tab autocomplete**: LazyVim extras `ai.copilot-native`
+  (vim.lsp.inline_completion, 0.12 native ghost text) + `ai.sidekick`
+  (folke's Copilot NES — Cursor-style next-edit suggestions). Tab chain:
+  NES jump/apply → ghost-text accept → snippet → literal tab.
+  `vim.g.ai_cmp = false` (ghost text mode, no menu source).
+- **claudecode.nvim** (coder/) — WebSocket MCP bridge; Claude stays in tmux,
+  `/ide` connects it; `<leader>cs/cb/cd/cD` send/context/diff keymaps.
+- **Deleted** gen.nvim/ollama (superseded).
+First-run: `:Lazy sync`, then `:LspStart copilot` sign-in (`:Copilot auth` /
+`:lsp` to inspect). **Pricing decision open**: Copilot Free (2k completions/mo)
+to trial; Pro $10/mo for unlimited if it sticks. $0 fallback if it doesn't:
+minuet-ai.nvim + Ollama qwen-coder (GPU box makes it viable; quality/latency
+step down). supermaven is dead (sunset 2025-11-30); windsurf.nvim = platform
+risk after two acquisitions. Skipped: avante/codecompanion (redundant with
+Claude-in-the-next-pane), vim.pack (lazy.nvim stays — LazyVim is lazy.nvim),
+ui2 (experimental, revisit at 0.13).
+
+### D4. Ghostty 1.3 features
+⚠ VERIFY installed ghostty ≥ 1.3 (`ghostty +version`; nixpkgs pin is
+2026-03-13, release was 03-09 — close call).
+- **Key tables** — native modal keybinds; replaces/upgrades the hand-rolled
+  tmux-prefix-mode work from the japandi pass.
+- Scrollback search (`ctrl+shift+f`) — free, just don't shadow the bind.
+- `notify-on-command-finish` already set; pair with a Stop-hook notify (D6)
+  so agent-finished pings work even outside ghostty focus.
+- ◐ `shell-integration-features = ssh-terminfo,ssh-env` if SSH use grows.
+- Shader discipline: cursor-event shaders only (current warp is fine);
+  continuous-animation shaders (CRT/bloom) pin the GPU — rejected.
+
+### D5. pi as second agent
+`pi-coding-agent` is in nixpkgs → add to `home/tools.nix`. The fork
+**oh-my-pi** (omp, 11.6k★, now bigger than upstream: LSP, debuggers,
+hash-anchored edits, worktree subagents) inherits `.claude/` config
+(CLAUDE.md, skills) for free but is not in nixpkgs and releases multiple
+times a day — run via bun in mutable space if wanted; do not chase its churn
+declaratively. Role: overflow/second-opinion agent in a tdl pane.
+
+### D6. Claude Code hooks worth authoring (lands with D1)
+1. PostToolUse format-on-edit: treefmt (nixfmt/stylua) on .nix/.lua writes —
+   beware self-retrigger; filter on file type and skip when no change.
+2. Stop → `notify-send` (works on both sessions' notification daemons).
+3. PreToolUse guard: block writes under `~/.config/credentials/`.
+Statusline: keep ccstatusline (already configured); ccusage is the analysis
+tool, run ad-hoc, not a statusline replacement.
+
+### D7. Local AI loadout — IMPLEMENTED 2026-06-09 (RTX 5070 12GB + 60GB RAM)
+`modules/ollama.nix` high tier: **gemma4:12b-it-qat** (daily chat, 7.2 GB QAT —
+beats Gemma 3 27B) · **qwen2.5-coder:3b-base** (FIM for minuet fallback;
+Qwen3.x chat models are NOT FIM models) · **qwen3.5:4b** (quick jobs).
+Container env: flash attention + KV q8_0 + 16K ctx + 30m keep-alive +
+max 2 loaded; port now loopback-only. `ai` alias → gemma4.
+Follow-ups:
+- **Heavy mode — IMPLEMENTED 2026-06-09**: `modules/llama-heavy.nix` —
+  llama-server (Docker, CUDA) running Qwen3.6-35B-A3B Q4_K_M with
+  `--n-cpu-moe 28` expert offload (~9 GB VRAM + 15 GB RAM, ~20-25 tok/s).
+  Not autostarted (owns the GPU); `heavy` / `heavy-stop` fish fns do the
+  exclusive swap with the ollama container. Port 8089 loopback, web UI +
+  OpenAI-compatible API. Tune --n-cpu-moe down for speed / up if OOM.
+  Max-quality upgrade path: Qwen3-Coder-Next 80B-A3B UD-Q4 (~46 GB total)
+  in the same container, just a -hf tag change.
+- NVFP4 (native Blackwell 4-bit, +~57% prefill in llama.cpp): watch, don't
+  switch yet — quality vs Q4_K_M unsettled.
+- Old models (qwen3.5:9b, deepseek-r1:14b) still on disk — `ollama rm` when
+  satisfied with gemma4.
+
+---
+
+## Workstream E — Dev automation loops (the playbook)
+
+Everything needed is already installed (ralph-loop, GSD, BMAD, codex plugin,
+/loop, /schedule). This workstream is *usage doctrine*, not installation.
+Five named recipes; the discipline is choosing per task, not running all five.
+
+### E1. "Gate" — daily default: Claude writes, Codex reviews every stop
+Enable the codex plugin's stop-time review gate (`codex:setup`), or for big
+diffs run Codex manually in the tdl bottom pane: review branch vs main, bugs
+only. Cross-provider review is the best-evidenced multi-agent pattern
+(different vendors make non-overlapping mistakes). **Cap debate at 2 rounds**;
+ignore its style opinions.
+
+### E2. "Phase loop" — structured features: GSD, not BMAD
+Per feature: discuss → plan → execute → verify, each phase a fresh session;
+`gsd-quick` for small one-shots; `gsd-map-codebase` first on brownfield client
+repos. Run token-heavy planning/research phases through `hclaude` (this is the
+workload headroom exists for). `gsd-autonomous` only after supervised phases
+on that repo. **BMAD verdict**: full pipeline is 5–25× slower for solo-dev
+tasks (12min OpenSpec / 90min SpecKit / 5.5hr BMAD benchmark); keep exactly
+two pieces — `bmad-code-review` (good adversarial second opinion) and
+`bmad-quick-dev` if its style ever beats gsd-quick. One framework per project.
+
+### E3. "Night loop" — unattended grinding, fenced
+(User framing 2026-06-09: "Ralph" is legacy branding — these are just loop
+automations now, via the Stop-hook loop plugin / `/loop`. Mechanics unchanged.)
+Only for mechanically-verifiable batch work (test-coverage expansion,
+migrations, greenfield scaffolding from specs). Never judgment work.
+1. Prep is 80% of quality: `specs/*.md` (behavioral, one concern per file,
+   "one sentence without 'and'"), lean AGENTS.md (build/test commands only).
+2. Worktree always (`EnterWorktree` / `git worktree add ../proj-ralph`);
+   direnv gives the worktree its dev shell for free. Container if the run
+   needs credentials/network beyond the repo.
+3. `/ralph-loop "<one-task-per-iteration prompt; tests must pass before
+   commit>" --max-iterations 25 --completion-promise "<promise>DONE</promise>"`
+4. Morning: read the commit log, then E1 the whole branch before merge.
+If it circles: regenerate IMPLEMENTATION_PLAN.md, don't argue with it.
+Hard rules: max-iterations always set; no unsandboxed
+`--dangerously-skip-permissions` on this machine.
+
+### E4. "Babysitter" — /loop on a pushed PR
+Dedicated small tmux pane: `/loop 10m check PR #N: CI failed → diagnose+push
+fix; review comment → address; green+approved → tell me`. Scope to one
+branch; kill on context switch. Natural fourth pane for the tdl layout.
+
+### E5. "Cron chores" — Routines (cloud) + systemd timer (local)
+- Client repos: 1–2 cloud Routines max (weekly dep-audit → draft PR; GitHub
+  pull_request trigger → test+review comment). Read-mostly; never auto-merge.
+  API rates + $0.08/runtime-hr — fine for minutes-long jobs only.
+- Dotfiles: cloud can't `nrs` this box — local `systemd --user` timer running
+  `claude -p --bare` for a weekly flake-update review report instead.
+
+### E-skip (recorded so we don't re-litigate)
+Full BMAD cast for solo work · any third spec framework (Spec Kit/OpenSpec/
+Kiro — pure switching cost) · agent teams >2–3 or swarm-style parallel
+writing (solo review capacity caps at ~4 worktrees; teams only for parallel
+*investigation*) · Stop hooks that generate responses outside the ralph
+plugin (accidental-infinite-loop factory).
+
+---
+
 ## Implementation order
 
 Independent of RICE-PLAN's checklist; interleave freely. Ordered by
@@ -321,6 +486,22 @@ payoff-per-risk:
 - [ ] **N8. B7 remaining toggles** (gaps, DND) + B8 cheat-sheet v1 + A6 niri
       open/close motion check.
 - [ ] **N9. B9 sudo toggle** (after the sudoers.d verification).
+
+D/E track (interleave with N-track freely; D10 first, it's pure config):
+
+- [ ] **D10. Quick batch** — `pi-coding-agent` to tools.nix · nixd flake config
+      (`.nixd.json` or LSP settings in nvim) · treefmt-nix + `nix fmt` +
+      flake check · ghostty version check for 1.3 features.
+- [ ] **D11. claudecode.nvim** in config/nvim (live symlink — no rebuild).
+- [ ] **D12. `programs.claude-code` migration** (settings/rules/authored
+      hooks first; plugins later) + D6 hooks + vercel-plugin hook scoping.
+- [ ] **D13. Ghostty key tables** (replace hand-rolled prefix mode) once 1.3
+      confirmed.
+- [ ] **E10. Doctrine, not code**: enable codex stop-gate (`codex:setup`);
+      first supervised GSD phase loop on a client repo; first fenced Night
+      Ralph on something mechanical; wire the /loop babysitter pane into tdl
+      (pairs with B3's layouts).
+- [ ] **D14 (later)**: sops-nix credentials migration.
 
 ## Decisions (resolved 2026-06-09)
 

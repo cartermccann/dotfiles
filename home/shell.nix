@@ -37,7 +37,7 @@ let
 
     # Ollama (runs in docker container as root)
     ollama = "sudo docker exec -it ollama ollama";
-    ai = "sudo docker exec -it ollama ollama run qwen3.5:9b";
+    ai = "sudo docker exec -it ollama ollama run gemma4:12b-it-qat";
 
   };
 in
@@ -72,6 +72,22 @@ in
       # FERRO-NEXT B2: one canonical session (Omarchy's `t`)
       function t
         tmux attach; or tmux new -s work
+      end
+
+      # FERRO-NEXT D7: heavy mode — exclusive GPU swap, ollama out,
+      # llama-server (Qwen3.6-35B-A3B MoE, expert offload) in.
+      # First run downloads ~24 GB; watch with: sudo docker logs -f llama-heavy
+      function heavy --description "swap ollama out, big MoE model in"
+        sudo systemctl stop docker-ollama
+        sudo systemctl start docker-llama-heavy
+        echo "heavy mode up: http://127.0.0.1:8089 (web UI + OpenAI-compatible API)"
+        echo "back to normal: heavy-stop"
+      end
+
+      function heavy-stop --description "swap llama-heavy out, ollama back in"
+        sudo systemctl stop docker-llama-heavy
+        sudo systemctl start docker-ollama
+        echo "heavy mode down, ollama restored"
       end
 
       # FERRO-NEXT B5: git worktrees as `repo--branch` sibling dirs.

@@ -14,6 +14,7 @@
     ../../modules/desktop-hyprland.nix
     ../../modules/nvidia.nix
     ../../modules/ollama.nix
+    ../../modules/llama-heavy.nix
     ../../modules/audio.nix
     ../../modules/bluetooth.nix
     ../../modules/printing.nix
