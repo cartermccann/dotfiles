@@ -47,12 +47,19 @@ in
     cursor-style = bar
     cursor-style-blink = true
 
-    # Smooth cursor: smear shader between previous/current cursor positions
-    # (ghostty 1.2+ cursor uniforms; relative path = next to this config file).
-    # Switch cursor-style to block for a bolder smear ribbon — bar gives a
-    # thin light-streak, which is the quieter read.
-    custom-shader = shaders/cursor_smear.glsl
-    custom-shader-animation = true
+    # Smooth cursor (ghostty 1.2+ cursor uniforms; relative path = next to
+    # this config file). Three vendored options — exactly one active:
+    #   cursor_warp.glsl  — Neovide-like: cursor stretches into a wedge and
+    #                       snaps back (per-corner easing). Current pick.
+    #   cursor_tail.glsl  — kitty-like comet trail, capped length.
+    #   cursor_smear.glsl — original ferro ribbon smear, quietest.
+    # Switch cursor-style to block for a bolder trail — bar gives a thin
+    # light-streak, which is the quieter read.
+    custom-shader = shaders/cursor_warp.glsl
+    # `always`, not `true`: with a bar cursor, unfocus swaps to a hollow block
+    # — trail shaders trigger on that change and freeze mid-frame unless the
+    # animation keeps ticking (sahaj-b/ghostty-cursor-shaders README).
+    custom-shader-animation = always
     adjust-cell-height = 2
     font-thicken = true
     bold-is-bright = false
@@ -72,4 +79,6 @@ in
   '';
 
   xdg.configFile."ghostty/shaders/cursor_smear.glsl".source = ./ghostty-shaders/cursor_smear.glsl;
+  xdg.configFile."ghostty/shaders/cursor_warp.glsl".source = ./ghostty-shaders/cursor_warp.glsl;
+  xdg.configFile."ghostty/shaders/cursor_tail.glsl".source = ./ghostty-shaders/cursor_tail.glsl;
 }
