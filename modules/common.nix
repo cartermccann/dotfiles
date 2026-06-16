@@ -11,6 +11,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 10;
+  boot.loader.systemd-boot.memtest86.enable = true; # RAM test from boot menu (hold Space at boot)
   boot.loader.timeout = 0; # hold Space to show boot menu
 
   # Plymouth — Catppuccin boot splash (override Stylix's default theme)
