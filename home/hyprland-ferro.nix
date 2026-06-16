@@ -11,6 +11,10 @@ let
   cc = import ../lib/ferro-palette.nix;
   cfgHome = config.xdg.configHome;
 
+  # Real-time generative ASCII wallpaper (the Ceen signal hand). Streams rawvideo
+  # into mpvpaper on the background layer; replaces the default swww still image.
+  ceen-live = pkgs.callPackage ../pkgs/ceen-live { };
+
   # "#1b1917" -> "27, 25, 23" for CSS rgba(). Single palette source of truth:
   # every color literal in this file is interpolated from `cc` — one accent
   # change in lib/ferro-palette.nix re-themes the whole session.
@@ -55,6 +59,8 @@ let
     # outside Hyprland (the script is niri-safe by construction).
     POS=$(${hyprctl} cursorpos 2>/dev/null | tr -d ' ')
     [ -n "$POS" ] || POS="0,0"
+    # Stop the live ASCII wallpaper so the picked still image is visible.
+    ${pkgs.procps}/bin/pkill -x mpvpaper 2>/dev/null || true
     ${pkgs.swww}/bin/swww img ~/wallpaper.png \
       --transition-type grow --transition-pos "$POS" \
       --transition-fps 165 --transition-duration 0.7 --transition-bezier .05,.7,.1,1
@@ -77,6 +83,8 @@ in
         hypr-power-menu
         hypr-wallpaper-pick
         hypr-night-toggle
+        ceen-live # live ASCII wallpaper: `ceen-live-wallpaper HDMI-A-1` to (re)start
+
         pkgs.hyprsunset # night light daemon (autostarted below; hyprland session only)
         pkgs.grimblast # screenshot wrapper (adds --freeze; wraps grim+slurp)
         pkgs.hyprpicker # color picker → clipboard (SUPER+SHIFT+C)
@@ -454,7 +462,9 @@ in
           -- hyprsunset as a plain autostart = hyprland-session-only by construction
           -- (a systemd user service would leak into the niri session and fight wlsunset).
           hl.exec_cmd("hyprsunset")
-          hl.exec_cmd("sleep 1 && swww img ${config.home.homeDirectory}/wallpaper.png --transition-type fade --transition-fps 165 --transition-duration 0.8")
+          -- Live ASCII wallpaper. swww-daemon stays up (above) so hypr-wallpaper-pick
+          -- still works; picking a still image pkills mpvpaper to take over.
+          hl.exec_cmd("${ceen-live}/bin/ceen-live-wallpaper HDMI-A-1")
         end)
       '';
 
