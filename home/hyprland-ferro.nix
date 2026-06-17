@@ -23,7 +23,13 @@ let
     let
       h = lib.removePrefix "#" hex;
     in
-    lib.concatStringsSep ", " (map (i: toString (lib.fromHexString (builtins.substring i 2 h))) [ 0 2 4 ]);
+    lib.concatStringsSep ", " (
+      map (i: toString (lib.fromHexString (builtins.substring i 2 h))) [
+        0
+        2
+        4
+      ]
+    );
 
   # hyprctl from the same 0.55.x flake build the compositor runs, so the IPC
   # protocol matches. In 0.55, `hyprctl dispatch` takes the Lua dispatcher form.
@@ -60,6 +66,8 @@ let
     POS=$(${hyprctl} cursorpos 2>/dev/null | tr -d ' ')
     [ -n "$POS" ] || POS="0,0"
     # Stop the live ASCII wallpaper so the picked still image is visible.
+    # Kill the supervisor first so it doesn't respawn mpvpaper after we take over.
+    ${pkgs.procps}/bin/pkill -f ceen-live-wallpaper 2>/dev/null || true
     ${pkgs.procps}/bin/pkill -x mpvpaper 2>/dev/null || true
     ${pkgs.swww}/bin/swww img ~/wallpaper.png \
       --transition-type grow --transition-pos "$POS" \

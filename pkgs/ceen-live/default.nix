@@ -4,6 +4,7 @@
   makeWrapper,
   ffmpeg,
   mpvpaper,
+  systemd,
   dejavu_fonts,
 }:
 
@@ -31,7 +32,13 @@ rustPlatform.buildRustPackage {
     install -Dm755 ${./ceen-live-wallpaper.sh} $out/bin/ceen-live-wallpaper
     wrapProgram $out/bin/ceen-live-wallpaper \
       --set CEEN_BIN $out/bin/ceen-live \
-      --prefix PATH : ${lib.makeBinPath [ mpvpaper ffmpeg ]}
+      --prefix PATH : ${
+        lib.makeBinPath [
+          mpvpaper
+          ffmpeg
+          systemd
+        ]
+      }
   '';
 
   meta = {
