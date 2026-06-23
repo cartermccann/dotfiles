@@ -43,7 +43,13 @@ let
 
     # Ollama (runs in the rootful Podman OCI container)
     ollama = "sudo podman exec -it ollama ollama";
-    ai = "sudo podman exec -it ollama ollama run qwen3.5:4b";
+    ai = "sudo podman exec -it ollama ollama run gemma4:12b-it-qat";
+    gemma = "sudo podman exec -it ollama ollama run gemma4:12b-it-qat";
+    qwen = "sudo podman exec -it ollama ollama run qwen3.5:4b";
+    quick = "sudo podman exec -it ollama ollama run qwen3.5:4b";
+    coder = "sudo podman exec -it ollama ollama run qwen2.5-coder:3b-base";
+    qwy = "sudo podman exec -it ollama ollama run hf.co/empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q4_K_M";
+    qwythos = "sudo podman exec -it ollama ollama run hf.co/empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q4_K_M";
 
   };
 

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 # Ollama via Docker
 # On GPU hosts: uses nvidia-container-toolkit for CUDA acceleration
@@ -7,12 +12,14 @@
 
 let
   # Loadout research 2026-06-09 (FERRO-NEXT D7): budget ~10 GB of the 12 GB
-  # VRAM, ~2 GB headroom for compositor/ghostty. QAT tags preferred over
-  # post-hoc Q4 quants whenever they exist (trained-to-be-quantized).
+  # VRAM, ~2 GB headroom for compositor/ghostty. Prefer Gemma 4 / Qwen-family
+  # models; avoid Gemma 3 as the default. QAT tags preferred over post-hoc Q4
+  # quants whenever they exist (trained-to-be-quantized).
   # Preload only ever adds — retire old models manually via `ollama rm`.
   modelsByTier = {
     high = [
-      "qwen3.5:9b-noThink" # daily chat fallback until the Ollama image can pull gemma4
+      "gemma4:12b-it-qat" # daily chat default: 7.2 GB, Gemma 4, fits 12 GB better than q8
+      "hf.co/empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q4_K_M" # Qwythos 9B GGUF, 5.63 GB; reasoning/tool-calling test model
       "qwen2.5-coder:3b-base" # FIM tab-completion (minuet): 1.9 GB, stays resident
       "qwen3.5:4b" # quick jobs (dictation cleanup, summaries): 3.4 GB
     ];
@@ -71,7 +78,11 @@ let
 in
 {
   options.local.ollamaTier = lib.mkOption {
-    type = lib.types.enum [ "low" "medium" "high" ];
+    type = lib.types.enum [
+      "low"
+      "medium"
+      "high"
+    ];
     default = "medium";
     description = "Hardware tier for Ollama model selection";
   };
@@ -86,15 +97,21 @@ in
         OLLAMA_KV_CACHE_TYPE = "q8_0"; # halves KV memory, negligible quality cost
         OLLAMA_CONTEXT_LENGTH = "16384"; # default is only 4096
         OLLAMA_KEEP_ALIVE = "30m"; # default 5m unloads mid-session
-        OLLAMA_MAX_LOADED_MODELS = "2"; # default 3/GPU overcommits 12 GB
+        OLLAMA_MAX_LOADED_MODELS = "1"; # one 7–9 GB model resident; avoid 12 GB VRAM clown-car mode
       };
       extraOptions = lib.optionals hasGpu [ "--device=nvidia.com/gpu=all" ];
     };
 
     systemd.services.ollama-preload = {
       description = "Preload Ollama models for this machine's tier";
-      after = [ "podman-ollama.service" "network-online.target" ];
-      wants = [ "podman-ollama.service" "network-online.target" ];
+      after = [
+        "podman-ollama.service"
+        "network-online.target"
+      ];
+      wants = [
+        "podman-ollama.service"
+        "network-online.target"
+      ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
