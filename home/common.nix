@@ -19,7 +19,6 @@
     ./tools.nix
     ./hermes.nix
     ./headroom.nix
-    ./rclone-gdrive.nix
     ./ghostty.nix
     ./swaylock.nix
     ./spotify.nix
