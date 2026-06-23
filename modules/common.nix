@@ -6,6 +6,23 @@
   ...
 }:
 
+let
+  hermes-nrs = pkgs.writeShellScriptBin "hermes-nrs" ''
+    set -euo pipefail
+
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.nh
+        pkgs.nix
+        pkgs.systemd
+        pkgs.git
+        pkgs.coreutils
+      ]
+    }:/run/current-system/sw/bin
+
+    exec ${pkgs.nh}/bin/nh os switch /home/cjm/dotfiles
+  '';
+in
 {
   # Boot
   boot.loader.systemd-boot.enable = true;
@@ -107,15 +124,15 @@
     options = "--delete-older-than 14d";
   };
 
-  # Passwordless rebuilds — lets coding agents apply config after validating
-  # with `nh os build`. Scoped to nixos-rebuild only; note this is still
-  # effectively root for anything that can write to ~/dotfiles.
+  # Passwordless rebuilds for Hermes/Telegram.
+  # Scoped to this immutable wrapper instead of broad sudo access to nh/shells.
+  # This is still effectively root for anyone who can write to ~/dotfiles.
   security.sudo.extraRules = [
     {
       users = [ user ];
       commands = [
         {
-          command = "/run/current-system/sw/bin/nixos-rebuild";
+          command = "${hermes-nrs}/bin/hermes-nrs";
           options = [ "NOPASSWD" ];
         }
       ];
@@ -142,19 +159,20 @@
   ];
 
   # System packages
-  environment.systemPackages = with pkgs; [
-    git
-    gh
-    wget
-    curl
-    htop
-    btop
-    unzip
-    file
-    killall
-    pid-fan-controller
-
-  ];
+  environment.systemPackages =
+    (with pkgs; [
+      git
+      gh
+      wget
+      curl
+      htop
+      btop
+      unzip
+      file
+      killall
+      pid-fan-controller
+    ])
+    ++ [ hermes-nrs ];
 
   # Fish (needed at system level for login shell)
   programs.fish.enable = true;
