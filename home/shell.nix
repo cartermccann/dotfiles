@@ -56,9 +56,18 @@ let
   comcreateBanner = pkgs.writeShellScriptBin "comcreate-banner" (
     builtins.readFile ../scripts/comcreate-banner.sh
   );
+
+  # Animated cascade-reveal wrapper for the neon fastfetch config.
+  ff = pkgs.writeShellScriptBin "ff" (builtins.readFile ../scripts/ff-cascade.sh);
 in
 {
-  home.packages = [ comcreateBanner ];
+  home.packages = [
+    comcreateBanner
+    ff
+  ];
+
+  # Neon-gradient fastfetch config (declarative; `ff` animates its reveal).
+  xdg.configFile."fastfetch/config.jsonc".source = ./fastfetch/config.jsonc;
 
   programs.fish = {
     enable = true;
@@ -66,7 +75,7 @@ in
     interactiveShellInit = ''
       function fish_greeting
         if not set -q TMUX
-          comcreate-banner
+          ff
         end
       end
       set -gx NH_FLAKE $HOME/dotfiles
