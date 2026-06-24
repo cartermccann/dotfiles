@@ -19,6 +19,7 @@
     ./tools.nix
     ./hermes.nix
     ./headroom.nix
+    ./knockturnal-warmer.nix
     ./ghostty.nix
     ./swaylock.nix
     ./spotify.nix
