@@ -15,6 +15,8 @@ let
     "rust-analyzer"
     "rust-src"
   ];
+
+  screaming-frog-seo-spider = pkgs.callPackage ../pkgs/screaming-frog-seo-spider { };
 in
 
 {
@@ -92,6 +94,9 @@ in
 
     # Recording
     obs-studio
+
+    # SEO
+    screaming-frog-seo-spider # `screaming-frog-seo-spider` — proprietary crawler, bundled JDK 25
 
     # Networking
     whois
