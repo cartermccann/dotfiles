@@ -89,7 +89,10 @@ in
 
   config = {
     virtualisation.oci-containers.containers.ollama = {
-      image = "ollama/ollama";
+      # Pin the engine: unpinned :latest let a stale cached image (0.17.7) come
+      # back on restart and fail to load gemma4 ("unknown model architecture").
+      # Bump this deliberately when a new model needs a newer engine.
+      image = "ollama/ollama:0.30.10";
       ports = [ "127.0.0.1:11434:11434" ]; # was 0.0.0.0 — nothing remote calls it
       volumes = [ "ollama:/root/.ollama" ];
       environment = {
