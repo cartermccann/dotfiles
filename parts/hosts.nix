@@ -70,7 +70,13 @@ let
               };
               extraSpecialArgs = {
                 inherit user pkgs-unstable;
-                inherit (inputs) google-workspace-cli fenix herdr hyprland;
+                inherit (inputs)
+                  google-workspace-cli
+                  fenix
+                  herdr
+                  hermes-agent
+                  hyprland
+                  ;
               };
               backupFileExtension = "hm-bak";
             };

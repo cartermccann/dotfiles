@@ -41,16 +41,12 @@ let
     http = "xh";
     md = "glow";
 
-    # Ollama (runs in the rootful Podman OCI container)
+    # Ollama (runs in the rootful podman container)
     ollama = "sudo podman exec -it ollama ollama";
     ai = "sudo podman exec -it ollama ollama run gemma4:12b-it-qat";
-    gemma = "sudo podman exec -it ollama ollama run gemma4:12b-it-qat";
     qwen = "sudo podman exec -it ollama ollama run qwen3.5:4b";
-    quick = "sudo podman exec -it ollama ollama run qwen3.5:4b";
     coder = "sudo podman exec -it ollama ollama run qwen2.5-coder:3b-base";
     qwy = "sudo podman exec -it ollama ollama run hf.co/empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q4_K_M";
-    qwythos = "sudo podman exec -it ollama ollama run hf.co/empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q4_K_M";
-
   };
 
   comcreateBanner = pkgs.writeShellScriptBin "comcreate-banner" (
@@ -83,9 +79,6 @@ in
       set -gx GOBIN $HOME/.local/bin
       fish_add_path $HOME/.local/bin
 
-      # FERRO-NEXT B3: default agent for tdl/tds/tsl layouts (override per-shell)
-      set -q FERRO_AI; or set -gx FERRO_AI hclaude
-
       # Autosuggestion color — visible but subtle on dark backgrounds
       set -U fish_color_autosuggestion 90909a
 
@@ -100,14 +93,14 @@ in
         tmux attach -t dev
       end
 
-      # FERRO-NEXT B2: one canonical session (Omarchy's `t`)
+      # One canonical tmux session
       function t
         tmux attach; or tmux new -s work
       end
 
-      # FERRO-NEXT D7: heavy mode — exclusive GPU swap, ollama out,
-      # llama-server (Qwen3.6-35B-A3B MoE, expert offload) in.
-      # First run downloads ~24 GB; watch with: sudo podman logs -f llama-heavy
+      # Heavy mode: the GPU fits one of ollama or llama-server (Qwen3.6-35B MoE),
+      # so these swap between them. First run downloads ~24 GB;
+      # watch with: sudo podman logs -f llama-heavy
       function heavy --description "swap ollama out, big MoE model in"
         sudo systemctl stop podman-ollama
         sudo systemctl start podman-llama-heavy
@@ -121,7 +114,7 @@ in
         echo "heavy mode down, ollama restored"
       end
 
-      # FERRO-NEXT B5: git worktrees as `repo--branch` sibling dirs.
+      # Git worktrees as `repo--branch` sibling dirs.
       # (named gwa/gwr — ga/gd are taken by git add / git diff aliases)
       function gwa --description "git worktree add -b <branch> ../<repo>--<branch>"
         if test (count $argv) -ne 1
@@ -325,6 +318,13 @@ in
   };
 
   programs.fzf = {
+    enable = true;
+    enableBashIntegration = true;
+    enableFishIntegration = true;
+  };
+
+  # atuin (rich shell history)
+  programs.atuin = {
     enable = true;
     enableBashIntegration = true;
     enableFishIntegration = true;

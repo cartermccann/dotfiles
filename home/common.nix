@@ -3,6 +3,7 @@
   lib,
   pkgs,
   user,
+  hermes-agent,
   ...
 }:
 
@@ -64,6 +65,22 @@
     categories = [
       "Graphics"
       "Development"
+    ];
+  };
+
+  # Hermes Desktop (flake package ships the binary, but currently not a .desktop file)
+  xdg.desktopEntries.hermes-desktop = {
+    name = "Hermes";
+    genericName = "AI Agent Desktop";
+    comment = "Hermes Agent desktop app";
+    exec = "hermes-desktop %U";
+    terminal = false;
+    icon = "${
+      hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.desktop
+    }/share/hermes-desktop/dist/hermes.png";
+    categories = [
+      "Development"
+      "Utility"
     ];
   };
 

@@ -4,10 +4,11 @@
   google-workspace-cli,
   fenix,
   herdr,
+  hermes-agent,
   ...
 }:
 let
-  rust-toolchain = fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable.withComponents [
+  rustToolchain = fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable.withComponents [
     "cargo"
     "clippy"
     "rustc"
@@ -16,16 +17,24 @@ let
     "rust-src"
   ];
 
-  screaming-frog-seo-spider = pkgs.callPackage ../pkgs/screaming-frog-seo-spider { };
+  screamingFrog = pkgs.callPackage ../pkgs/screaming-frog-seo-spider { };
 in
 
 {
   home.packages = with pkgs; [
-    # Languages (globally available)
+    # Languages & runtimes
     python3
+    uv
     go
+    nodejs_24
+    bun
+    pnpm
+    deno
+    nodePackages.typescript
+    biome
+    rustToolchain
 
-    # Modern CLI
+    # CLI staples
     ripgrep
     fd
     jq
@@ -33,79 +42,79 @@ in
     tree
     eza
     dust
+    duf # prettier df
     tldr
     tree-sitter
     yazi
-    cava
     glow # markdown reader
-    xh # modern httpie
+    xh # httpie-style curl
     gum # shell prompts/confirm (gwr worktree fn, ferro-menu scripts)
     ouch # universal compress/decompress
-    duf # prettier df
     procs # modern ps
-    bandwhich # per-process network bandwidth
-    doggo # DNS lookup
-    gping # graphical ping
+    sd # modern sed
+    broot # interactive tree/file navigator
+    television # general-purpose fuzzy finder TUI
+    cht-sh # cheat.sh client
 
-    # Dev workflow tools
+    # Dev workflow
     just # command runner
     watchexec # file watcher
     tokei # code statistics
     hyperfine # CLI benchmarking
-    sd # modern sed
-
-    # Rice
-    pipes-rs
-    cbonsai
-    cmatrix # green rain — pairs with the ferro phosphor motif
-    asciiquarium # terminal aquarium screensaver
-    sl # the train you typo into
-    figlet # big ascii banners (try: figlet ferro)
-    lolcat # rainbow pipe (figlet ferro | lolcat)
-    peaclock # zen full-screen terminal clock
-    tty-clock # minimal digital clock (tty-clock -c -C 4)
-
-    # Dev workflow
-    nodejs_24
-    bun
-    pnpm
-    deno
-    nodePackages.typescript
-    biome
+    difftastic # syntax-aware diffs
     lazygit
     lazydocker
-    uv
+    git-lfs
+    git-bug # issue tracker embedded in git
+    posting # terminal API client
+    bruno # Git-friendly API client
+    rainfrog # Postgres TUI
+
+    # Networking
+    whois
+    netcat-openbsd
+    doggo # DNS lookup
+    gping # graphical ping
+    bandwhich # per-process bandwidth
+
+    # Cloud & deploy
     flyctl
     stripe-cli
-    git-lfs
     google-cloud-sdk
     awscli2
 
-    rust-toolchain
-
     # Nix tooling
-    nixfmt-rfc-style
     nh
+    nixfmt-rfc-style
     nix-output-monitor
 
     # AI / LLM
     opencode
     codex
+    fabric-ai # reusable AI prompt patterns
 
-    # Recording
+    # Media & recording
     obs-studio
+    yt-dlp
 
     # SEO
-    screaming-frog-seo-spider # `screaming-frog-seo-spider` — proprietary crawler, bundled JDK 25
+    screamingFrog # proprietary crawler, bundled JDK
 
-    # Networking
-    whois
-    netcat-openbsd
+    # Rice
+    cava
+    pipes-rs
+    cbonsai
+    cmatrix
+    asciiquarium
+    sl # the train you typo into
+    figlet # big ascii banners
+    lolcat # rainbow pipe (figlet ferro | lolcat)
+    peaclock # zen full-screen terminal clock
+    tty-clock # minimal digital clock (tty-clock -c -C 4)
 
-    # Google Workspace CLI
-    google-workspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
-
-    # herdr — terminal workspace manager for AI coding agents
-    herdr.packages.${pkgs.stdenv.hostPlatform.system}.default
+    # From flake inputs
+    google-workspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.default # gws
+    herdr.packages.${pkgs.stdenv.hostPlatform.system}.default # workspace manager for AI agents
+    hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.desktop # Hermes Desktop (Electron)
   ];
 }
