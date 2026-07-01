@@ -7,7 +7,7 @@
 }:
 
 let
-  hermes-nrs = pkgs.writeShellScriptBin "hermes-nrs" ''
+  hermesNrs = pkgs.writeShellScriptBin "hermes-nrs" ''
     set -euo pipefail
 
     export PATH=${
@@ -132,7 +132,7 @@ in
       users = [ user ];
       commands = [
         {
-          command = "${hermes-nrs}/bin/hermes-nrs";
+          command = "${hermesNrs}/bin/hermes-nrs";
           options = [ "NOPASSWD" ];
         }
       ];
@@ -172,7 +172,7 @@ in
       killall
       pid-fan-controller
     ])
-    ++ [ hermes-nrs ];
+    ++ [ hermesNrs ];
 
   # Fish (needed at system level for login shell)
   programs.fish.enable = true;

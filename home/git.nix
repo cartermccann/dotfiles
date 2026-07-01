@@ -11,7 +11,6 @@
       init.defaultBranch = "main";
       pull.rebase = true;
       push.autoSetupRemote = true;
-      # FERRO-NEXT B4 (Omarchy git block)
       diff = {
         algorithm = "histogram";
         colorMoved = "plain";

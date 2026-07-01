@@ -7,17 +7,16 @@
 
 # Knockturnal cache-warmer — daily GSC hot-list push.
 #
-# The Knockturnal (client work, ~/projects/knockturnal-audit) runs a WordPress cache warmer
-# (mu-plugin kt-warm.php on Pressable) that keeps the top pages hot. Its evergreen list of
-# top GSC earners must be refreshed from Search Console, which only ComCreate's tooling can
-# reach — so this timer runs the project's push script daily: it drives headless `claude` +
-# the comcreate-marketing MCP to pull the top ~25 article pages and scp's them to the host.
+# The Knockturnal's WordPress cache warmer (mu-plugin kt-warm.php on Pressable,
+# project at ~/projects/knockturnal-audit) keeps its top pages hot from a list of
+# top GSC earners. Only ComCreate's tooling can reach Search Console, so this
+# timer runs the project's push script daily: headless `claude` + the
+# comcreate-marketing MCP pull the top ~25 article pages and scp them to the host.
 #
-# Runs through a fish LOGIN shell so the job inherits the full interactive PATH (the MCP's
-# node lives at ~/.vite-plus/bin, claude at ~/.local/bin) — validated under systemd-run.
-# Self-limiting: the script aborts without overwriting if the pull is short, and the warmer
-# ignores a >36h-stale file (falls back to newest-20), so a missed run is harmless.
-# Isolated module — remove this file + its import in common.nix to fully revert.
+# Runs through a fish login shell so the job inherits the full interactive PATH
+# (the MCP's node lives at ~/.vite-plus/bin, claude at ~/.local/bin). A missed run
+# is harmless: the script aborts rather than overwrite a short pull, and the
+# warmer ignores a >36h-stale file. Remove this file + its import to revert.
 let
   homeDir = config.home.homeDirectory;
   script = "${homeDir}/projects/knockturnal-audit/scripts/kt-warmer-gsc-push.sh";

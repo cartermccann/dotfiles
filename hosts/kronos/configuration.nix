@@ -35,8 +35,7 @@
     earlySetup = true;
   };
 
-  # Ollama — high tier: RTX 5070 (12GB VRAM) + 64GB RAM
-  # Runs via Docker with GPU passthrough (see modules/ollama.nix)
+  # Ollama — high tier: RTX 5070 (12GB VRAM) + 64GB RAM (see modules/ollama.nix)
   local.ollamaTier = "high";
 
   system.stateVersion = "25.11";

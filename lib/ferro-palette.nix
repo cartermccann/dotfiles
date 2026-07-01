@@ -1,12 +1,10 @@
-# ferro palette — Base16 mapping originally derived from comcreate.io's tokens.css
-# (comcreate-org/svelte); renamed "ferro" 2026-06-09 as the rice's own identity.
-#
-# Vibe: warm espresso/cream monochrome minimalism + azure accent + retro green-phosphor
-# terminal motif. Monospace-forward. Consumed ONLY by the Hyprland (Ferro) session's
-# components (hyprland.conf, its waybar, fuzzel, swaync, hyprlock) so the rest of the system
-# keeps its global Stylix palette. Import with: let cc = import ../lib/ferro-palette.nix;
+# ferro palette — Base16 mapping derived from comcreate.io's tokens.css.
+# Warm espresso/cream monochrome + azure accent + retro green-phosphor motif.
+# Consumed only by the Hyprland (Ferro) session's components (hyprland.lua, its
+# waybar, fuzzel, swaync, hyprlock); the rest of the system keeps its global
+# Stylix palette. Import with: let cc = import ../lib/ferro-palette.nix;
 rec {
-  # ── Base16 slots, WITH leading "#" (for GTK CSS / configs that want hex) ──
+  # Base16 slots, with leading "#" (for GTK CSS / configs that want hex)
   base00 = "#141210"; # bg            (espresso black)
   base01 = "#1b1917"; # surface       (raised bg / status)
   base02 = "#211e1a"; # selection     (raised)
@@ -24,15 +22,27 @@ rec {
   base0E = "#a98bff"; # magenta       (periwinkle)
   base0F = "#2d8a4e"; # brown slot    → brand deep green
 
-  # ── Same slots WITHOUT "#" — for fuzzel (RRGGBBAA) and Hyprland rgba(...) ──
+  # Same slots without "#" — for fuzzel (RRGGBBAA) and Hyprland rgba(...)
   raw = {
-    base00 = "141210"; base01 = "1b1917"; base02 = "211e1a"; base03 = "6b655d";
-    base04 = "8a847c"; base05 = "e8e4df"; base06 = "c5bfb5"; base07 = "f2efe9";
-    base08 = "e06c5e"; base09 = "d99a5c"; base0A = "cbb46a"; base0B = "3ddc84";
-    base0C = "72b8ff"; base0D = "7b7bff"; base0E = "a98bff"; base0F = "2d8a4e";
+    base00 = "141210";
+    base01 = "1b1917";
+    base02 = "211e1a";
+    base03 = "6b655d";
+    base04 = "8a847c";
+    base05 = "e8e4df";
+    base06 = "c5bfb5";
+    base07 = "f2efe9";
+    base08 = "e06c5e";
+    base09 = "d99a5c";
+    base0A = "cbb46a";
+    base0B = "3ddc84";
+    base0C = "72b8ff";
+    base0D = "7b7bff";
+    base0E = "a98bff";
+    base0F = "2d8a4e";
   };
 
-  # ── Brand semantic aliases ──
+  # Brand semantic aliases
   bg = base00;
   surface = base01;
   raised = base02;

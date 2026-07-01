@@ -1,4 +1,9 @@
-{ config, pkgs, user, ... }:
+{
+  config,
+  pkgs,
+  user,
+  ...
+}:
 
 {
   programs.neovim = {
@@ -20,5 +25,6 @@
   };
 
   # Live-editable nvim config via symlink to dotfiles
-  xdg.configFile."nvim".source = config.lib.file.mkOutOfStoreSymlink "/home/${user}/dotfiles/config/nvim";
+  xdg.configFile."nvim".source =
+    config.lib.file.mkOutOfStoreSymlink "/home/${user}/dotfiles/config/nvim";
 }

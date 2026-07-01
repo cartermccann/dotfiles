@@ -107,58 +107,58 @@ in
     // Keybindings
     binds {
 
-      // ── Programs ──
+      // Programs
       Mod+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
       Mod+Return { spawn "ghostty"; }
-      // FERRO-NEXT B2: canonical tmux session ("work"), same bind as Hyprland session
+      // canonical tmux session ("work"), same bind as the Hyprland session
       Mod+Alt+Return { spawn "ghostty" "-e" "fish" "-c" "tmux attach; or tmux new -s work"; }
       Mod+Shift+S { spawn "bash" "-c" "grim -g \"$(slurp)\" - | satty -f -"; }
       Mod+Shift+P { screenshot-screen; }
       Print { screenshot; }
 
-      // ── Clipboard history ──
+      // Clipboard history
       Mod+V { spawn "bash" "-c" "cliphist list | fuzzel --dmenu --prompt='Clipboard: ' | cliphist decode | wl-copy"; }
 
-      // ── Window management ──
+      // Window management
       Mod+W { close-window; }
       Mod+Q { close-window; }
 
-      // ── Vim-style focus ──
+      // Vim-style focus
       Mod+H { focus-column-left; }
       Mod+J { focus-window-down; }
       Mod+K { focus-window-up; }
       Mod+L { focus-column-right; }
 
-      // ── Arrow key focus ──
+      // Arrow key focus
       Mod+Left { focus-column-left; }
       Mod+Down { focus-window-down; }
       Mod+Up { focus-window-up; }
       Mod+Right { focus-column-right; }
 
-      // ── Vim-style move windows ──
+      // Vim-style move windows
       Mod+Shift+H { move-column-left; }
       Mod+Shift+J { move-window-down; }
       Mod+Shift+K { move-window-up; }
       Mod+Shift+L { move-column-right; }
 
-      // ── Arrow key move windows ──
+      // Arrow key move windows
       Mod+Shift+Left { move-column-left; }
       Mod+Shift+Down { move-window-down; }
       Mod+Shift+Up { move-window-up; }
       Mod+Shift+Right { move-column-right; }
 
-      // ── Resize ──
+      // Resize
       Mod+Ctrl+H { set-column-width "-10%"; }
       Mod+Minus { set-column-width "-10%"; }
       Mod+Equal { set-column-width "+10%"; }
 
-      // ── Layout ──
+      // Layout
       Mod+F { maximize-column; }
       Mod+Shift+F { fullscreen-window; }
       Mod+C { center-column; }
       Mod+T { toggle-window-floating; }
 
-      // ── Workspaces 1-10 ──
+      // Workspaces 1-10
       Mod+1 { focus-workspace 1; }
       Mod+2 { focus-workspace 2; }
       Mod+3 { focus-workspace 3; }
@@ -181,30 +181,30 @@ in
       Mod+Shift+9 { move-column-to-workspace 9; }
       Mod+Shift+0 { move-column-to-workspace 10; }
 
-      // ── Workspace cycling ──
+      // Workspace cycling
       Mod+Tab { focus-workspace-down; }
       Mod+Shift+Tab { focus-workspace-up; }
 
-      // ── Utilities ──
+      // Utilities
       Mod+Ctrl+N { spawn "bash" "-c" "pkill wlsunset || wlsunset -t 3500 -T 6500 -l 40.76 -L -111.89"; }
 
-      // ── Dictation ──
+      // Dictation
       Mod+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
 
-      // ── Control panels ──
+      // Control panels
       Mod+Ctrl+A { spawn "pavucontrol"; }
       Mod+Ctrl+B { spawn "bluetui"; }
       Mod+Ctrl+T { spawn "ghostty" "-e" "btop"; }
       Mod+Ctrl+D { spawn "ghostty" "-e" "rice-dashboard"; }
 
-      // ── Wallpaper & Theme ──
+      // Wallpaper & Theme
       Mod+Shift+W { spawn "wallpaper-pick"; }
 
-      // ── Session ──
+      // Session
       Mod+Shift+E { quit; }
       Mod+Shift+Slash { show-hotkey-overlay; }
 
-      // ── Audio (media keys) ──
+      // Audio (media keys)
       XF86AudioRaiseVolume allow-when-locked=true { spawn "swayosd-client" "--output-volume" "raise"; }
       XF86AudioLowerVolume allow-when-locked=true { spawn "swayosd-client" "--output-volume" "lower"; }
       XF86AudioMute allow-when-locked=true { spawn "swayosd-client" "--output-volume" "mute-toggle"; }
@@ -213,7 +213,7 @@ in
       XF86AudioNext { spawn "playerctl" "next"; }
       XF86AudioPrev { spawn "playerctl" "previous"; }
 
-      // ── Brightness ──
+      // Brightness
       XF86MonBrightnessUp allow-when-locked=true { spawn "swayosd-client" "--brightness" "raise"; }
       XF86MonBrightnessDown allow-when-locked=true { spawn "swayosd-client" "--brightness" "lower"; }
     }

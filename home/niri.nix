@@ -4,12 +4,11 @@
   user,
   ...
 }:
-# The standalone "plain Niri" session (its own config.kdl + Stylix waybar) was
-# retired 2026-06-08 — only Niri-Noctalia and Hyprland (Ferro) remain. This
-# file now just provides the cross-session helper scripts those two sessions
-# still call (rice-dashboard from both; wallpaper-pick from Niri-Noctalia).
+# The standalone "plain Niri" session was retired; only Niri-Noctalia and
+# Hyprland (Ferro) remain. This file provides the cross-session helper scripts
+# both still call (rice-dashboard from both; wallpaper-pick from Niri-Noctalia).
 let
-  rice-dashboard = pkgs.writeShellScriptBin "rice-dashboard" ''
+  riceDashboard = pkgs.writeShellScriptBin "rice-dashboard" ''
     ${pkgs.tmux}/bin/tmux new-session -d -s rice -x "$(tput cols)" -y "$(tput lines)"
     ${pkgs.tmux}/bin/tmux send-keys -t rice 'btop' Enter
     ${pkgs.tmux}/bin/tmux split-window -h -t rice -p 40
@@ -20,7 +19,7 @@ let
     ${pkgs.tmux}/bin/tmux attach -t rice
   '';
 
-  wallpaper-pick = pkgs.writeShellScriptBin "wallpaper-pick" ''
+  wallpaperPick = pkgs.writeShellScriptBin "wallpaper-pick" ''
     PICK=$(find -L ~/wallpapers -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) | ${pkgs.fuzzel}/bin/fuzzel --dmenu --prompt="Wallpaper: ")
     # ~/wallpaper.png is a cross-session contract (hyprlock reads it too) — `magick`
     # writes real PNG bytes regardless of the source format, where `cp` lied about
@@ -31,5 +30,8 @@ let
   '';
 in
 {
-  home.packages = [ wallpaper-pick rice-dashboard ];
+  home.packages = [
+    wallpaperPick
+    riceDashboard
+  ];
 }

@@ -27,7 +27,10 @@ in
   # `common` portal config the niri module already defines.
   xdg.portal = {
     config.hyprland = {
-      default = [ "hyprland" "gtk" ];
+      default = [
+        "hyprland"
+        "gtk"
+      ];
       "org.freedesktop.impl.portal.ScreenCast" = [ "hyprland" ];
       "org.freedesktop.impl.portal.Screenshot" = [ "hyprland" ];
     };
@@ -44,9 +47,7 @@ in
     swaynotificationcenter
   ];
 
-  # No custom login tile: programs.hyprland already registers a plain "Hyprland"
-  # session (Exec=start-hyprland, the upstream-recommended launcher). Since the
-  # ferro theming lives entirely in the user-global ~/.config/hypr/hyprland.lua,
-  # that stock "Hyprland" tile loads this exact look — so we drop the former
-  # "Hyprland (Ferro)" tile rather than show a redundant, differently-named one.
+  # No custom login tile: programs.hyprland registers a plain "Hyprland" session,
+  # and the ferro theming lives in ~/.config/hypr/hyprland.lua, so that stock
+  # tile already loads this exact look.
 }

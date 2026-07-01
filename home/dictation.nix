@@ -1,4 +1,9 @@
-{ pkgs, pkgs-unstable, user, ... }:
+{
+  pkgs,
+  pkgs-unstable,
+  user,
+  ...
+}:
 
 let
   homeAbs = "/home/${user}";
@@ -82,7 +87,7 @@ in
       fi
 
       if [ -f "$RECPID" ] && kill -0 "$(cat "$RECPID")" 2>/dev/null; then
-        # ── STOP path ────────────────────────────────────────────────
+        # Stop: end the recording, transcribe, type the result
         STOP_PID=$(cat "$RECPID")
         kill -INT "$STOP_PID" 2>/dev/null || true
         # `wait` only works on direct children, so poll until pw-record exits
@@ -123,7 +128,7 @@ in
           notify "No transcription"
         fi
       else
-        # ── START path ───────────────────────────────────────────────
+        # Start: begin recording
         ${pkgs.pipewire}/bin/pw-record --rate 16000 --channels 1 --format s16 "$WAV" &
         echo $! > "$RECPID"
         notify "Listening…"

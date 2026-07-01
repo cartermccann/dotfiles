@@ -5,7 +5,7 @@
     enable = true;
     polarity = "dark";
     image = ../wallpaper/fam.jpg;
-    # Run: ls $(nix eval --raw nixpkgs#base16-schemes)/share/themes/ to view all avlaible themes
+    # List available themes: ls $(nix eval --raw nixpkgs#base16-schemes)/share/themes/
     base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
 
     fonts = {

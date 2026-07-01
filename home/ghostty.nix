@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 let
-  # RICE-PLAN Tier 3.2 — ghostty is shared by both sessions, and the plan
-  # accepts ferro leaking into niri (same call as the swaylock remap in 3.1).
+  # ghostty is shared by both sessions, so the ferro palette leaks into niri
+  # by design — a themed terminal beats a per-session config split.
   cc = import ../lib/ferro-palette.nix;
 in
 {

@@ -14,7 +14,7 @@ let
     "--enable-features=TouchpadOverscrollHistoryNavigation,WebRTCPipeWireCapturer"
   ];
 
-  google-chrome-wrapped = pkgs.google-chrome.override {
+  googleChromeWrapped = pkgs.google-chrome.override {
     commandLineArgs = waylandFlags ++ [
       "--disable-accelerated-video-decode"
       "--disable-gpu-video-decoder"
@@ -22,7 +22,6 @@ let
       "--oauth2-client-secret=OTJgUOQcT7lO7GsGZq2G4IlT"
     ];
   };
-
 in
 {
   programs._1password = {
@@ -36,18 +35,16 @@ in
   };
 
   environment.systemPackages = with pkgs; [
-    google-chrome-wrapped
-
-    # Design-focused browsers
+    # Browsers
+    googleChromeWrapped
     zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
     floorp-bin
     helium.packages.${pkgs.stdenv.hostPlatform.system}.default
-    #Linter
-    statix
 
     # Communication
     slack
     pkgs-unstable.beeper
+
     # Utilities
     localsend # local file sharing
     nautilus # file manager
@@ -56,6 +53,7 @@ in
     fastfetch
     inxi
     blanket
+    statix # nix linter
 
     # Notes
     obsidian

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   environment.systemPackages = with pkgs; [
@@ -14,12 +19,12 @@
 
     # Image tools
     imagemagick
-    imv     # Wayland image viewer
-    pinta   # simple image editor
-    satty   # screenshot annotation
+    imv # Wayland image viewer
+    pinta # simple image editor
+    satty # screenshot annotation
 
     # Documents
     libreoffice
-    evince  # PDF viewer
+    evince # PDF viewer
   ];
 }

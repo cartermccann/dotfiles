@@ -1,21 +1,19 @@
 { config, lib, ... }:
 
-# "Heavy mode" — llama-server running a big MoE model with expert offload
-# (FERRO-NEXT D7 power play). Ollama can't do this: expert-aware offload PRs
-# (#12333, #15207) were closed unmerged, and its generic layer split is much
-# slower for MoE. llama.cpp's --n-cpu-moe keeps the 3B active path in VRAM and
-# parks cold experts in system RAM — Qwen3.6-35B-A3B at ~9 GB VRAM + ~15 GB
-# RAM, ~20-25 tok/s expected on the RTX 5070.
+# "Heavy mode" — llama-server running a big MoE model with expert offload.
+# Ollama can't do this (its expert-aware offload PRs were closed unmerged, and
+# its generic layer split is much slower for MoE); llama.cpp's --n-cpu-moe
+# keeps the 3B active path in VRAM and parks cold experts in system RAM —
+# Qwen3.6-35B-A3B at ~9 GB VRAM + ~15 GB RAM, ~20-25 tok/s on the RTX 5070.
 #
-# Docker for the same reason as ollama.nix: nixpkgs CUDA (cicc) crashes on
-# Blackwell. NOT autostarted — it owns most of the GPU, so it's summoned via
+# Containerized for the same reason as ollama.nix: nixpkgs CUDA (cicc) crashes
+# on Blackwell. NOT autostarted — it owns most of the GPU, so it's summoned via
 # the `heavy` fish function (home/shell.nix), which swaps the ollama container
-# out and this in. `heavy-stop` swaps back.
+# out and this in; `heavy-stop` swaps back.
 #
-# First start downloads the GGUF (~24 GB) from HuggingFace into the
-# llama-cache volume via llama-server's built-in -hf fetcher.
-# ⚠ If the unsloth repo/quant tag changed, check:
-#   https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF
+# First start downloads the GGUF (~24 GB) from HuggingFace into the llama-cache
+# volume via llama-server's built-in -hf fetcher. If the unsloth repo/quant tag
+# changes, check https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF.
 # --n-cpu-moe 28 is a starting point: lower it until VRAM is ~full (faster),
 # raise it if the server OOMs at load or long context.
 

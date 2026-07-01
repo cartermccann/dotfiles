@@ -5,16 +5,13 @@
   ...
 }:
 
-# Ollama via Docker
-# On GPU hosts: uses nvidia-container-toolkit for CUDA acceleration
-# On CPU hosts: runs without GPU passthrough
-# Avoids nixpkgs CUDA build issues (cicc crash on Blackwell/RTX 5070)
+# Ollama in an OCI container (podman). GPU hosts get CUDA through
+# nvidia-container-toolkit; CPU hosts run without passthrough. Containerized
+# because the nixpkgs CUDA build (cicc) crashes on Blackwell (RTX 5070).
 
 let
-  # Loadout research 2026-06-09 (FERRO-NEXT D7): budget ~10 GB of the 12 GB
-  # VRAM, ~2 GB headroom for compositor/ghostty. Prefer Gemma 4 / Qwen-family
-  # models; avoid Gemma 3 as the default. QAT tags preferred over post-hoc Q4
-  # quants whenever they exist (trained-to-be-quantized).
+  # High tier budgets ~10 GB of the 12 GB VRAM, leaving ~2 GB for the
+  # compositor/ghostty. Prefer QAT tags over post-hoc Q4 quants when they exist.
   # Preload only ever adds — retire old models manually via `ollama rm`.
   modelsByTier = {
     high = [
@@ -93,7 +90,7 @@ in
       # back on restart and fail to load gemma4 ("unknown model architecture").
       # Bump this deliberately when a new model needs a newer engine.
       image = "ollama/ollama:0.30.10";
-      ports = [ "127.0.0.1:11434:11434" ]; # was 0.0.0.0 — nothing remote calls it
+      ports = [ "127.0.0.1:11434:11434" ]; # loopback only — nothing remote calls it
       volumes = [ "ollama:/root/.ollama" ];
       environment = {
         OLLAMA_FLASH_ATTENTION = "1"; # prerequisite for KV quant; free VRAM+speed

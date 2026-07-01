@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   # Tailscale VPN (works with Headscale too)
@@ -13,7 +18,12 @@
     allowedUDPPorts = [ config.services.tailscale.port ];
     # LocalSend
     allowedTCPPorts = [ 53317 ];
-    allowedUDPPortRanges = [{ from = 53317; to = 53317; }];
+    allowedUDPPortRanges = [
+      {
+        from = 53317;
+        to = 53317;
+      }
+    ];
   };
 
   environment.systemPackages = with pkgs; [

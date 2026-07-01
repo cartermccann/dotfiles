@@ -12,7 +12,7 @@ in
       playback_window_position = "Top";
       copy_command = {
         command = "${pkgs.wl-clipboard}/bin/wl-copy";
-        args = [];
+        args = [ ];
       };
       device = {
         audio_cache = false;
@@ -43,16 +43,41 @@ in
           bright_white = c.base07;
         };
         component_style = {
-          block_title = { fg = "Blue"; modifiers = ["Bold"]; };
-          border = { fg = "BrightBlack"; };
-          playback_track = { fg = "White"; modifiers = ["Bold"]; };
-          playback_artists = { fg = "BrightBlack"; };
-          playback_album = { fg = "BrightBlack"; };
-          playback_progress_bar = { fg = "Blue"; };
-          current_playing = { fg = "Blue"; modifiers = ["Bold"]; };
-          page_desc = { fg = "BrightBlack"; };
-          table_header = { fg = "BrightBlack"; modifiers = ["Bold"]; };
-          selection = { fg = "Blue"; modifiers = ["Bold"]; };
+          block_title = {
+            fg = "Blue";
+            modifiers = [ "Bold" ];
+          };
+          border = {
+            fg = "BrightBlack";
+          };
+          playback_track = {
+            fg = "White";
+            modifiers = [ "Bold" ];
+          };
+          playback_artists = {
+            fg = "BrightBlack";
+          };
+          playback_album = {
+            fg = "BrightBlack";
+          };
+          playback_progress_bar = {
+            fg = "Blue";
+          };
+          current_playing = {
+            fg = "Blue";
+            modifiers = [ "Bold" ];
+          };
+          page_desc = {
+            fg = "BrightBlack";
+          };
+          table_header = {
+            fg = "BrightBlack";
+            modifiers = [ "Bold" ];
+          };
+          selection = {
+            fg = "Blue";
+            modifiers = [ "Bold" ];
+          };
         };
       }
     ];
