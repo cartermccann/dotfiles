@@ -92,6 +92,7 @@ in
     # AI / LLM
     pkgs-unstable.opencode # agent CLIs move too fast for stable — take both from unstable
     pkgs-unstable.codex
+    pkgs-unstable.ollama # CLI client only (server is the podman container) — unstable to stay near the 0.30.x server API
     fabric-ai # reusable AI prompt patterns
 
     # Media & recording

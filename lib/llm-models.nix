@@ -1,0 +1,42 @@
+# Single source of truth for local Ollama model tags.
+#
+# Consumed by modules/ollama.nix (tiered preload) and home/shell.nix (chat
+# aliases) so an alias can never point at a model the preloader doesn't pull.
+# When these change, keep the alias table in ~/.claude/rules/nix-environment.md
+# in sync.
+#
+# High tier budgets ~10 GB of the 12 GB VRAM, leaving ~2 GB for the
+# compositor/ghostty. Prefer QAT tags over post-hoc Q4 quants when they exist.
+# Preload only ever adds — retire old models manually via `ollama rm`.
+let
+  daily = "gemma4:12b-it-qat"; # daily chat default: 7.2 GB, fits 12 GB better than q8
+  quick = "qwen3.5:4b"; # quick jobs (dictation cleanup, summaries): 3.4 GB
+  fim = "qwen2.5-coder:3b-base"; # FIM tab-completion (minuet): 1.9 GB, stays resident
+  qwythos = "hf.co/empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q4_K_M"; # reasoning/tool-calling test model, 5.63 GB
+  small = "llama3.2:3b"; # CPU-friendly fallback for low/medium tiers
+in
+{
+  inherit
+    daily
+    quick
+    fim
+    qwythos
+    small
+    ;
+
+  tiers = {
+    high = [
+      daily
+      qwythos
+      fim
+      quick
+    ];
+    medium = [
+      quick
+      small
+    ];
+    low = [
+      small
+    ];
+  };
+}

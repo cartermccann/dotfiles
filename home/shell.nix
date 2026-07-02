@@ -7,6 +7,8 @@
 }:
 
 let
+  llm = import ../lib/llm-models.nix;
+
   shellAliases = {
     # Navigation
     ".." = "cd ..";
@@ -41,12 +43,13 @@ let
     http = "xh";
     md = "glow";
 
-    # Ollama (runs in the rootful podman container)
-    ollama = "sudo podman exec -it ollama ollama";
-    ai = "sudo podman exec -it ollama ollama run gemma4:12b-it-qat";
-    qwen = "sudo podman exec -it ollama ollama run qwen3.5:4b";
-    coder = "sudo podman exec -it ollama ollama run qwen2.5-coder:3b-base";
-    qwy = "sudo podman exec -it ollama ollama run hf.co/empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q4_K_M";
+    # Ollama chat (server runs in the rootful podman container; the host CLI
+    # from tools.nix talks to its API on 127.0.0.1:11434 — no sudo needed).
+    # Model tags come from lib/llm-models.nix, same list the preloader pulls.
+    ai = "ollama run ${llm.daily}";
+    qwen = "ollama run ${llm.quick}";
+    coder = "ollama run ${llm.fim}";
+    qwy = "ollama run ${llm.qwythos}";
   };
 
   comcreateBanner = pkgs.writeShellScriptBin "comcreate-banner" (
@@ -103,7 +106,11 @@ in
       # watch with: sudo podman logs -f llama-heavy
       function heavy --description "swap ollama out, big MoE model in"
         sudo systemctl stop podman-ollama
-        sudo systemctl start podman-llama-heavy
+        if not sudo systemctl start podman-llama-heavy
+          echo "llama-heavy failed to start — restoring ollama"
+          sudo systemctl start podman-ollama
+          return 1
+        end
         echo "heavy mode up: http://127.0.0.1:8089 (web UI + OpenAI-compatible API)"
         echo "back to normal: heavy-stop"
       end

@@ -10,27 +10,12 @@
 # because the nixpkgs CUDA build (cicc) crashes on Blackwell (RTX 5070).
 
 let
-  # High tier budgets ~10 GB of the 12 GB VRAM, leaving ~2 GB for the
-  # compositor/ghostty. Prefer QAT tags over post-hoc Q4 quants when they exist.
-  # Preload only ever adds — retire old models manually via `ollama rm`.
-  modelsByTier = {
-    high = [
-      "gemma4:12b-it-qat" # daily chat default: 7.2 GB, Gemma 4, fits 12 GB better than q8
-      "hf.co/empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q4_K_M" # Qwythos 9B GGUF, 5.63 GB; reasoning/tool-calling test model
-      "qwen2.5-coder:3b-base" # FIM tab-completion (minuet): 1.9 GB, stays resident
-      "qwen3.5:4b" # quick jobs (dictation cleanup, summaries): 3.4 GB
-    ];
-    medium = [
-      "qwen3.5:4b"
-      "llama3.2:3b"
-    ];
-    low = [
-      "llama3.2:3b"
-    ];
-  };
+  # Model tags + tier lists live in lib/llm-models.nix (shared with the
+  # shell.nix chat aliases).
+  llm = import ../lib/llm-models.nix;
 
   tier = config.local.ollamaTier;
-  models = modelsByTier.${tier};
+  models = llm.tiers.${tier};
   hasGpu = config.hardware.nvidia-container-toolkit.enable or false;
 
   preloadScript = pkgs.writeShellScript "ollama-preload-models" ''
@@ -53,7 +38,7 @@ let
     INSTALLED=$(${pkgs.curl}/bin/curl -sf http://localhost:11434/api/tags | ${pkgs.jq}/bin/jq -r '.models[].name' 2>/dev/null || echo "")
 
     ${lib.concatMapStringsSep "\n" (model: ''
-      if echo "$INSTALLED" | grep -q "^${model}$"; then
+      if echo "$INSTALLED" | grep -qxF "${model}"; then
         echo "Already have: ${model}"
       else
         echo "Pulling: ${model}..."
