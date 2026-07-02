@@ -90,8 +90,8 @@ in
     nix-output-monitor
 
     # AI / LLM
-    opencode
-    pkgs-unstable.codex # stable's codex lags months behind releases
+    pkgs-unstable.opencode # agent CLIs move too fast for stable — take both from unstable
+    pkgs-unstable.codex
     fabric-ai # reusable AI prompt patterns
 
     # Media & recording

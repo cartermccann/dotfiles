@@ -8,7 +8,7 @@
 }:
 
 let
-  hyprPkgs = hyprland.packages.${pkgs.system};
+  hyprPkgs = hyprland.packages.${pkgs.stdenv.hostPlatform.system};
 in
 {
   # Hyprland compositor — pinned 0.55.x from the upstream flake (Lua config era).

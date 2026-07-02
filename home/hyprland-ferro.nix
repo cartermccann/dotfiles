@@ -33,7 +33,7 @@ let
 
   # hyprctl from the same 0.55.x flake build the compositor runs, so the IPC
   # protocol matches. In 0.55, `hyprctl dispatch` takes the Lua dispatcher form.
-  hyprctl = "${hyprland.packages.${pkgs.system}.hyprland}/bin/hyprctl";
+  hyprctl = "${hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland}/bin/hyprctl";
 
   # ferro is now the default waybar config (~/.config/waybar/{config,style.css}),
   # so launch it bare — no -c/-s needed.
