@@ -58,6 +58,8 @@ let
                 "input"
               ];
               openssh.authorizedKeys.keys = [
+                # atlas (carter@) — Tailscale SSH access
+                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCM/HUY44HAmSX35c7AXzhE/dbIUwz8F7ZeaaNieHY4 carter@atlas"
               ];
             };
 
