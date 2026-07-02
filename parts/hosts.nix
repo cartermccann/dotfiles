@@ -27,6 +27,7 @@ let
           zen-browser
           helium
           hyprland
+          claude-desktop
           ;
       };
       modules = [

@@ -5,6 +5,7 @@
   pkgs-unstable,
   zen-browser,
   helium,
+  claude-desktop,
   ...
 }:
 
@@ -57,5 +58,8 @@ in
 
     # Notes
     obsidian
+
+    # AI
+    claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs
   ];
 }

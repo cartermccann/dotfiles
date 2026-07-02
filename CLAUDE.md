@@ -15,7 +15,7 @@ Flake-parts layout. This repo defines the entire system (kronos) + home-manager 
 
 1. Edit the relevant module (`home/` for user-level, `modules/` for system-level).
 2. Validate without sudo: `nh os build ~/dotfiles` (or `nix flake check ~/dotfiles`).
-3. Apply: `sudo nixos-rebuild switch --flake ~/dotfiles#kronos` (passwordless via NOPASSWD rule in `modules/common.nix`). The user's own alias is `nrs` (nh os switch).
+3. Apply: user runs `nrs` (nh os switch). There is NO general passwordless sudo for rebuilds — the NOPASSWD rule in `modules/common.nix` covers only the immutable `hermes-nrs` wrapper (for Hermes/Telegram), and agents must not invoke it. After a successful `nh os build`, ask the user to apply (e.g. `! sudo nixos-rebuild switch --flake ~/dotfiles#kronos`).
 
 ## Conventions
 

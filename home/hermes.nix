@@ -57,7 +57,7 @@
     force = true;
     text = ''
       [Service]
-      Environment="PATH=${config.home.homeDirectory}/.hermes/hermes-agent/venv/bin:${config.home.homeDirectory}/.hermes/hermes-agent/node_modules/.bin:${config.home.homeDirectory}/.vite-plus/0.1.19/bin:${config.home.homeDirectory}/.local/state/nix/profiles/home-manager/home-path/bin:${config.home.homeDirectory}/.local/bin:${config.home.homeDirectory}/.npm-global/bin:/run/wrappers/bin:/etc/profiles/per-user/${config.home.username}/bin:/run/current-system/sw/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      Environment="PATH=${config.home.homeDirectory}/.hermes/hermes-agent/venv/bin:${config.home.homeDirectory}/.hermes/hermes-agent/node_modules/.bin:${config.home.homeDirectory}/.vite-plus/bin:${config.home.homeDirectory}/.local/state/nix/profiles/home-manager/home-path/bin:${config.home.homeDirectory}/.local/bin:${config.home.homeDirectory}/.npm-global/bin:/run/wrappers/bin:/etc/profiles/per-user/${config.home.username}/bin:/run/current-system/sw/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     '';
   };
 }

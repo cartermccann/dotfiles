@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  pkgs-unstable,
   google-workspace-cli,
   fenix,
   herdr,
@@ -90,7 +91,7 @@ in
 
     # AI / LLM
     opencode
-    codex
+    pkgs-unstable.codex # stable's codex lags months behind releases
     fabric-ai # reusable AI prompt patterns
 
     # Media & recording
