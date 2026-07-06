@@ -413,7 +413,7 @@ let
         lib.concatStringsSep "\n" [
           ''hl.bind(mod .. " + comma",         hl.dsp.exec_cmd("qs -c qs-shell ipc call notifs dismiss"))  -- dismiss latest''
           ''hl.bind(mod .. " + SHIFT + comma", hl.dsp.exec_cmd("qs -c qs-shell ipc call notifs clearAll")) -- close all''
-          ''hl.bind(mod .. " + N",             hl.dsp.exec_cmd("qs -c qs-shell ipc call popout toggle notif")) -- toggle panel''
+          ''hl.bind(mod .. " + N",             hl.dsp.exec_cmd("qs -c qs-shell ipc call popout toggle notifications")) -- toggle panel''
         ]
     }
 

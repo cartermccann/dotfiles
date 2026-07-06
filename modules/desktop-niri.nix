@@ -59,7 +59,10 @@
     grim
     slurp
     wl-clipboard
-    mako
+    # mako removed: its package ships a dbus-activatable user service that
+    # grabs org.freedesktop.Notifications in ANY session (it hijacked the QS
+    # session notification server). Every session has its own daemon now:
+    # noctalia (niri), swaync (ferro/waybar), qs-shell (QS).
     waybar
     xwayland-satellite
     networkmanagerapplet
