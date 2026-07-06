@@ -304,7 +304,14 @@ let
         # wallpaper) until M7 — only the app-launcher bind itself flips.
         ''hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd("qs -c qs-shell ipc call launcher toggle"))''
     }
-    hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/ferro.ini | cliphist decode | wl-copy"))
+    ${
+      if shellKind == "waybar" then
+        ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/ferro.ini | cliphist decode | wl-copy"))''
+      else
+        # M7: qs-shell's own clipboard overlay (cliphist-backed, ipc target
+        # "clipboard"); the fuzzel dmenu pipeline stays on the waybar side.
+        ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("qs -c qs-shell ipc call clipboard toggle"))''
+    }
 
     -- Screenshots (grimblast adds --freeze: the screen stops while you aim)
     hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd([[grimblast --freeze save area - | satty -f - --output-filename ~/Pictures/Screenshots/satty-$(date +%Y%m%d-%H%M%S).png]]))
