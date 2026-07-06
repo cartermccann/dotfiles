@@ -58,7 +58,11 @@ in
         [Desktop Entry]
         Name=Hyprland (QS)
         Comment=Hyprland with qs-shell (Quickshell)
-        Exec=Hyprland --config /home/${user}/.config/hypr/hyprland-qs.lua
+        # start-hyprland is 0.55's watchdog launcher (bare Hyprland shows a
+        # "started without start-hyprland" error overlay in-session, and that
+        # overlay is itself a top layer that shoves other surfaces down).
+        # Args after `--` are forwarded to Hyprland.
+        Exec=start-hyprland -- --config /home/${user}/.config/hypr/hyprland-qs.lua
         Type=Application
       '').overrideAttrs
       (_: {

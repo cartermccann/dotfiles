@@ -414,12 +414,16 @@ let
     hl.bind(mod .. " + CTRL + L",  hl.dsp.exec_cmd("hyprlock"))
     hl.bind(mod .. " + SHIFT + X", hl.dsp.exec_cmd("hypr-power-menu"))
     hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("hypr-wallpaper-pick"))
-    hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("${
+    ${
       if shellKind == "waybar" then
-        "pkill waybar || " + waybarCmd
+        ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill waybar || ${waybarCmd}"))''
       else
-        "pkill -f 'qs -c qs-shell' || qs -c qs-shell"
-    }"))
+        # A restart, not a kill/start toggle — the shell should never stay dead
+        # after one press. NB: the running process is `quickshell -c qs-shell`
+        # (`qs` is just a launcher), so a pkill pattern containing 'qs -c'
+        # never matches and silently no-ops.
+        ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd([[bash -c "pkill -f 'quickshell -c qs-shell'; sleep 0.3; exec qs -c qs-shell"]]))''
+    }
     hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
     hl.bind(mod .. " + CTRL + N",  hl.dsp.exec_cmd("hypr-night-toggle"))
     hl.bind(mod .. " + ALT + L",   hl.dsp.exec_cmd("~/.local/bin/toggle-dictation.sh"))
