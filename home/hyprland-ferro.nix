@@ -308,9 +308,13 @@ let
       if shellKind == "waybar" then
         ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/ferro.ini | cliphist decode | wl-copy"))''
       else
-        # M7: qs-shell's own clipboard overlay (cliphist-backed, ipc target
-        # "clipboard"); the fuzzel dmenu pipeline stays on the waybar side.
-        ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("qs -c qs-shell ipc call clipboard toggle"))''
+        # M7: qs-shell's own clipboard + emoji overlays (the emoji bind is a
+        # qs-only ADDITION — the waybar session never had one); the fuzzel
+        # dmenu clipboard pipeline stays on the waybar side.
+        lib.concatStringsSep "\n" [
+          ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("qs -c qs-shell ipc call clipboard toggle"))''
+          ''hl.bind(mod .. " + period", hl.dsp.exec_cmd("qs -c qs-shell ipc call emoji toggle"))''
+        ]
     }
 
     -- Screenshots (grimblast adds --freeze: the screen stops while you aim)
