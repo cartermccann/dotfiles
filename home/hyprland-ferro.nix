@@ -445,7 +445,16 @@ let
     -- Utilities
     hl.bind(mod .. " + CTRL + L",  hl.dsp.exec_cmd("hyprlock"))
     hl.bind(mod .. " + SHIFT + X", hl.dsp.exec_cmd("hypr-power-menu"))
-    hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("hypr-wallpaper-pick"))
+    ${
+      if shellKind == "waybar" then
+        ''hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("hypr-wallpaper-pick"))''
+      else
+        # M7: qs-shell's own wallpaper picker overlay (ipc target
+        # "wallpaper"). It runs the same magick → pkill → swww pipeline as
+        # hypr-wallpaper-pick, writing the ~/wallpaper.png cross-session
+        # contract; the fuzzel dmenu script stays on the waybar variant.
+        ''hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("qs -c qs-shell ipc call wallpaper toggle"))''
+    }
     ${
       if shellKind == "waybar" then
         ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill waybar || ${waybarCmd}"))''
@@ -519,7 +528,14 @@ let
             ''hl.exec_cmd("swaync")''
           ]
         else
-          ''hl.exec_cmd("qs -c qs-shell")''
+          # M7: hyprpolkitagent rides along — quickshell 0.2.1 has no polkit
+          # QML API, so the QS session needs a standalone auth agent (the
+          # waybar session keeps whatever it had; this is qs-only). Plain
+          # autostart = session-scoped by construction, same as hyprsunset.
+          lib.concatStringsSep "\n  " [
+            ''hl.exec_cmd("qs -c qs-shell")''
+            ''hl.exec_cmd("${pkgs.hyprpolkitagent}/libexec/hyprpolkitagent")''
+          ]
       }
       hl.exec_cmd("hypridle")
       -- hyprsunset as a plain autostart = hyprland-session-only by construction
