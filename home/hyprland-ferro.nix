@@ -295,7 +295,15 @@ let
     hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("ghostty"))
     -- canonical tmux session ("work"), same bind as the niri session
     hl.bind(mod .. " + ALT + RETURN", hl.dsp.exec_cmd("ghostty -e fish -c 'tmux attach; or tmux new -s work'"))
-    hl.bind(mod .. " + SPACE",  hl.dsp.exec_cmd("fuzzel --config ${cfgHome}/fuzzel/ferro.ini"))
+    ${
+      if shellKind == "waybar" then
+        ''hl.bind(mod .. " + SPACE",  hl.dsp.exec_cmd("fuzzel --config ${cfgHome}/fuzzel/ferro.ini"))''
+      else
+        # qs-shell's own launcher (M4): scrim + app search + calc/run
+        # fallback. fuzzel stays for dmenu scripts (power-menu/cliphist/
+        # wallpaper) until M7 — only the app-launcher bind itself flips.
+        ''hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd("qs -c qs-shell ipc call launcher toggle"))''
+    }
     hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/ferro.ini | cliphist decode | wl-copy"))
 
     -- Screenshots (grimblast adds --freeze: the screen stops while you aim)
