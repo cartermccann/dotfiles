@@ -14,7 +14,7 @@
     ./neovim.nix
     ./niri.nix
     ./niri-noctalia.nix
-    ./hyprland-ferro.nix
+    ./hyprland.nix
     ./qs-shell.nix
     ./tmux.nix
     ./dictation.nix

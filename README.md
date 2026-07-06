@@ -1,6 +1,6 @@
 # dotfiles
 
-NixOS flake for all my machines: Niri + Noctalia (with a second Hyprland "ferro" session), Ghostty, Neovim, tmux, and a dev-first setup with local LLMs. Built on flake-parts; home-manager runs as a NixOS module.
+NixOS flake for all my machines: Niri + Noctalia (plus two Hyprland session variants: waybar and qs-shell/Quickshell), Ghostty, Neovim, tmux, and a dev-first setup with local LLMs. Built on flake-parts; home-manager runs as a NixOS module.
 
 ## Machines
 
@@ -30,8 +30,8 @@ flake.nix          # inputs; outputs delegated to parts/
 parts/             # flake-parts modules: hosts (mkHost), templates
 hosts/             # per-machine configuration + hardware config
 modules/           # NixOS system modules (desktop, nvidia, ollama, oom-protection, ...)
-home/              # home-manager modules (shell, tools, neovim, tmux, niri, hyprland-ferro, ...)
-lib/               # overlays + the ferro palette
+home/              # home-manager modules (shell, tools, neovim, tmux, niri, hyprland, ...)
+lib/               # overlays + the hyprland palette
 pkgs/              # custom packages (ceen-live, screaming-frog-seo-spider)
 templates/         # dev-shell templates for `nix flake init -t ~/dotfiles#<lang>`
 config/nvim/       # Neovim config, symlinked out of the store so it stays live-editable
@@ -51,7 +51,7 @@ wallpaper/
 ## Desktop sessions
 
 - **Niri (Noctalia)** — primary session; config in `home/niri-noctalia.nix`.
-- **Hyprland** — the "ferro" glass rice (Hyprland 0.55 Lua config); `home/hyprland-ferro.nix` + `lib/ferro-palette.nix`.
+- **Hyprland** — the glass rice (Hyprland 0.55 Lua config), two tiles: "Hyprland" (waybar) and "Hyprland (QS)" (qs-shell/Quickshell); `home/hyprland.nix` + `lib/palette.nix`.
 
 Both share ghostty, tmux, and the helper scripts in `home/niri.nix`.
 

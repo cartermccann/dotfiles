@@ -1,8 +1,8 @@
-# ferro palette — Base16 mapping derived from comcreate.io's tokens.css.
+# Hyprland session palette — Base16 mapping.
 # Warm espresso/cream monochrome + azure accent + retro green-phosphor motif.
-# Consumed only by the Hyprland (Ferro) session's components (hyprland.lua, its
+# Consumed only by the Hyprland sessions' components (hyprland.lua, its
 # waybar, fuzzel, swaync, hyprlock); the rest of the system keeps its global
-# Stylix palette. Import with: let cc = import ../lib/ferro-palette.nix;
+# Stylix palette. Import with: let pal = import ../lib/palette.nix;
 rec {
   # Base16 slots, with leading "#" (for GTK CSS / configs that want hex)
   base00 = "#141210"; # bg            (espresso black)
@@ -42,7 +42,7 @@ rec {
     base0F = "2d8a4e";
   };
 
-  # Brand semantic aliases
+  # Semantic aliases
   bg = base00;
   surface = base01;
   raised = base02;

@@ -1,8 +1,8 @@
--- Ferro — neovim colorscheme derived from lib/ferro-palette.nix
+-- Ferro — neovim colorscheme derived from lib/palette.nix
 -- Warm espresso/cream monochrome base + azure accent + phosphor-green motif.
--- Mirrors the Hyprland (Ferro) rice so the editor matches the desktop.
+-- Mirrors the Hyprland rice so the editor matches the desktop.
 --
--- Palette source of truth: ~/dotfiles/lib/ferro-palette.nix (Base16).
+-- Palette source of truth: ~/dotfiles/lib/palette.nix (Base16).
 -- A few shades below are derived tints (string-green, bg washes, selection)
 -- kept tasteful for code over a full file — noted inline.
 --
@@ -20,7 +20,7 @@ vim.g.colors_name = "ferro"
 local transparent = vim.g.ferro_transparent ~= false
 
 local c = {
-  -- ── Base16 slots (ferro-palette.nix) ──
+  -- ── Base16 slots (lib/palette.nix) ──
   bg = "#141210", -- base00 espresso black
   surface = "#1b1917", -- base01 raised bg / status
   raised = "#211e1a", -- base02 selection / raised

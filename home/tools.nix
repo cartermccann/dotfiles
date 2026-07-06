@@ -49,7 +49,7 @@ in
     yazi
     glow # markdown reader
     xh # httpie-style curl
-    gum # shell prompts/confirm (gwr worktree fn, ferro-menu scripts)
+    gum # shell prompts/confirm (gwr worktree fn, menu scripts)
     ouch # universal compress/decompress
     procs # modern ps
     sd # modern sed
@@ -110,7 +110,7 @@ in
     asciiquarium
     sl # the train you typo into
     figlet # big ascii banners
-    lolcat # rainbow pipe (figlet ferro | lolcat)
+    lolcat # rainbow pipe (figlet | lolcat)
     peaclock # zen full-screen terminal clock
     tty-clock # minimal digital clock (tty-clock -c -C 4)
 

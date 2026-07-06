@@ -1,10 +1,10 @@
-// ferro cursor warp — Neovide-style smooth cursor for ghostty (1.2+ cursor uniforms).
+// cursor warp — Neovide-style smooth cursor for ghostty (1.2+ cursor uniforms).
 // Each corner of the cursor animates with its own duration: corners leading the
 // move arrive almost instantly, trailing corners lag behind, so the cursor
 // stretches into a wedge and snaps back. Vendored from
-// https://github.com/sahaj-b/ghostty-cursor-shaders (MIT), tuned for ferro:
+// https://github.com/sahaj-b/ghostty-cursor-shaders (MIT), tuned for this rig:
 // shorter duration, fade along the trail (quiet glass read, not neon), trail
-// tint follows iCurrentCursorColor so it tracks the ferro azure caret.
+// tint follows iCurrentCursorColor so it tracks the azure caret.
 
 // sRGB -> Linear conversion (ghostty passes sRGB; the pipeline is linear)
 vec3 sRGBToLinear(vec3 c) {

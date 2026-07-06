@@ -1,7 +1,7 @@
-// ferro cursor smear — smooth cursor motion for ghostty (1.2+ cursor uniforms).
+// cursor smear — smooth cursor motion for ghostty (1.2+ cursor uniforms).
 // When the cursor jumps, a parallelogram "smear" is drawn between the previous
 // and current cursor quads and eased away over DURATION. Trail tint comes from
-// iCurrentCursorColor, so it follows the ferro azure caret automatically.
+// iCurrentCursorColor, so it follows the azure caret automatically.
 //
 // Coordinate note (verified against the 1.3.2 embedded shader docs):
 // iCurrentCursor.xy is the -X,+Y corner of the cursor (top-left in GL y-up

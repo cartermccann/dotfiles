@@ -1,8 +1,8 @@
-// ferro cursor tail — kitty-style comet trail for ghostty (1.2+ cursor uniforms).
+// cursor tail — kitty-style comet trail for ghostty (1.2+ cursor uniforms).
 // A capped-length trail chases the cursor: the head arrives first, the tail
 // reels in behind it. Vendored from
 // https://github.com/sahaj-b/ghostty-cursor-shaders (MIT); trail tint follows
-// iCurrentCursorColor so it tracks the ferro azure caret. Alternate to
+// iCurrentCursorColor so it tracks the azure caret. Alternate to
 // cursor_warp.glsl — switch in ghostty.nix.
 
 // sRGB -> Linear conversion (ghostty passes sRGB; the pipeline is linear)

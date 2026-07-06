@@ -48,7 +48,7 @@ in
   ];
 
   # No custom login tile for the waybar variant: programs.hyprland registers a
-  # plain "Hyprland" session, and the ferro theming lives in
+  # plain "Hyprland" session, and its theming lives in
   # ~/.config/hypr/hyprland.lua, so that stock tile already loads this exact
   # look. The Quickshell variant needs its own tile since it points at a
   # different Lua config (~/.config/hypr/hyprland-qs.lua).

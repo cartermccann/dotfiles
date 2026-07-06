@@ -7,7 +7,7 @@ Flake-parts layout. This repo defines the entire system (kronos) + home-manager 
 - `flake.nix` / `parts/` — flake outputs (hosts in `parts/hosts.nix`, templates in `parts/templates.nix`)
 - `hosts/` — per-machine config
 - `modules/` — NixOS system modules (desktop, nvidia, ollama, oom-protection, ...)
-- `home/` — home-manager modules (tools, shell, neovim, tmux, niri, hyprland-ferro, headroom, ...)
+- `home/` — home-manager modules (tools, shell, neovim, tmux, niri, hyprland, headroom, ...)
 - `templates/` — `nix flake init -t ~/dotfiles#<lang>` dev-shell templates
 - `scripts/`, `config/`, `wallpaper/` — non-Nix assets referenced by modules
 
@@ -27,6 +27,6 @@ Flake-parts layout. This repo defines the entire system (kronos) + home-manager 
 
 ## Gotchas
 
-- Desktop sessions: niri+noctalia is primary; "Hyprland (Ferro)" is a second session (`home/hyprland-ferro.nix`). swww owns the wallpaper — Noctalia's wallpaper module is deliberately disabled.
+- Desktop sessions: niri+noctalia is primary; Hyprland has two variants from one module (`home/hyprland.nix`): the stock "Hyprland" tile (waybar, `hypr/hyprland.lua`) and "Hyprland (QS)" (qs-shell/Quickshell, `hypr/hyprland-qs.lua`). swww owns the wallpaper — Noctalia's wallpaper module is deliberately disabled.
 - First rebuild after adding a cachix substituter may prompt for trust — expected.
 - uv-tool installs (e.g. headroom-ai) are NOT in this flake; manage with `uv tool upgrade <name>`.

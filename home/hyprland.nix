@@ -8,7 +8,7 @@
   ...
 }:
 let
-  cc = import ../lib/ferro-palette.nix;
+  pal = import ../lib/palette.nix;
   cfgHome = config.xdg.configHome;
 
   # Real-time generative ASCII wallpaper (the Ceen signal hand). Streams rawvideo
@@ -16,8 +16,8 @@ let
   ceenLive = pkgs.callPackage ../pkgs/ceen-live { };
 
   # "#1b1917" -> "27, 25, 23" for CSS rgba(). Single palette source of truth:
-  # every color literal in this file is interpolated from `cc` — one accent
-  # change in lib/ferro-palette.nix re-themes the whole session.
+  # every color literal in this file is interpolated from `pal` — one accent
+  # change in lib/palette.nix re-themes the whole session.
   cssRgb =
     hex:
     let
@@ -35,14 +35,14 @@ let
   # protocol matches. In 0.55, `hyprctl dispatch` takes the Lua dispatcher form.
   hyprctl = "${hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland}/bin/hyprctl";
 
-  # ferro is now the default waybar config (~/.config/waybar/{config,style.css}),
+  # this module owns the default waybar config (~/.config/waybar/{config,style.css}),
   # so launch it bare — no -c/-s needed.
   waybarCmd = "waybar";
 
   # Power menu (Hyprland variant of the niri power-menu — uses hyprlock + hyprctl)
   hyprPowerMenu = pkgs.writeShellScriptBin "hypr-power-menu" ''
     CHOICE=$(printf "Lock\nLogout\nSuspend\nReboot\nShutdown" \
-      | ${pkgs.fuzzel}/bin/fuzzel --dmenu --config ${cfgHome}/fuzzel/ferro.ini --prompt="⏻  ")
+      | ${pkgs.fuzzel}/bin/fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini --prompt="⏻  ")
     case "$CHOICE" in
       Lock)     ${pkgs.hyprlock}/bin/hyprlock ;;
       Logout)   ${hyprctl} dispatch 'hl.dsp.exit()' ;;
@@ -58,7 +58,7 @@ let
   # hyprlock and the niri session never see JPEG-bytes-named-png.
   hyprWallpaperPick = pkgs.writeShellScriptBin "hypr-wallpaper-pick" ''
     PICK=$(find -L ~/wallpapers -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) \
-      | ${pkgs.fuzzel}/bin/fuzzel --dmenu --config ${cfgHome}/fuzzel/ferro.ini --prompt="Wallpaper: ")
+      | ${pkgs.fuzzel}/bin/fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini --prompt="Wallpaper: ")
     [ -n "$PICK" ] || exit 0
     ${pkgs.imagemagick}/bin/magick "$PICK" ~/wallpaper.png
     # Grow the new wallpaper out from the cursor; fall back to 0,0 when invoked
@@ -85,7 +85,7 @@ let
   '';
 
   mkHyprlandLua = shellKind: ''
-    -- ferro Hyprland session (Hyprland 0.55+ Lua config)
+    -- Hyprland session (Hyprland 0.55+ Lua config)
 
     local mod = "SUPER"
 
@@ -111,8 +111,8 @@ let
         -- Japandi hairline: 1px, near-invisible. The pane is defined by its
         -- glass + shadow, not its outline; focus reads from the azure glow below.
         border_size = 1,
-        ["col.active_border"] = "rgba(${cc.raw.base07}50)",
-        ["col.inactive_border"] = "rgba(${cc.raw.base07}0d)",
+        ["col.active_border"] = "rgba(${pal.raw.base07}50)",
+        ["col.inactive_border"] = "rgba(${pal.raw.base07}0d)",
         layout = "dwindle",
         allow_tearing = false,
         resize_on_border = true,
@@ -172,7 +172,7 @@ let
           enabled = true,
           range = 12,
           render_power = 3,
-          color = "rgba(${cc.raw.base0D}30)", -- soft azure halo
+          color = "rgba(${pal.raw.base0D}30)", -- soft azure halo
           color_inactive = "rgba(00000000)",
         },
       },
@@ -216,7 +216,7 @@ let
     hl.curve("menuDecel",       { type = "bezier", points = { { 0.1, 1 },     { 0, 1 }      } }) -- instant-feel layer fades
     hl.curve("menuAccel",       { type = "bezier", points = { { 0.52, 0.03 }, { 0.72, 0.08 } } }) -- layer exit
     hl.curve("almostLinear",    { type = "bezier", points = { { 0.5, 0.5 },   { 0.75, 1 }   } }) -- upstream fade default
-    -- Easing tokens ported from comcreate.io's tokens.css.
+    -- House easing tokens (reveal / snap / stage).
     hl.curve("ferroReveal", { type = "bezier", points = { { 0.19, 1 },    { 0.22, 1 }  } }) -- --ease-reveal: aggressive expo-like decel
     hl.curve("ferroSnap",   { type = "bezier", points = { { 0.65, 0.05 }, { 0, 1 }     } }) -- --ease-snap: late accel, hard settle
     hl.curve("ferroStage",  { type = "bezier", points = { { 0.77, 0 },    { 0.175, 1 } } }) -- --ease-stage: deliberate in-out
@@ -297,7 +297,7 @@ let
     hl.bind(mod .. " + ALT + RETURN", hl.dsp.exec_cmd("ghostty -e fish -c 'tmux attach; or tmux new -s work'"))
     ${
       if shellKind == "waybar" then
-        ''hl.bind(mod .. " + SPACE",  hl.dsp.exec_cmd("fuzzel --config ${cfgHome}/fuzzel/ferro.ini"))''
+        ''hl.bind(mod .. " + SPACE",  hl.dsp.exec_cmd("fuzzel --config ${cfgHome}/fuzzel/hypr.ini"))''
       else
         # qs-shell's own launcher (M4): scrim + app search + calc/run
         # fallback. fuzzel stays for dmenu scripts (power-menu/cliphist/
@@ -306,7 +306,7 @@ let
     }
     ${
       if shellKind == "waybar" then
-        ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/ferro.ini | cliphist decode | wl-copy"))''
+        ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini | cliphist decode | wl-copy"))''
       else
         # M7: qs-shell's own clipboard + emoji overlays (the emoji bind is a
         # qs-only ADDITION — the waybar session never had one); the fuzzel
@@ -566,7 +566,7 @@ in
 
       # Seed ~/wallpaper.png on first activation — *converted*, not copied, so the
       # PNG-named file actually contains PNG bytes (hyprlock requires it).
-      home.activation.seedFerroWallpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      home.activation.seedWallpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         [ -f "$HOME/wallpaper.png" ] || run ${pkgs.imagemagick}/bin/magick ${../wallpaper/fam.jpg} "$HOME/wallpaper.png"
       '';
 
@@ -591,7 +591,7 @@ in
         }
       '';
 
-      # Waybar: ferro owns ~/.config/waybar/{config,style.css}; disable the Stylix
+      # Waybar: this module owns ~/.config/waybar/{config,style.css}; disable the Stylix
       # waybar target so the two never fight over style.css.
       stylix.targets.waybar.enable = false;
 
@@ -740,72 +740,72 @@ in
         }
         window#waybar {
           background: transparent;
-          color: ${cc.base05};
+          color: ${pal.base05};
         }
         tooltip {
-          background: rgba(${cssRgb cc.base01}, 0.95);
-          border: 1px solid rgba(${cssRgb cc.base05}, 0.08);
+          background: rgba(${cssRgb pal.base01}, 0.95);
+          border: 1px solid rgba(${cssRgb pal.base05}, 0.08);
           border-radius: 10px;
         }
         tooltip label {
-          color: ${cc.base05};
+          color: ${pal.base05};
         }
         /* Floating frosted-glass module groups (Hyprland layer blur does the frosting).
            Site language: borders are NEUTRAL hairlines; accent only where focus lives.
-           The inset top highlight is comcreate.io's PillNav "liquid sheen". */
+           The inset top highlight is a PillNav-style "liquid sheen". */
         .modules-left,
         .modules-center,
         .modules-right {
-          background: rgba(${cssRgb cc.base01}, 0.45);
-          border: 1px solid rgba(${cssRgb cc.base05}, 0.07);
-          box-shadow: inset 0 1px 0 rgba(${cssRgb cc.base05}, 0.06);
+          background: rgba(${cssRgb pal.base01}, 0.45);
+          border: 1px solid rgba(${cssRgb pal.base05}, 0.07);
+          box-shadow: inset 0 1px 0 rgba(${cssRgb pal.base05}, 0.06);
           border-radius: 14px;
           padding: 1px 10px;
           margin: 0 4px;
         }
         #workspaces button {
-          color: ${cc.base04};
+          color: ${pal.base04};
           padding: 0 9px;
           margin: 2px 2px;
           border-radius: 10px;
           font-size: 12px;
         }
         #workspaces button.active {
-          color: ${cc.base07};
-          background: rgba(${cssRgb cc.base0D}, 0.18);
+          color: ${pal.base07};
+          background: rgba(${cssRgb pal.base0D}, 0.18);
         }
         #workspaces button.urgent {
-          color: ${cc.base08};
+          color: ${pal.base08};
         }
         #workspaces button:hover {
-          background: rgba(${cssRgb cc.base05}, 0.06);
+          background: rgba(${cssRgb pal.base05}, 0.06);
         }
         #submap {
-          color: ${cc.base0D};
+          color: ${pal.base0D};
           padding: 0 10px;
           font-size: 11px;
           letter-spacing: 0.08em;
         }
         #clock {
-          color: ${cc.base05};
+          color: ${pal.base05};
           font-weight: bold;
           padding: 0 10px;
           font-size: 12px;
         }
         #mpris {
-          color: ${cc.base06};
+          color: ${pal.base06};
           padding: 0 9px;
           font-size: 12px;
         }
         #mpris.paused {
-          color: ${cc.base04};
+          color: ${pal.base04};
         }
         #idle_inhibitor {
-          color: ${cc.base04};
+          color: ${pal.base04};
           padding: 0 8px;
         }
         #idle_inhibitor.activated {
-          color: ${cc.base0D};
+          color: ${pal.base0D};
         }
         /* HUD micro-labels: uppercase comes from the module format strings (GTK CSS
            has no text-transform); tracking lives here. mpris exempt — titles keep case. */
@@ -815,7 +815,7 @@ in
         #network,
         #bluetooth,
         #pulseaudio {
-          color: ${cc.base06};
+          color: ${pal.base06};
           padding: 0 9px;
           font-size: 11px;
           letter-spacing: 0.08em;
@@ -823,34 +823,34 @@ in
         #pulseaudio.muted,
         #bluetooth.disabled,
         #network.disconnected {
-          color: ${cc.base03};
+          color: ${pal.base03};
         }
         #custom-notifications {
-          color: ${cc.base06};
+          color: ${pal.base06};
           padding: 0 8px;
         }
         #custom-notifications.notification,
         #custom-notifications.inhibited-notification {
-          color: ${cc.base0D};
+          color: ${pal.base0D};
         }
         #custom-notifications.dnd-notification,
         #custom-notifications.dnd-none {
-          color: ${cc.base03};
+          color: ${pal.base03};
         }
         #tray {
           padding: 0 6px;
         }
         #custom-power {
-          color: ${cc.base04};
+          color: ${pal.base04};
           padding: 0 10px 0 8px;
         }
         #custom-power:hover {
-          color: ${cc.base08};
+          color: ${pal.base08};
         }
       '';
 
-      # fuzzel: ferro launcher (separate config path; launched via --config)
-      xdg.configFile."fuzzel/ferro.ini".text = ''
+      # fuzzel: session launcher (separate config path; launched via --config)
+      xdg.configFile."fuzzel/hypr.ini".text = ''
         [main]
         font=JetBrainsMono Nerd Font:size=12
         prompt=>
@@ -863,41 +863,41 @@ in
         layer=overlay
 
         [colors]
-        background=${cc.raw.base00}cc
-        text=${cc.raw.base05}ff
-        prompt=${cc.raw.base04}ff
-        placeholder=${cc.raw.base03}ff
-        input=${cc.raw.base05}ff
-        match=${cc.raw.base0D}ff
-        selection=${cc.raw.base02}dd
-        selection-text=${cc.raw.base07}ff
-        selection-match=${cc.raw.base0C}ff
-        border=${cc.raw.base0D}66
+        background=${pal.raw.base00}cc
+        text=${pal.raw.base05}ff
+        prompt=${pal.raw.base04}ff
+        placeholder=${pal.raw.base03}ff
+        input=${pal.raw.base05}ff
+        match=${pal.raw.base0D}ff
+        selection=${pal.raw.base02}dd
+        selection-text=${pal.raw.base07}ff
+        selection-match=${pal.raw.base0C}ff
+        border=${pal.raw.base0D}66
 
         [border]
         width=2
         radius=14
       '';
 
-      # swayosd: ferro glass OSD (server launched with --style above)
+      # swayosd: glass OSD (server launched with --style above)
       xdg.configFile."swayosd/style.css".text = ''
         window {
-          background: rgba(${cssRgb cc.base01}, 0.55);
-          border: 1px solid rgba(${cssRgb cc.base05}, 0.08);
+          background: rgba(${cssRgb pal.base01}, 0.55);
+          border: 1px solid rgba(${cssRgb pal.base05}, 0.08);
           border-radius: 14px;
         }
         label {
-          color: ${cc.base05};
+          color: ${pal.base05};
           font-family: "JetBrainsMono Nerd Font", monospace;
         }
         progressbar trough {
-          background: rgba(${cssRgb cc.base03}, 0.4);
+          background: rgba(${cssRgb pal.base03}, 0.4);
         }
         progressbar progress {
-          background: ${cc.base0D};
+          background: ${pal.base0D};
         }
         image {
-          color: ${cc.base06};
+          color: ${pal.base06};
         }
       '';
 
@@ -941,62 +941,62 @@ in
           font-size: 12px;
         }
         .control-center {
-          background: rgba(${cssRgb cc.base00}, 0.60);
-          color: ${cc.base05};
-          border: 1px solid rgba(${cssRgb cc.base05}, 0.08);
+          background: rgba(${cssRgb pal.base00}, 0.60);
+          color: ${pal.base05};
+          border: 1px solid rgba(${cssRgb pal.base05}, 0.08);
           border-radius: 16px;
           margin: 8px;
           padding: 12px;
         }
         .notification-row .notification-background .notification {
-          background: rgba(${cssRgb cc.base01}, 0.65);
-          color: ${cc.base05};
-          border: 1px solid rgba(${cssRgb cc.base05}, 0.08);
+          background: rgba(${cssRgb pal.base01}, 0.65);
+          color: ${pal.base05};
+          border: 1px solid rgba(${cssRgb pal.base05}, 0.08);
           border-radius: 14px;
           margin: 6px 4px;
           padding: 4px;
         }
         .notification-row .notification-background .notification.critical {
-          border-color: ${cc.base08};
+          border-color: ${pal.base08};
         }
         .notification .summary {
           font-size: 13px;
           font-weight: 600;
-          color: ${cc.base05};
+          color: ${pal.base05};
         }
         .notification .body {
           font-size: 12px;
-          color: ${cc.base06};
+          color: ${pal.base06};
         }
         .notification .app-name {
           font-size: 10px;
-          color: ${cc.base04};
+          color: ${pal.base04};
         }
         .notification .time {
           font-size: 10px;
-          color: ${cc.base04};
+          color: ${pal.base04};
         }
         .widget-title {
-          color: ${cc.base05};
+          color: ${pal.base05};
           font-size: 13px;
           font-weight: bold;
           padding: 4px 8px;
         }
         .widget-title > button {
-          background: rgba(${cssRgb cc.base0D}, 0.14);
-          color: ${cc.base05};
+          background: rgba(${cssRgb pal.base0D}, 0.14);
+          color: ${pal.base05};
           font-size: 12px;
           border-radius: 10px;
           padding: 2px 10px;
         }
         .widget-dnd {
-          color: ${cc.base04};
+          color: ${pal.base04};
           font-size: 12px;
           padding: 4px 8px;
         }
         .notification-action {
-          background: rgba(${cssRgb cc.base01}, 0.6);
-          color: ${cc.base05};
+          background: rgba(${cssRgb pal.base01}, 0.6);
+          color: ${pal.base05};
           font-size: 12px;
           border-radius: 10px;
         }
@@ -1021,12 +1021,12 @@ in
           outline_thickness = 2
           dots_size = 0.25
           dots_spacing = 0.3
-          outer_color = rgba(${cc.raw.base0D}ee)
-          inner_color = rgba(${cc.raw.base01}cc)
-          font_color = rgba(${cc.raw.base05}ff)
-          check_color = rgba(${cc.raw.base0C}ee)
-          fail_color = rgba(${cc.raw.base08}ee)
-          placeholder_text = <span foreground="##${cc.raw.base04}">ferro</span>
+          outer_color = rgba(${pal.raw.base0D}ee)
+          inner_color = rgba(${pal.raw.base01}cc)
+          font_color = rgba(${pal.raw.base05}ff)
+          check_color = rgba(${pal.raw.base0C}ee)
+          fail_color = rgba(${pal.raw.base08}ee)
+          placeholder_text = <span foreground="##${pal.raw.base04}">ferro</span>
           rounding = 14
           fade_on_empty = false
           position = 0, -40
@@ -1039,7 +1039,7 @@ in
           text = $TIME
           font_size = 64
           font_family = JetBrainsMono Nerd Font
-          color = rgba(${cc.raw.base05}ff)
+          color = rgba(${pal.raw.base05}ff)
           position = 0, 120
           halign = center
           valign = center
@@ -1050,7 +1050,7 @@ in
           text = cmd[update:60000] date +"%A, %B %d"
           font_size = 18
           font_family = JetBrainsMono Nerd Font
-          color = rgba(${cc.raw.base06}cc)
+          color = rgba(${pal.raw.base06}cc)
           position = 0, 60
           halign = center
           valign = center
@@ -1082,7 +1082,7 @@ in
       '';
     }
 
-    # Opt the Hyprland session out of global Stylix so it carries the ferro palette
+    # Opt the Hyprland session out of global Stylix so it carries the hyprland palette
     # (same idea as stylix.targets.niri.enable=false in home/shell.nix). Guarded:
     # stylix 25.11 may not declare a `hyprland` target, and if it doesn't, Stylix
     # never touches hypr/ anyway.

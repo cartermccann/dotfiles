@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 let
-  # ghostty is shared by both sessions, so the ferro palette leaks into niri
+  # ghostty is shared by both sessions, so the hyprland palette leaks into niri
   # by design — a themed terminal beats a per-session config split.
-  cc = import ../lib/ferro-palette.nix;
+  pal = import ../lib/palette.nix;
 in
 {
   stylix.targets.ghostty.enable = false;
@@ -11,30 +11,30 @@ in
     font-family = JetBrainsMono Nerd Font
     font-size = 14
 
-    background = ${cc.base00}
-    foreground = ${cc.base05}
+    background = ${pal.base00}
+    foreground = ${pal.base05}
 
-    palette = 0=${cc.base01}
-    palette = 1=${cc.base08}
-    palette = 2=${cc.base0B}
-    palette = 3=${cc.base0A}
-    palette = 4=${cc.base0D}
-    palette = 5=${cc.base0E}
-    palette = 6=${cc.base0C}
-    palette = 7=${cc.base06}
-    palette = 8=${cc.base03}
-    palette = 9=${cc.base08}
-    palette = 10=${cc.base0B}
-    palette = 11=${cc.base0A}
-    palette = 12=${cc.base0D}
-    palette = 13=${cc.base0E}
-    palette = 14=${cc.base0C}
-    palette = 15=${cc.base07}
+    palette = 0=${pal.base01}
+    palette = 1=${pal.base08}
+    palette = 2=${pal.base0B}
+    palette = 3=${pal.base0A}
+    palette = 4=${pal.base0D}
+    palette = 5=${pal.base0E}
+    palette = 6=${pal.base0C}
+    palette = 7=${pal.base06}
+    palette = 8=${pal.base03}
+    palette = 9=${pal.base08}
+    palette = 10=${pal.base0B}
+    palette = 11=${pal.base0A}
+    palette = 12=${pal.base0D}
+    palette = 13=${pal.base0E}
+    palette = 14=${pal.base0C}
+    palette = 15=${pal.base07}
 
-    cursor-color = ${cc.base0D}
-    cursor-text = ${cc.base00}
-    selection-foreground = ${cc.base07}
-    selection-background = ${cc.base02}
+    cursor-color = ${pal.base0D}
+    cursor-text = ${pal.base00}
+    selection-foreground = ${pal.base07}
+    selection-background = ${pal.base02}
 
     # Glass: ghostty owns background alpha so text stays fully opaque;
     # blur comes from the compositor (Hyprland decoration:blur / niri
@@ -52,7 +52,7 @@ in
     #   cursor_warp.glsl  — Neovide-like: cursor stretches into a wedge and
     #                       snaps back (per-corner easing). Current pick.
     #   cursor_tail.glsl  — kitty-like comet trail, capped length.
-    #   cursor_smear.glsl — original ferro ribbon smear, quietest.
+    #   cursor_smear.glsl — original ribbon smear, quietest.
     # Switch cursor-style to block for a bolder trail — bar gives a thin
     # light-streak, which is the quieter read.
     custom-shader = shaders/cursor_warp.glsl
@@ -71,7 +71,7 @@ in
     window-padding-color = extend
     minimum-contrast = 1.2
     unfocused-split-opacity = 0.85
-    split-divider-color = ${cc.base02}
+    split-divider-color = ${pal.base02}
     gtk-titlebar = false
     window-decoration = false
     notify-on-command-finish = unfocused

@@ -10,7 +10,7 @@
   home.packages = [
     pkgs.quickshell
     # Polkit auth agent for the QS session (autostarted from the qs branch of
-    # hyprland-ferro.nix). Quickshell 0.2.1 exposes no polkit QML API, so the
+    # hyprland.nix). Quickshell 0.2.1 exposes no polkit QML API, so the
     # shell can't render auth dialogs itself — hyprpolkitagent (Qt/QML, made
     # for Hyprland) fills the gap. See qs-shell's DECISIONS.md (M7).
     pkgs.hyprpolkitagent

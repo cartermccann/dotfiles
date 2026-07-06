@@ -5,7 +5,7 @@
   ...
 }:
 # The standalone "plain Niri" session was retired; only Niri-Noctalia and
-# Hyprland (Ferro) remain. This file provides the cross-session helper scripts
+# the Hyprland sessions remain. This file provides the cross-session helper scripts
 # both still call (rice-dashboard from both; wallpaper-pick from Niri-Noctalia).
 let
   riceDashboard = pkgs.writeShellScriptBin "rice-dashboard" ''
