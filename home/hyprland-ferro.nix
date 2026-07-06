@@ -400,9 +400,22 @@ let
     hl.bind(mod .. " + SHIFT + TAB", hl.dsp.focus({ workspace = "e-1" }))
 
     -- Notifications (swaync)
-    hl.bind(mod .. " + comma",         hl.dsp.exec_cmd("swaync-client -d -sw")) -- dismiss latest
-    hl.bind(mod .. " + SHIFT + comma", hl.dsp.exec_cmd("swaync-client -C -sw")) -- close all
-    hl.bind(mod .. " + N",             hl.dsp.exec_cmd("swaync-client -t -sw")) -- toggle panel
+    ${
+      if shellKind == "waybar" then
+        lib.concatStringsSep "\n" [
+          ''hl.bind(mod .. " + comma",         hl.dsp.exec_cmd("swaync-client -d -sw")) -- dismiss latest''
+          ''hl.bind(mod .. " + SHIFT + comma", hl.dsp.exec_cmd("swaync-client -C -sw")) -- close all''
+          ''hl.bind(mod .. " + N",             hl.dsp.exec_cmd("swaync-client -t -sw")) -- toggle panel''
+        ]
+      else
+        # qs-shell IPC instead — the "notifs" handler lands alongside the
+        # notification center, a parallel M3 lane.
+        lib.concatStringsSep "\n" [
+          ''hl.bind(mod .. " + comma",         hl.dsp.exec_cmd("qs -c qs-shell ipc call notifs dismiss"))  -- dismiss latest''
+          ''hl.bind(mod .. " + SHIFT + comma", hl.dsp.exec_cmd("qs -c qs-shell ipc call notifs clearAll")) -- close all''
+          ''hl.bind(mod .. " + N",             hl.dsp.exec_cmd("qs -c qs-shell ipc call popout toggle notif")) -- toggle panel''
+        ]
+    }
 
     -- Control panels
     hl.bind(mod .. " + CTRL + A", hl.dsp.exec_cmd("pavucontrol"))
@@ -432,14 +445,39 @@ let
     hl.bind(mod .. " + SHIFT + E", hl.dsp.exit())
 
     -- Repeating volume/brightness (via swayosd for the OSD)
-    hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("swayosd-client --output-volume raise"), { repeating = true })
-    hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("swayosd-client --output-volume lower"), { repeating = true })
+    ${
+      if shellKind == "waybar" then
+        lib.concatStringsSep "\n" [
+          ''hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("swayosd-client --output-volume raise"), { repeating = true })''
+          ''hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("swayosd-client --output-volume lower"), { repeating = true })''
+        ]
+      else
+        # qs-shell's own IPC + OSD instead of swayosd.
+        lib.concatStringsSep "\n" [
+          ''hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("qs -c qs-shell ipc call audio up"),   { repeating = true })''
+          ''hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("qs -c qs-shell ipc call audio down"), { repeating = true })''
+        ]
+    }
     hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("swayosd-client --brightness raise"),    { repeating = true })
     hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("swayosd-client --brightness lower"),    { repeating = true })
 
     -- Locked binds (work while the lock screen is active)
-    hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle"), { locked = true })
-    hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("swayosd-client --input-volume mute-toggle"),  { locked = true })
+    ${
+      if shellKind == "waybar" then
+        lib.concatStringsSep "\n" [
+          ''hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle"), { locked = true })''
+          ''hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("swayosd-client --input-volume mute-toggle"),  { locked = true })''
+        ]
+      else
+        # Output mute -> qs-shell IPC. Mic-mute: swaync/swayosd's client is
+        # otherwise inert in the qs session (no swayosd-server running
+        # there); wpctl works standalone and needs no OSD, so mic-mute flips
+        # for real here instead of staying a dead bind.
+        lib.concatStringsSep "\n" [
+          ''hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("qs -c qs-shell ipc call audio mute"), { locked = true })''
+          ''hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), { locked = true })''
+        ]
+    }
     hl.bind("XF86AudioPlay",    hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
     hl.bind("XF86AudioNext",    hl.dsp.exec_cmd("playerctl next"),       { locked = true })
     hl.bind("XF86AudioPrev",    hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
