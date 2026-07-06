@@ -141,7 +141,12 @@ let
           size = 12, -- heavy frost; drop back toward 6/3 if the GPU runs hot
           passes = 4,
           new_optimizations = true,
-          xray = true, -- biggest NVIDIA perf lever: blur samples the wallpaper, not stacked windows
+          ${
+            if shellKind == "qs" then
+              "xray = false, -- xray breaks layer-shell blur in this build; qs-shell is glass-first (bar/popouts are layers) so it pays full blur"
+            else
+              "xray = true, -- biggest NVIDIA perf lever: blur samples the wallpaper, not stacked windows"
+          }
           ignore_opacity = true,
           noise = 0.055, -- coarser grain = the diffusion through the frost
           contrast = 0.9,
