@@ -11,10 +11,6 @@ let
   pal = import ../lib/palette.nix;
   cfgHome = config.xdg.configHome;
 
-  # Real-time generative ASCII wallpaper (the Ceen signal hand). Streams rawvideo
-  # into mpvpaper on the background layer; replaces the default swww still image.
-  ceenLive = pkgs.callPackage ../pkgs/ceen-live { };
-
   # "#1b1917" -> "27, 25, 23" for CSS rgba(). Single palette source of truth:
   # every color literal in this file is interpolated from `pal` — one accent
   # change in lib/palette.nix re-themes the whole session.
@@ -65,10 +61,6 @@ let
     # outside Hyprland (the script is niri-safe by construction).
     POS=$(${hyprctl} cursorpos 2>/dev/null | tr -d ' ')
     [ -n "$POS" ] || POS="0,0"
-    # Stop the live ASCII wallpaper so the picked still image is visible.
-    # Kill the supervisor first so it doesn't respawn mpvpaper after we take over.
-    ${pkgs.procps}/bin/pkill -f ceen-live-wallpaper 2>/dev/null || true
-    ${pkgs.procps}/bin/pkill -x mpvpaper 2>/dev/null || true
     ${pkgs.swww}/bin/swww img ~/wallpaper.png \
       --transition-type grow --transition-pos "$POS" \
       --transition-fps 165 --transition-duration 0.7 --transition-bezier .05,.7,.1,1
@@ -217,28 +209,28 @@ let
     hl.curve("menuAccel",       { type = "bezier", points = { { 0.52, 0.03 }, { 0.72, 0.08 } } }) -- layer exit
     hl.curve("almostLinear",    { type = "bezier", points = { { 0.5, 0.5 },   { 0.75, 1 }   } }) -- upstream fade default
     -- House easing tokens (reveal / snap / stage).
-    hl.curve("ferroReveal", { type = "bezier", points = { { 0.19, 1 },    { 0.22, 1 }  } }) -- --ease-reveal: aggressive expo-like decel
-    hl.curve("ferroSnap",   { type = "bezier", points = { { 0.65, 0.05 }, { 0, 1 }     } }) -- --ease-snap: late accel, hard settle
-    hl.curve("ferroStage",  { type = "bezier", points = { { 0.77, 0 },    { 0.175, 1 } } }) -- --ease-stage: deliberate in-out
+    hl.curve("easeReveal", { type = "bezier", points = { { 0.19, 1 },    { 0.22, 1 }  } }) -- --ease-reveal: aggressive expo-like decel
+    hl.curve("easeSnap",   { type = "bezier", points = { { 0.65, 0.05 }, { 0, 1 }     } }) -- --ease-snap: late accel, hard settle
+    hl.curve("easeStage",  { type = "bezier", points = { { 0.77, 0 },    { 0.175, 1 } } }) -- --ease-stage: deliberate in-out
     -- Upstream default spring, near-critically damped.
     hl.curve("easy", { type = "spring", mass = 1, stiffness = 71.2633, dampening = 15.8273644 })
 
     hl.animation({ leaf = "windows",     enabled = true, speed = 3.5, spring = "easy" })
-    hl.animation({ leaf = "windowsIn",   enabled = true, speed = 3,   bezier = "ferroReveal", style = "popin 85%" })
+    hl.animation({ leaf = "windowsIn",   enabled = true, speed = 3,   bezier = "easeReveal", style = "popin 85%" })
     hl.animation({ leaf = "windowsOut",  enabled = true, speed = 1.8, bezier = "almostLinear", style = "popin 90%" }) -- close gets out of the way
-    hl.animation({ leaf = "windowsMove", enabled = true, speed = 3,   bezier = "ferroSnap",   style = "slide" })
-    hl.animation({ leaf = "border",      enabled = true, speed = 3,   bezier = "ferroReveal" })
+    hl.animation({ leaf = "windowsMove", enabled = true, speed = 3,   bezier = "easeSnap",   style = "slide" })
+    hl.animation({ leaf = "border",      enabled = true, speed = 3,   bezier = "easeReveal" })
     hl.animation({ leaf = "fade",        enabled = true, speed = 2,   bezier = "almostLinear" })
     hl.animation({ leaf = "fadeIn",      enabled = true, speed = 1.7, bezier = "almostLinear" })
     hl.animation({ leaf = "fadeOut",     enabled = true, speed = 1.5, bezier = "almostLinear" })
     hl.animation({ leaf = "fadeDim",     enabled = true, speed = 2,   bezier = "almostLinear" })
     -- Layers: bar / fuzzel / swaync / swayosd get real entrances instead of defaults.
-    hl.animation({ leaf = "layersIn",      enabled = true, speed = 2.5, bezier = "ferroReveal", style = "popin 93%" })
+    hl.animation({ leaf = "layersIn",      enabled = true, speed = 2.5, bezier = "easeReveal", style = "popin 93%" })
     hl.animation({ leaf = "layersOut",     enabled = true, speed = 1.6, bezier = "menuAccel",       style = "popin 94%" })
     hl.animation({ leaf = "fadeLayersIn",  enabled = true, speed = 1.6, bezier = "menuDecel" })
     hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 1.8, bezier = "menuAccel" })
     -- Workspaces: the site's "stage transition" in-out — deliberate, cinematic slide.
-    hl.animation({ leaf = "workspaces", enabled = true, speed = 4, bezier = "ferroStage", style = "slide" })
+    hl.animation({ leaf = "workspaces", enabled = true, speed = 4, bezier = "easeStage", style = "slide" })
     -- Scratchpad drop-in/out (see SUPER+grave below).
     hl.animation({ leaf = "specialWorkspaceIn",  enabled = true, speed = 2.8, bezier = "emphasizedDecel", style = "slidefadevert 15%" })
     hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 1.5, bezier = "menuAccel",       style = "slidefadevert 15%" })
@@ -254,7 +246,7 @@ let
     ${
       if shellKind == "waybar" then
         lib.concatStringsSep "\n" [
-          ''hl.layer_rule({ match = { namespace = "waybar" },                     blur = true, ignore_alpha = 0.35, blur_popups = true })''
+          ''hl.layer_rule({ match = { namespace = "waybar" },                     blur = true, ignore_alpha = 0.2 })''
           ''hl.layer_rule({ match = { namespace = "launcher" },                   blur = true, ignore_alpha = 0.5, dim_around = true }) -- fuzzel: spotlight dim''
           ''hl.layer_rule({ match = { namespace = "swaync-control-center" },      blur = true, ignore_alpha = 0.5 })''
           ''hl.layer_rule({ match = { namespace = "swaync-notification-window" }, blur = true, ignore_alpha = 0.5 })''
@@ -450,14 +442,16 @@ let
         ''hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("hypr-wallpaper-pick"))''
       else
         # M7: qs-shell's own wallpaper picker overlay (ipc target
-        # "wallpaper"). It runs the same magick → pkill → swww pipeline as
+        # "wallpaper"). It runs the same magick → swww pipeline as
         # hypr-wallpaper-pick, writing the ~/wallpaper.png cross-session
         # contract; the fuzzel dmenu script stays on the waybar variant.
         ''hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("qs -c qs-shell ipc call wallpaper toggle"))''
     }
     ${
       if shellKind == "waybar" then
-        ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill waybar || ${waybarCmd}"))''
+        # Waybar handles SIGUSR2 as an in-process reload, avoiding a layer-shell
+        # teardown/recreate flash. Start it only when no process is running.
+        ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill -USR2 -x waybar || ${waybarCmd}"))''
       else
         # A restart, not a kill/start toggle — the shell should never stay dead
         # after one press. NB: the running process is `quickshell -c qs-shell`
@@ -519,6 +513,9 @@ let
       -- Import env into systemd/dbus, then bounce the portals (mirrors the niri startup line)
       hl.exec_cmd([[bash -c 'systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE && systemctl --user start hyprland-session.target && systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal 2>/dev/null']])
       hl.exec_cmd("swww-daemon")
+      -- Give the daemon a moment to bind its socket, then restore the shared
+      -- still wallpaper used by Niri, Hyprland, and hyprlock.
+      hl.exec_cmd([[bash -c 'sleep 1 && ${pkgs.swww}/bin/swww img ${config.home.homeDirectory}/wallpaper.png --transition-type fade --transition-duration 1']])
       hl.exec_cmd("wl-paste --watch cliphist store")
       ${
         if shellKind == "waybar" then
@@ -541,9 +538,6 @@ let
       -- hyprsunset as a plain autostart = hyprland-session-only by construction
       -- (a systemd user service would leak into the niri session and fight wlsunset).
       hl.exec_cmd("hyprsunset")
-      -- Live ASCII wallpaper. swww-daemon stays up (above) so hypr-wallpaper-pick
-      -- still works; picking a still image pkills mpvpaper to take over.
-      hl.exec_cmd("${ceenLive}/bin/ceen-live-wallpaper HDMI-A-1")
     end)
   '';
 in
@@ -554,8 +548,6 @@ in
         hyprPowerMenu
         hyprWallpaperPick
         hyprNightToggle
-        ceenLive # live ASCII wallpaper: `ceen-live-wallpaper HDMI-A-1` to (re)start
-
         pkgs.hyprsunset # night light daemon (autostarted below; hyprland session only)
         pkgs.grimblast # screenshot wrapper (adds --freeze; wraps grim+slurp)
         pkgs.hyprpicker # color picker → clipboard (SUPER+SHIFT+C)
@@ -665,25 +657,29 @@ in
           exec = "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits";
           format = "GPU {}°";
           interval = 10;
+          "min-length" = 8;
           on-click = "ghostty --class=TUI.float -e btop";
         };
         cpu = {
           format = "CPU {usage}%";
           interval = 5;
+          "min-length" = 8;
           on-click = "ghostty --class=TUI.float -e btop";
         };
         memory = {
           format = "MEM {percentage}%";
           interval = 5;
+          "min-length" = 8;
           on-click = "ghostty --class=TUI.float -e btop";
         };
         network = {
-          format-wifi = "{essid} {signalStrength}%";
+          format-wifi = "WIFI {signalStrength}%";
           format-ethernet = "ETH";
           format-disconnected = "OFFLINE";
           tooltip-format-ethernet = "{ifname}: {ipaddr}/{cidr}\n↓ {bandwidthDownBytes}  ↑ {bandwidthUpBytes}";
           tooltip-format-wifi = "{essid} ({signalStrength}%): {ipaddr}";
-          interval = 2;
+          interval = 10;
+          "min-length" = 9;
           on-click = "ghostty --class=TUI.float -e nmtui";
         };
         bluetooth = {
@@ -924,7 +920,7 @@ in
         ];
         widget-config = {
           title = {
-            text = "ferro";
+            text = "notifications";
             clear-all-button = true;
             button-text = "clear";
           };
@@ -1026,7 +1022,7 @@ in
           font_color = rgba(${pal.raw.base05}ff)
           check_color = rgba(${pal.raw.base0C}ee)
           fail_color = rgba(${pal.raw.base08}ee)
-          placeholder_text = <span foreground="##${pal.raw.base04}">ferro</span>
+          placeholder_text = <span foreground="##${pal.raw.base04}">password</span>
           rounding = 14
           fade_on_empty = false
           position = 0, -40

@@ -32,7 +32,7 @@ hosts/             # per-machine configuration + hardware config
 modules/           # NixOS system modules (desktop, nvidia, ollama, oom-protection, ...)
 home/              # home-manager modules (shell, tools, neovim, tmux, niri, hyprland, ...)
 lib/               # overlays + the hyprland palette
-pkgs/              # custom packages (ceen-live, screaming-frog-seo-spider)
+pkgs/              # custom package definitions
 templates/         # dev-shell templates for `nix flake init -t ~/dotfiles#<lang>`
 config/nvim/       # Neovim config, symlinked out of the store so it stays live-editable
 scripts/           # shell scripts referenced by modules

@@ -29,7 +29,7 @@ require("lazy").setup({
     { import = "plugins" },
   },
   defaults = { lazy = false, version = false },
-  install = { colorscheme = { "ferro", "square", "catppuccin-mocha", "tokyonight-night", "nord", "kanagawa-wave", "gruvbox", "rose-pine", "habamax" } },
+  install = { colorscheme = { "palette", "square", "catppuccin-mocha", "tokyonight-night", "nord", "kanagawa-wave", "gruvbox", "rose-pine", "habamax" } },
   checker = { enabled = true },
   performance = {
     rtp = {

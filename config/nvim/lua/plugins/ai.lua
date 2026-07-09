@@ -1,4 +1,4 @@
--- AI layer (FERRO-NEXT D3, revised 2026-06-10). One tool per layer:
+-- AI layer (revised 2026-06-10). One tool per layer:
 --   completion menu  blink.cmp (LazyVim default; accepts on <CR>/<C-y>, never Tab)
 --   tab autocomplete minuet-ai.nvim ghost text → local Ollama FIM
 --                    (qwen2.5-coder:3b-base, ~1.9 GB resident on the 5070).

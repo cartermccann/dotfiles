@@ -1,4 +1,4 @@
--- Ferro — neovim colorscheme derived from lib/palette.nix
+-- Palette — neovim colorscheme derived from lib/palette.nix
 -- Warm espresso/cream monochrome base + azure accent + phosphor-green motif.
 -- Mirrors the Hyprland rice so the editor matches the desktop.
 --
@@ -8,16 +8,16 @@
 --
 -- Transparency: defaults ON so the espresso comes from the terminal/compositor
 -- blur (matches square.lua + the catppuccin/transparent roster). Set
--- `vim.g.ferro_transparent = false` before `:colorscheme ferro` for a solid bg.
+-- `vim.g.palette_transparent = false` before `:colorscheme palette` for a solid bg.
 
 vim.cmd("hi clear")
 if vim.fn.exists("syntax_on") then
   vim.cmd("syntax reset")
 end
 vim.o.background = "dark"
-vim.g.colors_name = "ferro"
+vim.g.colors_name = "palette"
 
-local transparent = vim.g.ferro_transparent ~= false
+local transparent = vim.g.palette_transparent ~= false
 
 local c = {
   -- ── Base16 slots (lib/palette.nix) ──
