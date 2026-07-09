@@ -20,6 +20,7 @@ let
 
   screamingFrog = pkgs.callPackage ../pkgs/screaming-frog-seo-spider { };
   grokCli = pkgs.callPackage ../pkgs/grok-cli { };
+  codexCli = pkgs-unstable.callPackage ../pkgs/codex { };
 in
 
 {
@@ -91,8 +92,9 @@ in
     nix-output-monitor
 
     # AI / LLM
-    pkgs-unstable.opencode # agent CLIs move too fast for stable — take both from unstable
-    pkgs-unstable.codex
+    pkgs-unstable.opencode # agent CLIs move too fast for stable
+    pkgs-unstable.bubblewrap # PATH bwrap preferred by Codex over its bundled fallback
+    codexCli
     pkgs-unstable.ollama # CLI client only (server is the podman container) — unstable to stay near the 0.30.x server API
     fabric-ai # reusable AI prompt patterns
     grokCli # official xAI Grok CLI (grok/agent) — prebuilt binary in ../pkgs/grok-cli
