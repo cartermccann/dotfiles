@@ -21,6 +21,7 @@
     ./tools.nix
     ./hermes.nix
     ./headroom.nix
+    ./self-improve-loop.nix
     ./knockturnal-warmer.nix
     ./ghostty.nix
     ./swaylock.nix
