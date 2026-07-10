@@ -23,6 +23,9 @@
     ./headroom.nix
     ./self-improve-loop.nix
     ./codex-self-improve-loop.nix
+    ./pr-babysit-loop.nix
+    ./ci-triage-loop.nix
+    ./docs-gardener-loop.nix
     ./knockturnal-warmer.nix
     ./ghostty.nix
     ./swaylock.nix

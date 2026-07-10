@@ -36,8 +36,13 @@ pkgs/              # custom package definitions
 templates/         # dev-shell templates for `nix flake init -t ~/dotfiles#<lang>`
 config/nvim/       # Neovim config, symlinked out of the store so it stays live-editable
 scripts/           # shell scripts referenced by modules
+docs/              # project specifications, architecture, and delivery plans
 wallpaper/
 ```
+
+## Project documentation
+
+- [Dictation application plan](docs/dictation/README.md)
 
 ## Adding a machine
 
