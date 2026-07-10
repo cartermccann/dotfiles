@@ -1,0 +1,1147 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" href="data:,">
+  <title>Dictation — UX Design Directions</title>
+  <style>
+    :root {
+      --canvas: #15171c;
+      --canvas-2: #1b1e25;
+      --surface: #20232b;
+      --surface-raised: #282c35;
+      --surface-soft: #2d313b;
+      --glass: rgba(28, 31, 38, .92);
+      --ink: #e6e9ef;
+      --ink-dim: #a8afbd;
+      --ink-faint: #747c8b;
+      --coral: #ff7863;
+      --coral-soft: rgba(255, 120, 99, .14);
+      --coral-on: #1c0f0b;
+      --blue: #8ea7ff;
+      --blue-soft: rgba(142, 167, 255, .14);
+      --green: #5fd4a2;
+      --green-soft: rgba(95, 212, 162, .14);
+      --amber: #ffc46b;
+      --amber-soft: rgba(255, 196, 107, .14);
+      --error: #ff6b7a;
+      --error-soft: rgba(255, 107, 122, .14);
+      --outline: rgba(230, 233, 239, .10);
+      --outline-strong: rgba(230, 233, 239, .19);
+      --paper: #25231f;
+      --paper-raised: #2c2924;
+      --paper-soft: #37322c;
+      --paper-ink: #f0ece5;
+      --paper-ink-dim: #bcb3a8;
+      --paper-ink-faint: #91877c;
+      --paper-outline: rgba(240, 236, 229, .13);
+      --shadow: 0 24px 72px rgba(0, 0, 0, .46), 0 4px 16px rgba(0, 0, 0, .28);
+      --shadow-soft: 0 12px 36px rgba(0, 0, 0, .30);
+      --r-xs: 8px;
+      --r-s: 12px;
+      --r-m: 16px;
+      --r-l: 20px;
+      --r-pill: 999px;
+      --fast: 140ms;
+      --normal: 260ms;
+      --slow: 380ms;
+      --ease: cubic-bezier(.2, .8, .2, 1);
+      --sans: "Noto Sans", "Segoe UI", sans-serif;
+      --mono: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+    }
+
+    html[data-theme="light"] {
+      --canvas: #f1f2f4;
+      --canvas-2: #e6e8ec;
+      --surface: #fafafa;
+      --surface-raised: #ffffff;
+      --surface-soft: #e5e7eb;
+      --glass: rgba(250, 250, 251, .94);
+      --ink: #23262d;
+      --ink-dim: #4b5059;
+      --ink-faint: #707680;
+      --coral: #bd3d2c;
+      --coral-soft: rgba(189, 61, 44, .11);
+      --coral-on: #ffffff;
+      --blue: #4a63cf;
+      --blue-soft: rgba(74, 99, 207, .11);
+      --green: #147a52;
+      --green-soft: rgba(20, 122, 82, .10);
+      --amber: #89530d;
+      --amber-soft: rgba(137, 83, 13, .11);
+      --error: #b53448;
+      --error-soft: rgba(181, 52, 72, .10);
+      --outline: rgba(35, 38, 45, .11);
+      --outline-strong: rgba(35, 38, 45, .22);
+      --paper: #eee9e1;
+      --paper-raised: #f4efe7;
+      --paper-soft: #ded8ce;
+      --paper-ink: #28251f;
+      --paper-ink-dim: #655e56;
+      --paper-ink-faint: #8a8178;
+      --paper-outline: rgba(64, 58, 51, .14);
+      --shadow: 0 24px 72px rgba(40, 43, 50, .18), 0 4px 16px rgba(40, 43, 50, .10);
+      --shadow-soft: 0 12px 36px rgba(40, 43, 50, .14);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      font-kerning: normal;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button, select { color: inherit; }
+    button { border: 0; }
+    button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 3px;
+    }
+    button:disabled { cursor: not-allowed; opacity: .48; }
+    .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    .skip-link {
+      position: fixed; z-index: 100; top: 8px; left: 8px;
+      transform: translateY(-150%); padding: 10px 14px; border-radius: var(--r-s);
+      background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow);
+    }
+    .skip-link:focus { transform: none; }
+
+    .showcase {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      background:
+        radial-gradient(900px 500px at 12% -10%, var(--coral-soft), transparent 70%),
+        radial-gradient(840px 500px at 88% 110%, var(--blue-soft), transparent 72%),
+        var(--canvas);
+    }
+
+    .showcase-header {
+      position: sticky; top: 0; z-index: 40;
+      display: grid; grid-template-columns: auto minmax(300px, 1fr) auto;
+      gap: 22px; align-items: center;
+      min-height: 74px; padding: 12px clamp(16px, 2vw, 30px);
+      background: color-mix(in oklab, var(--canvas) 92%, transparent);
+      border-bottom: 1px solid var(--outline);
+      backdrop-filter: blur(22px) saturate(1.2);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: max-content; }
+    .brand-mark {
+      width: 36px; height: 36px; position: relative; display: grid; place-items: center;
+      border-radius: 13px; background: var(--coral-soft); border: 1px solid color-mix(in oklab, var(--coral) 28%, transparent);
+    }
+    .brand-mark::before {
+      content: ""; width: 7px; height: 15px; border: 2px solid var(--coral);
+      border-radius: 7px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;
+    }
+    .brand-mark::after {
+      content: ""; position: absolute; width: 15px; height: 9px; top: 16px;
+      border: 2px solid var(--coral); border-top: 0; border-radius: 0 0 9px 9px;
+    }
+    .brand-copy strong { display: block; font-size: 14px; font-weight: 650; letter-spacing: -.01em; }
+    .brand-copy span { display: block; margin-top: 2px; color: var(--ink-dim); font-size: 11px; }
+
+    .direction-tabs {
+      min-width: 0; display: flex; align-items: center; gap: 4px;
+      padding: 4px; overflow-x: auto; scrollbar-width: none;
+      border: 1px solid var(--outline); border-radius: var(--r-pill); background: color-mix(in oklab, var(--surface) 72%, transparent);
+    }
+    .direction-tabs::-webkit-scrollbar { display: none; }
+    .direction-tab {
+      min-height: 34px; padding: 0 12px; border-radius: var(--r-pill); cursor: pointer;
+      background: transparent; color: var(--ink-dim); white-space: nowrap;
+      font-size: 11.5px; font-weight: 550;
+      transition: color var(--fast) var(--ease), background var(--fast) var(--ease), transform var(--fast) var(--ease);
+    }
+    .direction-tab:hover { color: var(--ink); background: var(--surface-soft); }
+    .direction-tab:active { transform: scale(.97); }
+    .direction-tab[aria-pressed="true"] { color: var(--ink); background: var(--surface-raised); box-shadow: 0 1px 8px rgba(0,0,0,.12); }
+    .direction-tab .num { margin-right: 6px; color: var(--coral); font-family: var(--mono); font-size: 10px; }
+
+    .header-actions { display: flex; align-items: center; gap: 6px; }
+    .tool-button {
+      min-width: 36px; min-height: 36px; display: inline-grid; place-items: center;
+      padding: 0 11px; border-radius: var(--r-pill); cursor: pointer;
+      background: var(--surface); border: 1px solid var(--outline); color: var(--ink-dim);
+      transition: color var(--fast) var(--ease), background var(--fast) var(--ease), transform var(--fast) var(--ease);
+    }
+    .tool-button:hover { color: var(--ink); background: var(--surface-raised); }
+    .tool-button:active { transform: scale(.95); }
+    .tool-button[aria-pressed="true"] { color: var(--coral); background: var(--coral-soft); border-color: color-mix(in oklab, var(--coral) 24%, transparent); }
+
+    .workspace {
+      min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 310px;
+      gap: clamp(14px, 1.6vw, 24px); padding: clamp(14px, 1.8vw, 26px);
+    }
+    .workspace.inspector-hidden { grid-template-columns: minmax(0, 1fr); }
+    .workspace.inspector-hidden .inspector { display: none; }
+    .preview-column { min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 12px; }
+    .state-toolbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      min-width: 0;
+    }
+    .state-tabs {
+      display: flex; align-items: center; gap: 4px; padding: 4px;
+      border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--outline);
+    }
+    .state-tab {
+      min-height: 34px; padding: 0 15px; border-radius: var(--r-pill);
+      background: transparent; color: var(--ink-dim); cursor: pointer;
+      font-size: 12px; font-weight: 550;
+      transition: all var(--fast) var(--ease);
+    }
+    .state-tab:hover { color: var(--ink); }
+    .state-tab[aria-pressed="true"] { color: var(--ink); background: var(--surface-raised); }
+    .state-tab[data-state="recording"][aria-pressed="true"] { color: var(--coral); background: var(--coral-soft); }
+    .state-tab[data-state="held"][aria-pressed="true"] { color: var(--amber); background: var(--amber-soft); }
+    .state-tab[data-state="editor"][aria-pressed="true"] { color: var(--blue); background: var(--blue-soft); }
+    .state-tab[data-state="history"][aria-pressed="true"] { color: var(--green); background: var(--green-soft); }
+    .state-help { color: var(--ink-faint); font: 10.5px/1.4 var(--mono); white-space: nowrap; }
+
+    .preview-area {
+      min-height: 0; display: grid; place-items: center;
+    }
+    .preview-frame {
+      width: min(100%, calc((100vh - 190px) * 1.6));
+      min-width: 0; aspect-ratio: 16 / 10;
+      position: relative; overflow: hidden;
+      border-radius: clamp(14px, 1.6vw, 24px);
+      border: 1px solid var(--outline-strong);
+      background: #111319; box-shadow: var(--shadow);
+      container-type: inline-size;
+    }
+    .desktop-wall {
+      position: absolute; inset: 0; overflow: hidden;
+      background:
+        linear-gradient(155deg, rgba(255,255,255,.022), transparent 40%),
+        radial-gradient(55% 70% at 85% 88%, rgba(142,167,255,.16), transparent 72%),
+        radial-gradient(40% 50% at 8% 18%, rgba(255,120,99,.14), transparent 72%),
+        #14171d;
+    }
+    html[data-theme="light"] .desktop-wall {
+      background:
+        linear-gradient(155deg, rgba(255,255,255,.5), transparent 46%),
+        radial-gradient(55% 70% at 85% 88%, rgba(74,99,207,.13), transparent 72%),
+        radial-gradient(40% 50% at 8% 18%, rgba(189,61,44,.11), transparent 72%),
+        #e4e7ec;
+    }
+    .desktop-wall::before {
+      content: ""; position: absolute; width: 35%; aspect-ratio: 1; right: -9%; bottom: -22%;
+      border-radius: 42% 58% 61% 39% / 55% 38% 62% 45%;
+      background: color-mix(in oklab, var(--canvas) 86%, var(--blue)); opacity: .8;
+      transform: rotate(-17deg);
+    }
+    .desktop-wall::after {
+      content: ""; position: absolute; inset: 0; opacity: .035; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.65'/%3E%3C/svg%3E");
+    }
+    .desktop-bar {
+      position: absolute; z-index: 4; top: 1.6%; left: 1.4%; right: 1.4%; height: 5.2%;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.05%; border-radius: var(--r-pill);
+      background: rgba(25,28,35,.78); border: 1px solid rgba(230,233,239,.10);
+      backdrop-filter: blur(18px) saturate(1.25); color: #e6e9ef;
+      box-shadow: 0 7px 24px rgba(0,0,0,.20);
+      font-size: clamp(6px, .85cqw, 12px);
+    }
+    html[data-theme="light"] .desktop-bar { background: rgba(249,250,251,.84); color: #23262d; border-color: rgba(35,38,45,.11); }
+    .desk-cluster { display: flex; align-items: center; gap: .62cqw; }
+    .workspace-dot { width: .54cqw; min-width: 5px; aspect-ratio: 1; border-radius: 50%; background: currentColor; opacity: .26; }
+    .workspace-dot.active { width: 1.55cqw; border-radius: var(--r-pill); background: var(--coral); opacity: 1; }
+    .desk-cap { padding: .42cqw .82cqw; border-radius: var(--r-pill); background: rgba(230,233,239,.075); }
+    html[data-theme="light"] .desk-cap { background: rgba(35,38,45,.07); }
+
+    .artboard { position: absolute; inset: 0; z-index: 3; }
+    .design-screen { position: absolute; inset: 0; color: var(--ink); }
+    .state-view { position: absolute; inset: 0; display: none; }
+    .artboard[data-state="recording"] .state-recording,
+    .artboard[data-state="held"] .state-held,
+    .artboard[data-state="editor"] .state-editor,
+    .artboard[data-state="history"] .state-history { display: block; animation: state-in var(--normal) var(--ease) both; }
+    @keyframes state-in { from { opacity: 0; transform: translateY(1.2%) scale(.992); } to { opacity: 1; transform: none; } }
+
+    .glass {
+      background: var(--glass); border: 1px solid var(--outline-strong);
+      backdrop-filter: blur(26px) saturate(1.25); box-shadow: var(--shadow-soft);
+    }
+    .solid { background: var(--surface); border: 1px solid var(--outline); box-shadow: var(--shadow); }
+    .mock-window { position: absolute; overflow: hidden; border-radius: clamp(10px, 1.5cqw, 20px); }
+    .window-head {
+      height: 6.2cqw; max-height: 58px; min-height: 34px; display: flex; align-items: center; gap: 1cqw;
+      padding: 0 1.45cqw; border-bottom: 1px solid var(--outline);
+    }
+    .window-title { min-width: 0; }
+    .window-title strong { display: block; font-size: clamp(8px, 1.15cqw, 16px); font-weight: 650; }
+    .window-title span { display: block; color: var(--ink-dim); font-size: clamp(6px, .76cqw, 10.5px); margin-top: .12cqw; }
+    .window-actions { margin-left: auto; display: flex; align-items: center; gap: .55cqw; }
+    .mock-button {
+      min-height: 2.75cqw; min-width: 2.75cqw; display: inline-flex; align-items: center; justify-content: center; gap: .45cqw;
+      padding: 0 .9cqw; border-radius: var(--r-pill); background: var(--surface-soft);
+      border: 1px solid var(--outline); color: var(--ink); font-size: clamp(6px, .75cqw, 11px); font-weight: 600;
+    }
+    .mock-button.primary { background: var(--coral); color: var(--coral-on); border-color: transparent; }
+    .mock-button.safe { background: var(--green-soft); color: var(--green); }
+    .mock-button.warn { background: var(--amber-soft); color: var(--amber); }
+    .mock-button.danger { color: var(--error); background: transparent; }
+    .mock-icon-button { width: 2.75cqw; padding: 0; }
+    .mock-kbd {
+      display: inline-flex; min-width: 1.55cqw; height: 1.55cqw; align-items: center; justify-content: center;
+      border-radius: .4cqw; border: 1px solid var(--outline-strong); background: var(--surface-raised);
+      color: var(--ink-dim); font: clamp(5px, .6cqw, 9px)/1 var(--mono);
+    }
+    .tag {
+      display: inline-flex; align-items: center; gap: .4cqw; height: 2.2cqw; padding: 0 .76cqw;
+      border-radius: var(--r-pill); background: var(--surface-soft); color: var(--ink-dim);
+      font-size: clamp(5.5px, .67cqw, 9.5px); font-weight: 600; white-space: nowrap;
+    }
+    .tag::before { content: ""; width: .48cqw; min-width: 4px; aspect-ratio: 1; border-radius: 50%; background: currentColor; }
+    .tag.recording { color: var(--coral); background: var(--coral-soft); }
+    .tag.held { color: var(--amber); background: var(--amber-soft); }
+    .tag.ready { color: var(--green); background: var(--green-soft); }
+    .tag.private { color: var(--blue); background: var(--blue-soft); }
+    .tag.private::before { border-radius: 2px; }
+    .level-bars { display: flex; align-items: center; gap: .18cqw; height: 2.2cqw; }
+    .level-bars i { display: block; width: .18cqw; min-width: 2px; height: var(--h, 40%); border-radius: var(--r-pill); background: var(--coral); opacity: .82; animation: level 850ms var(--ease) infinite alternate; animation-delay: var(--d, 0ms); }
+    @keyframes level { from { transform: scaleY(.45); opacity: .5; } to { transform: scaleY(1); opacity: 1; } }
+    .transcript-copy { font-size: clamp(8px, 1.18cqw, 17px); line-height: 1.45; letter-spacing: -.012em; }
+    .transcript-copy .partial { color: var(--ink-dim); }
+    .meta-row { display: flex; align-items: center; gap: .55cqw; }
+    .spacer { flex: 1; }
+
+    .side-rail { border-right: 1px solid var(--outline); padding: 1.15cqw .8cqw; }
+    .rail-mark {
+      width: 2.8cqw; min-width: 26px; aspect-ratio: 1; margin: 0 auto 1.2cqw; border-radius: 1cqw;
+      display: grid; place-items: center; background: var(--coral-soft); color: var(--coral); font-weight: 700;
+    }
+    .rail-action {
+      width: 100%; min-height: 3cqw; margin-bottom: .45cqw; border-radius: .8cqw;
+      display: flex; align-items: center; justify-content: center; color: var(--ink-faint); font-size: clamp(7px, .9cqw, 13px);
+    }
+    .rail-action.active { background: var(--blue-soft); color: var(--blue); }
+    .doc-column { min-width: 0; padding: 2cqw 2.6cqw; overflow: hidden; }
+    .doc-label { color: var(--ink-faint); font: clamp(5.5px, .68cqw, 10px)/1.4 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .doc-title { margin: .65cqw 0 1.1cqw; font-size: clamp(13px, 2cqw, 28px); line-height: 1.15; letter-spacing: -.035em; font-weight: 650; }
+    .doc-text { max-width: 66ch; color: var(--ink); font-size: clamp(8px, 1.13cqw, 16px); line-height: 1.65; }
+    .doc-text p { margin: 0 0 1em; }
+    .selection { background: var(--blue-soft); border-radius: .25em; box-shadow: 0 0 0 2px var(--blue-soft); }
+    .context-panel { border-left: 1px solid var(--outline); padding: 1.45cqw 1.2cqw; overflow: hidden; }
+    .panel-title { font-size: clamp(7px, .9cqw, 13px); font-weight: 650; margin-bottom: 1cqw; }
+    .context-item { padding: .85cqw; border-radius: .8cqw; background: var(--surface-raised); margin-bottom: .7cqw; }
+    .context-item strong { display: block; font-size: clamp(6.5px, .78cqw, 11px); }
+    .context-item span { display: block; color: var(--ink-dim); font-size: clamp(5.5px, .66cqw, 9.5px); line-height: 1.45; margin-top: .35cqw; }
+    .history-list { overflow: hidden; }
+    .history-row {
+      display: grid; grid-template-columns: 5.8cqw minmax(0, 1fr) auto; gap: 1cqw; align-items: start;
+      padding: 1cqw 1.15cqw; border-bottom: 1px solid var(--outline); color: var(--ink);
+    }
+    .history-row.active { background: var(--blue-soft); }
+    .history-time { color: var(--ink-faint); font: clamp(5.5px, .65cqw, 9px)/1.5 var(--mono); }
+    .history-copy { min-width: 0; }
+    .history-copy strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(6.5px, .82cqw, 12px); font-weight: 600; }
+    .history-copy span { display: block; color: var(--ink-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(5.5px, .68cqw, 10px); margin-top: .3cqw; }
+    .search-field {
+      min-height: 3.25cqw; display: flex; align-items: center; gap: .7cqw; padding: 0 1cqw;
+      border-radius: 1cqw; background: var(--surface-raised); border: 1px solid var(--outline);
+      color: var(--ink-dim); font-size: clamp(6px, .76cqw, 11px);
+    }
+    .search-field b { color: var(--blue); font-size: 1.1em; }
+
+    .inspector {
+      min-height: 0; align-self: stretch; overflow: auto;
+      padding: 22px; border-radius: var(--r-l); background: var(--surface); border: 1px solid var(--outline);
+      box-shadow: var(--shadow-soft);
+    }
+    .inspector-kicker { color: var(--coral); font: 10px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .inspector h1 { margin: 8px 0 5px; font-size: 25px; line-height: 1.1; letter-spacing: -.04em; }
+    .inspector .tagline { margin: 0 0 22px; color: var(--ink-dim); font-size: 13px; line-height: 1.55; }
+    .recommendation {
+      display: none; align-items: center; gap: 8px; width: fit-content; margin-bottom: 18px; padding: 7px 10px;
+      border-radius: var(--r-pill); color: var(--green); background: var(--green-soft); font-size: 11px; font-weight: 650;
+    }
+    .recommendation.visible { display: inline-flex; }
+    .recommendation::before { content: "✓"; }
+    .inspector-section { padding: 16px 0; border-top: 1px solid var(--outline); }
+    .inspector-section h2 { margin: 0 0 8px; color: var(--ink-faint); font: 10px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .inspector-section p { margin: 0; color: var(--ink-dim); font-size: 12px; line-height: 1.6; }
+    .inspector-section ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+    .inspector-section li { position: relative; padding-left: 14px; color: var(--ink-dim); font-size: 12px; line-height: 1.48; }
+    .inspector-section li::before { content: ""; position: absolute; left: 0; top: .56em; width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
+    .inspector-section.risk li::before { background: var(--amber); }
+
+    .single-layout { width: 100%; display: grid; place-items: center; }
+    .compare-layout { width: 100%; display: none; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .compare-layout.visible { display: grid; }
+    .single-layout.hidden { display: none; }
+    .compare-pane { min-width: 0; display: grid; gap: 8px; }
+    .compare-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .compare-head label { color: var(--ink-faint); font: 10px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .compare-select {
+      min-height: 34px; min-width: 0; padding: 0 32px 0 11px; border-radius: var(--r-pill);
+      background: var(--surface); border: 1px solid var(--outline); font-size: 11px;
+    }
+    .compare-layout .preview-frame { width: 100%; }
+
+    .showcase-footer {
+      display: flex; justify-content: space-between; align-items: center; gap: 18px;
+      min-height: 42px; padding: 8px clamp(16px, 2vw, 30px);
+      border-top: 1px solid var(--outline); color: var(--ink-faint); font-size: 10.5px;
+    }
+    .footer-keys { display: flex; gap: 14px; font-family: var(--mono); }
+
+    @container (max-width: 700px) {
+      .desktop-bar { height: 7%; }
+      .window-head { min-height: 28px; }
+      .tag { height: 2.6cqw; }
+    }
+
+    @media (max-width: 1180px) {
+      .showcase-header { grid-template-columns: auto 1fr; }
+      .header-actions { grid-column: 2; grid-row: 1; justify-self: end; }
+      .direction-tabs { grid-column: 1 / -1; grid-row: 2; }
+      .workspace { grid-template-columns: minmax(0, 1fr); }
+      .inspector { display: none; }
+      .workspace.inspector-open { grid-template-columns: minmax(0, 1fr) 290px; }
+      .workspace.inspector-open .inspector { display: block; }
+      .preview-frame { width: min(100%, calc((100vh - 250px) * 1.6)); }
+    }
+    @media (max-width: 760px) {
+      .showcase-header { gap: 10px; padding: 10px 12px; }
+      .brand-copy span { display: none; }
+      .header-actions { gap: 4px; }
+      .workspace { padding: 10px; }
+      .workspace.inspector-open { grid-template-columns: minmax(0, 1fr); }
+      .workspace.inspector-open .inspector { display: block; }
+      .state-toolbar { align-items: flex-start; flex-direction: column; }
+      .state-tabs { width: 100%; overflow-x: auto; }
+      .state-tab { flex: 1; padding: 0 10px; }
+      .state-help { display: none; }
+      .preview-frame { width: 100%; aspect-ratio: 4 / 3; }
+      .compare-layout.visible { grid-template-columns: 1fr; }
+      .showcase-footer { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+    @media (forced-colors: active) {
+      :root {
+        --paper: Canvas;
+        --paper-raised: Canvas;
+        --paper-soft: ButtonFace;
+        --paper-ink: CanvasText;
+        --paper-ink-dim: CanvasText;
+        --paper-ink-faint: CanvasText;
+        --paper-outline: CanvasText;
+      }
+      .q4-note, .q4-held, .q4-editor, .q4-history {
+        background: Canvas;
+        color: CanvasText;
+        border: 1px solid CanvasText;
+        box-shadow: none;
+        backdrop-filter: none;
+      }
+      .q4-held .paper-button.primary { background: Highlight; color: HighlightText; }
+    }
+
+    /* Direction 01 — Quiet Orbit: one centered surface grows with intent. */
+    .q1-capture {
+      position: absolute; left: 50%; bottom: 6.5%; transform: translateX(-50%);
+      width: 55%; min-height: 12.5%; padding: 1.05cqw 1.25cqw;
+      border-radius: 2cqw; display: grid; gap: .75cqw;
+    }
+    .q1-capture .topline { display: flex; align-items: center; gap: .75cqw; }
+    .q1-capture .timer { color: var(--coral); font: clamp(6px,.78cqw,11px)/1 var(--mono); }
+    .q1-capture .transcript-copy { padding-left: .15cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .q1-held {
+      position: absolute; left: 50%; bottom: 5%; transform: translateX(-50%);
+      width: 57%; min-height: 26%; padding: 1.35cqw 1.45cqw; border-radius: 2cqw;
+    }
+    .q1-held .verdict { display: flex; align-items: center; gap: .8cqw; color: var(--amber); font-size: clamp(7px,.9cqw,13px); font-weight: 650; }
+    .q1-held .excerpt { margin: 1cqw 0 1.25cqw; font-size: clamp(8px,1.15cqw,16px); line-height: 1.5; }
+    .q1-held .actions { display: flex; align-items: center; gap: .65cqw; }
+    .q1-editor, .q1-history { left: 7%; right: 7%; top: 10%; bottom: 5%; }
+    .q1-editor-body { height: calc(100% - min(6.2cqw, 58px)); display: grid; grid-template-columns: 6.2% minmax(0,1fr) 25%; }
+    .q1-history-body { height: calc(100% - min(6.2cqw, 58px)); display: grid; grid-template-columns: 35% minmax(0,1fr); }
+    .q1-history-left { border-right: 1px solid var(--outline); padding: 1.25cqw; overflow: hidden; }
+    .q1-history-left .search-field { margin-bottom: 1cqw; }
+    .q1-detail { padding: 2cqw 2.4cqw; overflow: hidden; }
+    .q1-detail .outcome { display: flex; align-items: center; gap: .6cqw; color: var(--green); font-size: clamp(6px,.76cqw,11px); font-weight: 650; }
+
+    /* Direction 02 — Edge Ledger: instrument rail and chronological spine. */
+    .q2-capture-rail {
+      position: absolute; right: 2.2%; top: 14%; bottom: 10%; width: 6.2%;
+      border-radius: 2.2cqw; display: flex; flex-direction: column; align-items: center;
+      padding: 1.25cqw .55cqw; gap: 1.05cqw;
+    }
+    .q2-capture-rail .vertical-word { writing-mode: vertical-rl; transform: rotate(180deg); color: var(--coral); font: clamp(6px,.72cqw,10px)/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .q2-capture-rail .timer { margin-top: auto; color: var(--ink-dim); font: clamp(5px,.66cqw,9px)/1 var(--mono); writing-mode: vertical-rl; }
+    .q2-wing {
+      position: absolute; right: 8%; top: 34%; width: 38%; min-height: 16%;
+      padding: 1.25cqw 1.4cqw; border-radius: 1.6cqw 0 0 1.6cqw;
+    }
+    .q2-wing .eyebrow { margin-bottom: .7cqw; color: var(--ink-faint); font: clamp(5px,.65cqw,9px)/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .q2-held {
+      position: absolute; right: 2.2%; top: 14%; bottom: 8%; width: 43%;
+      padding: 1.6cqw; border-radius: 2cqw;
+    }
+    .q2-held .edge-rule { position: absolute; right: 0; top: 0; bottom: 0; width: .45cqw; background: var(--amber); }
+    .q2-held h2 { margin: 0 0 .65cqw; color: var(--amber); font-size: clamp(9px,1.35cqw,19px); }
+    .q2-held .excerpt { margin: 1.4cqw 0; font-size: clamp(8px,1.05cqw,15px); line-height: 1.55; }
+    .q2-held .actions { display: grid; gap: .55cqw; }
+    .q2-held .action-row { min-height: 3.4cqw; display: flex; align-items: center; padding: 0 1cqw; border-radius: .8cqw; background: var(--surface-raised); font-size: clamp(6px,.74cqw,10.5px); }
+    .q2-held .action-row .mock-kbd { margin-left: auto; }
+    .q2-editor, .q2-history { left: 3%; right: 3%; top: 9.5%; bottom: 3.5%; border-radius: 1.2cqw; }
+    .q2-editor-body { height: calc(100% - min(6.2cqw,58px)); display: grid; grid-template-columns: 14% minmax(0,1fr) 7%; }
+    .q2-ledger { border-right: 1px solid var(--outline); padding: 1.4cqw .9cqw; }
+    .q2-ledger-date { color: var(--ink-faint); font: clamp(5px,.62cqw,9px)/1.4 var(--mono); }
+    .q2-ledger-step { position: relative; margin: 1.25cqw 0 0 .65cqw; padding-left: 1.2cqw; color: var(--ink-dim); font-size: clamp(5.5px,.68cqw,10px); }
+    .q2-ledger-step::before { content:""; position:absolute; left:0; top:.35em; width:.48cqw; min-width:4px; aspect-ratio:1; border-radius:50%; background:var(--blue); }
+    .q2-tool-rail { border-left: 1px solid var(--outline); padding: 1cqw .6cqw; }
+    .q2-history-body { height: calc(100% - min(6.2cqw,58px)); display:grid; grid-template-columns: 12% 42% minmax(0,1fr); }
+    .q2-days { border-right:1px solid var(--outline); padding:1.2cqw .8cqw; }
+    .q2-day { padding:.75cqw .4cqw; color:var(--ink-faint); font:clamp(5px,.62cqw,9px)/1.3 var(--mono); }
+    .q2-day.active { color:var(--coral); }
+    .q2-results { border-right:1px solid var(--outline); padding:1cqw; }
+
+    /* Direction 03 — Command Strip: dense, search-driven, keyboard first. */
+    .q3-capture {
+      position:absolute; left:50%; top:9%; transform:translateX(-50%); width:62%; min-height:7%;
+      display:flex; align-items:center; gap:.8cqw; padding:.65cqw .8cqw; border-radius:1.1cqw;
+    }
+    .q3-capture .command-glyph { width:2.55cqw; aspect-ratio:1; display:grid; place-items:center; border-radius:.7cqw; background:var(--coral-soft); color:var(--coral); font-weight:700; }
+    .q3-capture .transcript-copy { min-width:0; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:clamp(7px,.9cqw,13px); }
+    .q3-capture .command-status { color:var(--amber); font:clamp(5px,.62cqw,9px)/1 var(--mono); }
+    .q3-lens {
+      position:absolute; left:50%; top:19%; transform:translateX(-50%); width:58%; min-height:44%; padding:.7cqw;
+      border-radius:1.5cqw;
+    }
+    .q3-query { min-height:4.4cqw; display:flex; align-items:center; gap:.85cqw; padding:0 1.1cqw; border-bottom:1px solid var(--outline); font-size:clamp(8px,1.15cqw,16px); }
+    .q3-query .prompt { color:var(--amber); font-family:var(--mono); }
+    .q3-lens-copy { padding:1.2cqw 1.25cqw; color:var(--ink); font-size:clamp(7px,.88cqw,13px); line-height:1.55; border-bottom:1px solid var(--outline); }
+    .q3-command { min-height:3.5cqw; display:flex; align-items:center; gap:.75cqw; padding:0 1cqw; border-radius:.75cqw; font-size:clamp(6px,.75cqw,11px); }
+    .q3-command.active { background:var(--amber-soft); color:var(--amber); }
+    .q3-command .desc { color:var(--ink-dim); }
+    .q3-command .mock-kbd { margin-left:auto; }
+    .q3-editor, .q3-history { left:6%; right:6%; top:9.5%; bottom:4%; border-radius:1.25cqw; }
+    .q3-editor-body { height:calc(100% - min(6.2cqw,58px)); padding:2.3cqw 8cqw 5.2cqw; }
+    .q3-editor-body .doc-text { max-width:72ch; margin:0 auto; }
+    .q3-commandbar { position:absolute; left:10%; right:10%; bottom:2.5%; min-height:4.5cqw; display:flex; align-items:center; gap:.65cqw; padding:.65cqw .8cqw; border-radius:1.2cqw; }
+    .q3-commandbar .hint { flex:1; color:var(--ink-dim); font-size:clamp(6px,.72cqw,10.5px); }
+    .q3-history-body { height:calc(100% - min(6.2cqw,58px)); padding:1.4cqw 10%; }
+    .q3-history-body .search-field { min-height:4.3cqw; margin-bottom:1cqw; }
+    .q3-result { display:grid; grid-template-columns:6cqw 1fr auto; gap:1cqw; padding:1cqw; border-radius:.85cqw; font-size:clamp(6px,.76cqw,11px); }
+    .q3-result.active { background:var(--blue-soft); }
+    .q3-result .snippet { color:var(--ink-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    /* Direction 04 — Paper & Margin: editorial transcript, contextual margin. */
+    .q4-note {
+      position:absolute; left:50%; bottom:6.5%; transform:translateX(-50%);
+      width:55%; min-height:12.5%; padding:1.05cqw 1.25cqw;
+      border-radius:2cqw; background:var(--glass); color:var(--ink);
+      box-shadow:var(--shadow); border:1px solid var(--outline); backdrop-filter:blur(22px);
+    }
+    .q4-note::before { content:none; }
+    .q4-note .note-head { display:flex; align-items:center; gap:.7cqw; color:var(--coral); font-size:clamp(6px,.75cqw,11px); font-weight:700; }
+    .q4-note .hold-on-stop { color:var(--ink-dim); font:.62cqw var(--mono); }
+    .q4-note .transcript-copy { margin-top:.8cqw; color:var(--ink); }
+    .q4-note .partial { color:var(--ink-dim); }
+    .q4-held {
+      position:absolute; right:5%; bottom:5%; width:38%; min-height:35%; padding:1.5cqw;
+      border-radius:1cqw 2cqw 2cqw 1cqw; background:var(--paper-raised); color:var(--paper-ink);
+      box-shadow:0 24px 68px rgba(0,0,0,.32); border:1px solid var(--paper-outline);
+    }
+    .q4-held .margin-label { color:var(--amber); font:clamp(5.5px,.68cqw,9.5px)/1.4 var(--mono); text-transform:uppercase; letter-spacing:.08em; }
+    .q4-held h2 { margin:.55cqw 0 1.05cqw; font-size:clamp(10px,1.45cqw,21px); letter-spacing:-.03em; }
+    .q4-held .excerpt { padding-left:1.2cqw; border-left:2px solid var(--amber); font-size:clamp(7px,.94cqw,14px); line-height:1.55; }
+    .q4-held .paper-actions { display:flex; gap:.6cqw; margin-top:1.25cqw; }
+    .q4-held .paper-button { min-height:3cqw; padding:0 .9cqw; border-radius:.7cqw; background:var(--paper-soft); color:var(--paper-ink); font-size:clamp(6px,.7cqw,10px); font-weight:650; }
+    .q4-held .paper-button.primary { background:var(--coral); color:var(--coral-on); }
+    .q4-held .paper-button.discard { color:var(--error); background:transparent; }
+    .q4-editor, .q4-history { left:10%; right:10%; top:9%; bottom:3.5%; border-radius:.75cqw; background:var(--paper); color:var(--paper-ink); box-shadow:0 28px 80px rgba(0,0,0,.32); }
+    .q4-head { height:5.6cqw; max-height:54px; min-height:32px; display:flex; align-items:center; padding:0 2cqw; border-bottom:1px solid var(--paper-outline); }
+    .q4-head strong { font-size:clamp(8px,1cqw,14px); }
+    .q4-head .paper-meta { margin-left:auto; color:var(--paper-ink-dim); font:clamp(5px,.63cqw,9px)/1 var(--mono); }
+    .q4-editor-body { height:calc(100% - min(5.6cqw,54px)); display:grid; grid-template-columns:minmax(0,1fr) 26%; }
+    .q4-paper { padding:3.2cqw 4.6cqw; overflow:hidden; }
+    .q4-paper .folio { color:var(--paper-ink-faint); font:clamp(5px,.62cqw,9px)/1 var(--mono); }
+    .q4-paper h1 { margin:.7cqw 0 1.3cqw; font-size:clamp(14px,2.3cqw,32px); line-height:1.08; letter-spacing:-.045em; }
+    .q4-paper p { max-width:65ch; margin:0; font-size:clamp(8px,1.12cqw,16px); line-height:1.7; }
+    .q4-margin { border-left:1px solid var(--paper-outline); padding:2cqw 1.4cqw; }
+    .q4-margin h3 { margin:0 0 1cqw; color:var(--paper-ink-faint); font:clamp(5px,.65cqw,9px)/1 var(--mono); text-transform:uppercase; letter-spacing:.08em; }
+    .q4-callout { padding:.9cqw; border-radius:.6cqw; background:var(--paper-soft); margin-bottom:.75cqw; font-size:clamp(6px,.72cqw,10.5px); line-height:1.45; }
+    .q4-history-body { height:calc(100% - min(5.6cqw,54px)); display:grid; grid-template-columns:28% minmax(0,1fr); }
+    .q4-index { border-right:1px solid var(--paper-outline); padding:1.5cqw; }
+    .q4-index-search { padding-bottom:1cqw; border-bottom:1px solid var(--paper-outline); color:var(--paper-ink-dim); font-size:.75cqw; }
+    .q4-index-row { display:flex; gap:.8cqw; padding:.85cqw 0; border-bottom:1px solid var(--paper-outline); font-size:clamp(6px,.72cqw,10.5px); }
+    .q4-index-row span { color:var(--paper-ink-dim); font-family:var(--mono); }
+    .q4-history .history-note { margin-top:1em; color:var(--paper-ink-dim); }
+
+    /* Direction 05 — Session Split: fresh result beside a persistent ledger. */
+    .q5-ribbon {
+      position:absolute; left:4%; bottom:5.5%; width:64%; min-height:14%; display:grid; grid-template-columns:16% minmax(0,1fr) auto;
+      gap:1.1cqw; align-items:center; padding:1.1cqw 1.25cqw; border-radius:1.25cqw;
+    }
+    .q5-session-id { border-right:1px solid var(--outline); padding-right:1cqw; }
+    .q5-session-id strong { display:block; color:var(--coral); font-size:clamp(7px,.9cqw,13px); }
+    .q5-session-id span { display:block; margin-top:.35cqw; color:var(--ink-faint); font:clamp(5px,.61cqw,9px)/1 var(--mono); }
+    .q5-ribbon .transcript-copy { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .q5-queue { position:absolute; left:4%; bottom:21.2%; display:flex; gap:.45cqw; }
+    .q5-queue span { width:1.7cqw; height:.4cqw; border-radius:var(--r-pill); background:var(--ink-faint); opacity:.35; }
+    .q5-queue span.active { width:3.4cqw; background:var(--coral); opacity:1; }
+    .q5-held { position:absolute; left:5%; right:5%; bottom:4.5%; min-height:38%; border-radius:1.5cqw; display:grid; grid-template-columns:68% minmax(0,1fr); overflow:hidden; }
+    .q5-held-copy { padding:1.5cqw 1.7cqw; }
+    .q5-held-copy .receipt { color:var(--ink-faint); font:clamp(5px,.63cqw,9px)/1 var(--mono); }
+    .q5-held-copy h2 { margin:.7cqw 0 1cqw; color:var(--amber); font-size:clamp(9px,1.25cqw,18px); }
+    .q5-held-copy p { margin:0; font-size:clamp(7px,.9cqw,13px); line-height:1.55; }
+    .q5-held-verdict { padding:1.5cqw; border-left:1px solid var(--outline); background:var(--amber-soft); }
+    .q5-held-verdict strong { color:var(--amber); font-size:clamp(7px,.86cqw,12px); }
+    .q5-held-verdict p { color:var(--ink-dim); font-size:clamp(5.5px,.67cqw,9.5px); line-height:1.5; }
+    .q5-held-verdict .mock-button { width:100%; margin-top:.55cqw; }
+    .q5-editor, .q5-history { left:4%; right:4%; top:9%; bottom:3%; border-radius:1.3cqw; }
+    .q5-body { height:calc(100% - min(6.2cqw,58px)); display:grid; grid-template-columns:34% minmax(0,1fr); }
+    .q5-sessions { border-right:1px solid var(--outline); padding:1.15cqw; overflow:hidden; }
+    .q5-sessions .search-field { margin-bottom:.8cqw; }
+    .q5-session-row { padding:1cqw .85cqw; border-radius:.75cqw; margin-bottom:.35cqw; }
+    .q5-session-row.active { background:var(--blue-soft); }
+    .q5-session-row strong { display:block; font-size:clamp(6.5px,.78cqw,11px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .q5-session-row span { display:block; margin-top:.35cqw; color:var(--ink-dim); font-size:clamp(5.5px,.64cqw,9px); }
+    .q5-main { padding:2cqw 2.4cqw; overflow:hidden; }
+    .q5-main .session-meta { display:flex; gap:.55cqw; margin-bottom:1.2cqw; }
+
+    /* Direction 06 — Morph Dock: transport surface unfolds from the bottom edge. */
+    .q6-dock {
+      position:absolute; left:14%; right:14%; bottom:3.5%; min-height:10%; display:grid; grid-template-columns:auto minmax(0,1fr) auto;
+      align-items:center; gap:1.15cqw; padding:.75cqw 1cqw; border-radius:1.5cqw;
+    }
+    .q6-orb { width:3.7cqw; aspect-ratio:1; border-radius:50%; display:grid; place-items:center; background:var(--coral-soft); border:1px solid color-mix(in oklab,var(--coral) 30%,transparent); }
+    .q6-orb::before { content:""; width:.75cqw; height:1.45cqw; border:2px solid var(--coral); border-radius:var(--r-pill); }
+    .q6-dock-copy { min-width:0; }
+    .q6-dock-copy .meta { display:flex; gap:.6cqw; color:var(--coral); font:clamp(5px,.62cqw,9px)/1 var(--mono); }
+    .q6-dock-copy .transcript-copy { margin-top:.45cqw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .q6-held { position:absolute; left:14%; right:14%; bottom:3.5%; min-height:34%; padding:1.5cqw; border-radius:1.7cqw; }
+    .q6-handle { width:4cqw; height:.35cqw; margin:-.5cqw auto 1.2cqw; border-radius:var(--r-pill); background:var(--outline-strong); }
+    .q6-held-head { display:flex; align-items:center; gap:.75cqw; color:var(--amber); font-size:clamp(7px,.9cqw,13px); font-weight:650; }
+    .q6-held-copy { margin:1cqw 0 1.25cqw; font-size:clamp(8px,1.08cqw,15px); line-height:1.55; }
+    .q6-held-actions { display:flex; gap:.6cqw; }
+    .q6-editor, .q6-history { left:8%; right:8%; top:16%; bottom:2.5%; border-radius:1.7cqw 1.7cqw .7cqw .7cqw; }
+    .q6-sheet-head { min-height:5.6cqw; display:flex; align-items:center; gap:.75cqw; padding:0 1.4cqw; border-bottom:1px solid var(--outline); }
+    .q6-sheet-head .q6-handle { margin:0 auto; position:absolute; top:.65cqw; left:48%; }
+    .q6-tabs { display:flex; align-items:center; gap:.4cqw; }
+    .q6-tab { padding:.55cqw .85cqw; border-radius:var(--r-pill); color:var(--ink-dim); font-size:clamp(5.5px,.68cqw,10px); }
+    .q6-tab.active { background:var(--blue-soft); color:var(--blue); }
+    .q6-editor-body { height:calc(100% - 5.6cqw); display:grid; grid-template-columns:minmax(0,1fr) 27%; }
+    .q6-history-body { height:calc(100% - 5.6cqw); display:grid; grid-template-rows:28% minmax(0,1fr); }
+    .q6-timeline { display:flex; align-items:flex-end; gap:.65cqw; padding:1.2cqw 1.6cqw; border-bottom:1px solid var(--outline); }
+    .q6-tick { width:8%; min-height:4.2cqw; padding:.65cqw; border-radius:.7cqw .7cqw 0 0; background:var(--surface-raised); font-size:clamp(5px,.6cqw,9px); }
+    .q6-tick.active { min-height:6.4cqw; background:var(--green-soft); color:var(--green); }
+    .q6-history-detail { display:grid; grid-template-columns:38% minmax(0,1fr); }
+
+    /* Direction 07 — Bare Signal: minimal chrome, typographic state. */
+    .q7-signal { position:absolute; left:50%; bottom:7%; transform:translateX(-50%); width:54%; color:#e6e9ef; filter:drop-shadow(0 4px 18px rgba(0,0,0,.55)); }
+    html[data-theme="light"] .q7-signal { color:#23262d; }
+    .q7-line { display:grid; grid-template-columns:auto auto minmax(0,1fr); align-items:center; gap:.85cqw; }
+    .q7-pulse { width:.75cqw; min-width:7px; aspect-ratio:1; border-radius:50%; background:var(--coral); box-shadow:0 0 0 .45cqw var(--coral-soft); }
+    .q7-time { color:var(--coral); font:clamp(6px,.76cqw,11px)/1 var(--mono); }
+    .q7-signal .transcript-copy { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:clamp(9px,1.35cqw,19px); font-weight:520; }
+    .q7-rule { height:2px; margin-top:.8cqw; border-radius:var(--r-pill); background:linear-gradient(90deg,var(--coral) 0 38%,rgba(230,233,239,.18) 38%); }
+    .q7-meta { display:flex; gap:1cqw; margin-top:.65cqw; color:#a8afbd; font:clamp(5px,.62cqw,9px)/1 var(--mono); }
+    html[data-theme="light"] .q7-meta { color:#4b5059; }
+    .q7-held { position:absolute; left:50%; bottom:6%; transform:translateX(-50%); width:58%; padding:1.1cqw 0 0 1.4cqw; border-left:.35cqw solid var(--amber); color:#e6e9ef; text-shadow:0 3px 14px rgba(0,0,0,.55); }
+    html[data-theme="light"] .q7-held { color:#23262d; text-shadow:0 2px 12px rgba(255,255,255,.55); }
+    .q7-held h2 { margin:0 0 .55cqw; color:var(--amber); font-size:clamp(9px,1.4cqw,20px); }
+    .q7-held p { margin:0 0 .9cqw; font-size:clamp(7px,.9cqw,13px); line-height:1.5; }
+    .q7-held-actions { display:flex; gap:1cqw; color:#a8afbd; font:clamp(5px,.64cqw,9px)/1 var(--mono); }
+    .q7-held-actions b { color:#e6e9ef; font-weight:600; }
+    html[data-theme="light"] .q7-held-actions { color:#4b5059; }
+    html[data-theme="light"] .q7-held-actions b { color:#23262d; }
+    .q7-editor, .q7-history { left:8%; right:8%; top:9%; bottom:3%; border-radius:.7cqw; background:color-mix(in oklab,var(--canvas) 97%,transparent); border:0; box-shadow:none; }
+    .q7-head { height:5cqw; max-height:48px; min-height:30px; display:flex; align-items:center; padding:0 1.4cqw; border-bottom:1px solid var(--outline); }
+    .q7-head strong { font-size:clamp(7px,.9cqw,13px); }
+    .q7-head .quiet-actions { margin-left:auto; display:flex; gap:1cqw; color:var(--ink-dim); font:clamp(5px,.62cqw,9px)/1 var(--mono); }
+    .q7-editor-body { height:calc(100% - min(5cqw,48px)); padding:3.6cqw 12%; }
+    .q7-editor-body h1 { margin:0 0 1.5cqw; font-size:clamp(14px,2.4cqw,34px); line-height:1.08; letter-spacing:-.045em; }
+    .q7-editor-body .doc-text { max-width:70ch; }
+    .q7-float-tools { position:absolute; right:2%; top:18%; display:grid; gap:.45cqw; }
+    .q7-tool { width:3cqw; aspect-ratio:1; display:grid; place-items:center; border-radius:50%; background:var(--surface-raised); color:var(--ink-dim); font-size:clamp(6px,.76cqw,11px); }
+    .q7-history-body { height:calc(100% - min(5cqw,48px)); padding:2.3cqw 12%; }
+    .q7-history-body .search-field { background:transparent; border:0; border-bottom:1px solid var(--outline-strong); border-radius:0; padding:0; margin-bottom:1.5cqw; }
+    .q7-history-row { display:grid; grid-template-columns:7cqw minmax(0,1fr) auto; gap:1.4cqw; padding:1.2cqw 0; border-bottom:1px solid var(--outline); }
+    .q7-history-row time { color:var(--ink-faint); font:clamp(5px,.62cqw,9px)/1.5 var(--mono); }
+    .q7-history-row strong { font-size:clamp(7px,.86cqw,12px); }
+    .q7-history-row p { margin:.3cqw 0 0; color:var(--ink-dim); font-size:clamp(6px,.7cqw,10px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .q7-history-row .outcome { color:var(--green); font:clamp(5px,.6cqw,9px)/1 var(--mono); }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#preview">Skip to design preview</a>
+  <div class="showcase">
+    <header class="showcase-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div class="brand-copy"><strong>Dictation directions</strong><span>Safe roaming, seven compositions</span></div>
+      </div>
+      <nav class="direction-tabs" id="directionTabs" aria-label="Design directions"></nav>
+      <div class="header-actions">
+        <button class="tool-button" id="compareButton" type="button" aria-pressed="false" title="Compare two directions">Compare</button>
+        <button class="tool-button" id="themeButton" type="button" aria-pressed="false" title="Switch light or dark theme" aria-label="Switch to light theme">◐</button>
+        <button class="tool-button" id="inspectorButton" type="button" aria-pressed="true" title="Show direction notes" aria-label="Toggle direction notes">Notes</button>
+      </div>
+    </header>
+
+    <main class="workspace" id="workspace">
+      <section class="preview-column" id="preview" aria-labelledby="activeDirectionName">
+        <div class="state-toolbar">
+          <div class="state-tabs" id="stateTabs" role="group" aria-label="Product state">
+            <button class="state-tab" type="button" data-state="recording" aria-pressed="true">Recording</button>
+            <button class="state-tab" type="button" data-state="held" aria-pressed="false">Held result</button>
+            <button class="state-tab" type="button" data-state="editor" aria-pressed="false">Editor</button>
+            <button class="state-tab" type="button" data-state="history" aria-pressed="false">History</button>
+          </div>
+          <div class="state-help">R / H / E / Y · state &nbsp; 1–7 · direction</div>
+        </div>
+        <p class="sr-only" id="activeStateSummary" aria-live="polite">Paper &amp; Margin, Recording state</p>
+
+        <div class="preview-area">
+          <div class="single-layout" id="singleLayout">
+            <div class="preview-frame" aria-live="polite">
+              <div class="desktop-wall"></div>
+              <div class="desktop-bar" aria-hidden="true">
+                <div class="desk-cluster"><span class="workspace-dot active"></span><span class="workspace-dot"></span><span class="workspace-dot"></span><span class="desk-cap">notes.md</span></div>
+                <div class="desk-cluster"><span class="desk-cap mono">11:42</span><span class="desk-cap">79%</span></div>
+              </div>
+              <div class="artboard" id="singleMount" data-state="recording"></div>
+            </div>
+          </div>
+
+          <div class="compare-layout" id="compareLayout">
+            <div class="compare-pane">
+              <div class="compare-head"><label for="compareA">Direction A</label><select class="compare-select" id="compareA"></select></div>
+              <div class="preview-frame">
+                <div class="desktop-wall"></div>
+                <div class="desktop-bar" aria-hidden="true"><div class="desk-cluster"><span class="workspace-dot active"></span><span class="workspace-dot"></span><span class="desk-cap">notes.md</span></div><div class="desk-cluster"><span class="desk-cap mono">11:42</span></div></div>
+                <div class="artboard" id="compareMountA" data-state="recording"></div>
+              </div>
+            </div>
+            <div class="compare-pane">
+              <div class="compare-head"><label for="compareB">Direction B</label><select class="compare-select" id="compareB"></select></div>
+              <div class="preview-frame">
+                <div class="desktop-wall"></div>
+                <div class="desktop-bar" aria-hidden="true"><div class="desk-cluster"><span class="workspace-dot active"></span><span class="workspace-dot"></span><span class="desk-cap">notes.md</span></div><div class="desk-cluster"><span class="desk-cap mono">11:42</span></div></div>
+                <div class="artboard" id="compareMountB" data-state="recording"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="inspector" id="inspector" aria-label="Direction notes">
+        <div class="inspector-kicker" id="directionNumber">Direction 04</div>
+        <h1 id="activeDirectionName">Paper &amp; Margin</h1>
+        <p class="tagline" id="directionTagline"></p>
+        <div class="recommendation" id="recommendation">Selected direction</div>
+        <section class="inspector-section"><h2>Core idea</h2><p id="directionIdea"></p></section>
+        <section class="inspector-section"><h2>Strongest at</h2><ul id="directionStrengths"></ul></section>
+        <section class="inspector-section risk"><h2>Watch for</h2><ul id="directionRisks"></ul></section>
+        <section class="inspector-section"><h2>Patterns carried forward</h2><p id="directionPatterns"></p></section>
+      </aside>
+    </main>
+
+    <footer class="showcase-footer">
+      <span>Evaluation: target safety · transcript hierarchy · keyboard fluency · density · 1–2+ week feasibility</span>
+      <span class="footer-keys"><span>T theme</span><span>C compare</span><span>I notes</span></span>
+    </footer>
+  </div>
+
+  <template id="direction-1">
+    <div class="design-screen" aria-hidden="true">
+      <section class="state-view state-recording">
+        <div class="q1-capture glass">
+          <div class="topline">
+            <span class="tag recording">Recording</span>
+            <span class="timer">00:18</span>
+            <div class="level-bars"><i style="--h:38%"></i><i style="--h:74%;--d:-120ms"></i><i style="--h:52%;--d:-240ms"></i><i style="--h:92%;--d:-360ms"></i><i style="--h:44%;--d:-480ms"></i></div>
+            <span class="spacer"></span>
+            <span class="tag">Normal</span>
+            <span class="tag held">Result will be held</span>
+          </div>
+          <div class="transcript-copy">The target should remain bound to the window that was active <span class="partial">when dictation began, even if I move to another work…</span></div>
+        </div>
+      </section>
+      <section class="state-view state-held">
+        <div class="q1-held glass">
+          <div class="verdict"><span>◇</span><span>Window changed — result held safely</span><span class="spacer"></span><span class="mono" style="color:var(--ink-dim);font-size:.7cqw">00:26</span></div>
+          <div class="excerpt">The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</div>
+          <div class="actions"><span class="mock-button primary">Edit <span class="mock-kbd">Configured</span></span><span class="mock-button">Copy <span class="mock-kbd">Configured</span></span><span class="mock-button">Retry</span><span class="spacer"></span><span class="mock-button danger">Discard</span></div>
+        </div>
+      </section>
+      <section class="state-view state-editor">
+        <div class="q1-editor mock-window solid">
+          <div class="window-head">
+            <div class="window-title"><strong>Current dictation</strong><span>Canonical result · edited version</span></div>
+            <span class="tag">Normal</span><span class="tag held">Delivery target changed</span>
+            <div class="window-actions"><span class="mock-button">Raw</span><span class="mock-button">Diff</span><span class="mock-button primary">Copy</span></div>
+          </div>
+          <div class="q1-editor-body">
+            <aside class="side-rail"><div class="rail-mark">D</div><div class="rail-action active">✎</div><div class="rail-action">≋</div><div class="rail-action">↺</div><div class="rail-action">⚙</div></aside>
+            <article class="doc-column">
+              <div class="doc-label">Accepted text · version 3</div>
+              <h1 class="doc-title">Target-safe desktop dictation</h1>
+              <div class="doc-text"><p>The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</p><p>Live words stay inside Dictation until the canonical pass finishes. If the original destination cannot be proven safe, the result waits here instead of following focus.</p><p><span class="selection">Capture belongs to the draft. Delivery remains a separate decision.</span></p></div>
+            </article>
+            <aside class="context-panel"><div class="panel-title">Versions</div><div class="context-item"><strong>Edited · current</strong><span>Two corrections · just now</span></div><div class="context-item"><strong>Cleaned</strong><span>Mode: Technical prose</span></div><div class="context-item"><strong>Raw final</strong><span>Immutable · 26 seconds</span></div><div class="panel-title" style="margin-top:1.4cqw">Transform</div><div class="context-item"><strong>Make concise</strong><span>Preview changes before accepting</span></div></aside>
+          </div>
+        </div>
+      </section>
+      <section class="state-view state-history">
+        <div class="q1-history mock-window solid">
+          <div class="window-head"><div class="window-title"><strong>History</strong><span>Normal sessions · Private sessions never appear here</span></div><div class="window-actions"><span class="mock-button">Modes</span><span class="mock-button">Vocabulary</span><span class="mock-button">Settings</span></div></div>
+          <div class="q1-history-body">
+            <aside class="q1-history-left"><div class="search-field"><b>⌕</b><span>Search transcripts</span><span class="spacer"></span><span class="mock-kbd">/</span></div><div class="meta-row" style="margin-bottom:.8cqw"><span class="tag">Today</span><span class="tag">Technical</span><span class="tag held">Held</span></div><div class="history-row active"><span class="history-time">11:42</span><span class="history-copy"><strong>Target-bound delivery notes</strong><span>…remain bound to the window that was active…</span></span><span class="tag held">Held</span></div><div class="history-row"><span class="history-time">10:16</span><span class="history-copy"><strong>Benchmark review</strong><span>Preview latency stayed below the warm budget…</span></span><span class="tag ready">Sent</span></div><div class="history-row"><span class="history-time">09:04</span><span class="history-copy"><strong>Release checklist</strong><span>Verify compositor focus transitions separately…</span></span><span class="tag">Copied</span></div></aside>
+            <article class="q1-detail"><div class="outcome">✓ Result held safely</div><h1 class="doc-title">Target-bound delivery notes</h1><div class="meta-row" style="margin-bottom:1.4cqw"><span class="tag">Technical prose</span><span class="tag">English</span><span class="tag">26 sec</span></div><div class="doc-text"><p>The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</p><p>Live words stay inside Dictation until the canonical pass finishes.</p></div></article>
+          </div>
+        </div>
+      </section>
+    </div>
+  </template>
+
+  <template id="direction-2">
+    <div class="design-screen" aria-hidden="true">
+      <section class="state-view state-recording">
+        <div class="q2-capture-rail glass"><span class="tag recording" style="width:2.4cqw;padding:0;justify-content:center"><span style="display:none">Recording</span></span><div class="level-bars" style="flex-direction:column;width:2cqw;height:7cqw"><i style="--h:42%"></i><i style="--h:76%"></i><i style="--h:58%"></i><i style="--h:90%"></i></div><span class="vertical-word">Recording</span><span class="spacer"></span><span class="tag" style="width:2.4cqw;padding:0;justify-content:center"></span><span class="timer">00:18</span></div>
+        <div class="q2-wing glass"><div class="eyebrow">Provisional transcript · target changed</div><div class="transcript-copy">The target should remain bound to the active window <span class="partial">even if I move to another workspace.</span></div></div>
+      </section>
+      <section class="state-view state-held">
+        <div class="q2-held glass"><span class="edge-rule"></span><div class="meta-row"><span class="tag held">Held safely</span><span class="spacer"></span><span class="mono" style="font-size:.65cqw;color:var(--ink-dim)">11:42 · 00:26</span></div><h2>Destination changed</h2><div class="excerpt">The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</div><div class="actions"><div class="action-row">Open editor <span class="mock-kbd">Configured</span></div><div class="action-row">Copy canonical text <span class="mock-kbd">Configured</span></div><div class="action-row">Retry finalization <span class="mock-kbd">Configured</span></div><div class="action-row" style="color:var(--error);background:transparent">Discard result <span class="mock-kbd">Configured</span></div></div></div>
+      </section>
+      <section class="state-view state-editor">
+        <div class="q2-editor mock-window solid"><div class="window-head"><div class="window-title"><strong>Current result</strong><span>Technical prose · English</span></div><span class="tag held">Original window changed</span><div class="window-actions"><span class="mock-button">Versions</span><span class="mock-button primary">Copy</span></div></div><div class="q2-editor-body"><aside class="q2-ledger"><div class="q2-ledger-date">TODAY · 11:42</div><div class="q2-ledger-step">Recorded<br><span class="mono">00:26</span></div><div class="q2-ledger-step">Raw final<br><span class="mono">11:42:31</span></div><div class="q2-ledger-step">Cleaned<br><span class="mono">+1.4 s</span></div><div class="q2-ledger-step" style="color:var(--amber)">Held<br>window changed</div></aside><article class="doc-column"><div class="doc-label">Canonical draft</div><h1 class="doc-title">Destination safety</h1><div class="doc-text"><p>The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</p><p>Changing focus never reassigns the destination. The transcript remains app-owned until a safe delivery intent is created.</p></div></article><aside class="q2-tool-rail"><div class="rail-action active">✎</div><div class="rail-action">Δ</div><div class="rail-action">↺</div><div class="rail-action">⋯</div></aside></div></div>
+      </section>
+      <section class="state-view state-history">
+        <div class="q2-history mock-window solid"><div class="window-head"><div class="window-title"><strong>Session ledger</strong><span>Chronological transcript and outcome record</span></div><div class="window-actions"><span class="mock-button">Filter</span><span class="mock-button">Export</span></div></div><div class="q2-history-body"><aside class="q2-days"><div class="q2-day active">TODAY<br>3 results</div><div class="q2-day">YESTERDAY<br>8 results</div><div class="q2-day">JUL 07<br>12 results</div></aside><section class="q2-results"><div class="search-field"><b>⌕</b><span>Search the ledger</span></div><div class="history-row active"><span class="history-time">11:42</span><span class="history-copy"><strong>Destination safety</strong><span>target should remain bound…</span></span><span class="tag held">Held</span></div><div class="history-row"><span class="history-time">10:16</span><span class="history-copy"><strong>Benchmark review</strong><span>preview latency stayed below…</span></span><span class="tag ready">Sent</span></div><div class="history-row"><span class="history-time">09:04</span><span class="history-copy"><strong>Release checklist</strong><span>verify compositor transitions…</span></span><span class="tag">Copied</span></div></section><article class="q1-detail"><div class="doc-label">11:42 · HELD RESULT</div><h1 class="doc-title">Destination safety</h1><div class="doc-text"><p>The target should remain bound to the window that was active when dictation began.</p><p>The result was held after the active workspace changed.</p></div></article></div></div>
+      </section>
+    </div>
+  </template>
+
+  <template id="direction-3">
+    <div class="design-screen" aria-hidden="true">
+      <section class="state-view state-recording"><div class="q3-capture glass"><span class="command-glyph">D</span><span class="tag recording">REC</span><span class="mono" style="color:var(--coral);font-size:.7cqw">00:18</span><div class="transcript-copy">The target should remain bound to the active window <span class="partial">even if I move to another workspace.</span></div><span class="command-status">HELD ON STOP</span><span class="mock-kbd">Global</span></div></section>
+      <section class="state-view state-held"><div class="q3-lens glass"><div class="q3-query"><span class="prompt">held:</span><span>Window changed — choose a safe action</span><span class="spacer"></span><span class="mock-kbd">esc</span></div><div class="q3-lens-copy">The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</div><div style="padding:.7cqw"><div class="q3-command active"><strong>Edit result</strong><span class="desc">Open the focused transcript editor</span><span class="mock-kbd">Configured</span></div><div class="q3-command"><strong>Copy text</strong><span class="desc">Canonical version only</span><span class="mock-kbd">Configured</span></div><div class="q3-command"><strong>Retry finalizer</strong><span class="desc">Audio is preserved</span><span class="mock-kbd">Configured</span></div><div class="q3-command" style="color:var(--error)"><strong>Discard</strong><span class="desc">Remove this result</span><span class="mock-kbd">Configured</span></div></div></div></section>
+      <section class="state-view state-editor"><div class="q3-editor mock-window solid"><div class="window-head"><div class="window-title"><strong>dictation / current</strong><span>Command-first editor</span></div><span class="tag">Normal</span><span class="tag held">Held</span><div class="window-actions"><span class="mock-kbd">Configured</span><span class="mock-kbd">Global</span></div></div><article class="q3-editor-body"><div class="doc-label">CANONICAL · VERSION 3</div><h1 class="doc-title">Target-safe desktop dictation</h1><div class="doc-text"><p>The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</p><p><span class="selection">Capture belongs to Dictation. Delivery remains a guarded command.</span></p><p>Type a command below to compare versions, clean the draft, copy it, or open history.</p></div></article><div class="q3-commandbar glass"><span style="color:var(--blue);font-family:var(--mono)">›</span><span class="hint">Type a command: make concise, show raw, copy, history…</span><span class="mock-kbd">Shortcut</span></div></div></section>
+      <section class="state-view state-history"><div class="q3-history mock-window solid"><div class="window-head"><div class="window-title"><strong>Search everything</strong><span>History · modes · vocabulary · commands</span></div><span class="tag">history:</span><div class="window-actions"><span class="mock-kbd">esc</span></div></div><div class="q3-history-body"><div class="search-field"><b>›</b><span>history: target window</span><span class="spacer"></span><span class="mock-kbd">↵</span></div><div class="q3-result active"><span class="mono" style="color:var(--ink-faint)">11:42</span><span><strong>Destination safety</strong><span class="snippet"> — target should remain bound to the window…</span></span><span class="tag held">Held</span></div><div class="q3-result"><span class="mono" style="color:var(--ink-faint)">10:16</span><span><strong>Benchmark review</strong><span class="snippet"> — warm preview latency stayed below…</span></span><span class="tag ready">Sent</span></div><div class="q3-result"><span class="mono" style="color:var(--ink-faint)">09:04</span><span><strong>Release checklist</strong><span class="snippet"> — verify compositor focus transitions…</span></span><span class="tag">Copied</span></div><div class="q3-result"><span class="mono" style="color:var(--ink-faint)">MODE</span><span><strong>Technical prose</strong><span class="snippet"> — protect identifiers and Markdown</span></span><span class="mock-kbd">M</span></div></div></div></section>
+    </div>
+  </template>
+
+  <template id="direction-4">
+    <div class="design-screen" aria-hidden="true">
+      <section class="state-view state-recording"><div class="q4-note"><div class="note-head"><span>●</span><span>Recording · 00:18</span><span class="spacer"></span><span class="hold-on-stop">HELD ON STOP</span></div><div class="transcript-copy">The target should remain bound to the active window <span class="partial">even if I move to another workspace.</span></div></div></section>
+      <section class="state-view state-held"><div class="q4-held"><div class="margin-label">Held result · window changed</div><h2>Your words stayed here.</h2><div class="excerpt">The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</div><div class="paper-actions"><span class="paper-button primary">Edit result</span><span class="paper-button">Copy text</span><span class="paper-button">Retry</span><span class="spacer"></span><span class="paper-button discard">Discard</span></div></div></section>
+      <section class="state-view state-editor"><div class="q4-editor mock-window"><div class="q4-head"><strong>Current dictation</strong><span class="paper-meta">EDITED · V3 · NORMAL</span></div><div class="q4-editor-body"><article class="q4-paper"><div class="folio">JULY 09 · 11:42</div><h1>Target-safe desktop dictation</h1><p>The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</p><p style="margin-top:1em">Live words stay inside Dictation until the canonical pass finishes. If the original destination cannot be proven safe, the result waits here instead of following focus.</p></article><aside class="q4-margin"><h3>Margin</h3><div class="q4-callout"><strong>Current version</strong><br>Edited · two corrections</div><div class="q4-callout"><strong>Target</strong><br>Window changed after editor opened</div><div class="q4-callout"><strong>Shortcut</strong><br><span class="mono">Configured global copy shortcut</span></div></aside></div></div></section>
+      <section class="state-view state-history"><div class="q4-history mock-window"><div class="q4-head"><strong>Dictation index</strong><span class="paper-meta">SEARCH · FILTER · RECOVER</span></div><div class="q4-history-body"><aside class="q4-index"><div class="q4-index-search">Search the index…</div><div class="q4-index-row"><span>11:42</span><strong>Destination safety</strong></div><div class="q4-index-row"><span>10:16</span><strong>Benchmark review</strong></div><div class="q4-index-row"><span>09:04</span><strong>Release checklist</strong></div><div class="q4-index-row"><span>08:31</span><strong>Vocabulary notes</strong></div></aside><article class="q4-paper"><div class="folio">HELD · TECHNICAL PROSE · 26 SECONDS</div><h1>Destination safety</h1><p>The target should remain bound to the window that was active when dictation began.</p><p class="history-note">The result was held after the workspace changed. Canonical text and its raw version remain available.</p></article></div></div></section>
+    </div>
+  </template>
+
+  <template id="direction-5">
+    <div class="design-screen" aria-hidden="true">
+      <section class="state-view state-recording">
+        <div class="q5-queue"><span class="active"></span><span></span><span></span></div>
+        <div class="q5-ribbon glass"><div class="q5-session-id"><strong>Recording</strong><span>SESSION 042</span></div><div class="transcript-copy">The target should remain bound to the active window <span class="partial">even if I move to another workspace.</span></div><div><div class="meta-row"><div class="level-bars"><i style="--h:34%"></i><i style="--h:82%"></i><i style="--h:57%"></i><i style="--h:91%"></i></div><span class="mono" style="color:var(--coral);font-size:.7cqw">00:18</span></div><div style="margin-top:.5cqw;text-align:right;color:var(--amber);font:.57cqw var(--mono)">TARGET CHANGED</div></div></div>
+      </section>
+      <section class="state-view state-held">
+        <div class="q5-held glass"><article class="q5-held-copy"><div class="receipt">SESSION 042 · CANONICAL · 11:42</div><h2>Window changed — result held safely</h2><p>The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</p><div class="meta-row" style="margin-top:1.2cqw"><span class="tag">Technical prose</span><span class="tag">English</span><span class="tag">Normal</span></div></article><aside class="q5-held-verdict"><strong>Safe next step</strong><p>Open the editor or copy the canonical result. Dictation will not paste into the newly focused window.</p><span class="mock-button primary">Edit result</span><span class="mock-button">Copy text</span><span class="mock-button danger">Discard</span></aside></div>
+      </section>
+      <section class="state-view state-editor">
+        <div class="q5-editor mock-window solid"><div class="window-head"><div class="window-title"><strong>Sessions</strong><span>Fresh result beside its history</span></div><span class="tag held">Needs action: 1</span><div class="window-actions"><span class="mock-button">Modes</span><span class="mock-button primary">Copy</span></div></div><div class="q5-body"><aside class="q5-sessions"><div class="search-field"><b>⌕</b><span>Search sessions</span></div><div class="q5-session-row active"><strong>Destination safety</strong><span>11:42 · Held · Technical</span></div><div class="q5-session-row"><strong>Benchmark review</strong><span>10:16 · Sent · Technical</span></div><div class="q5-session-row"><strong>Release checklist</strong><span>09:04 · Copied · Notes</span></div><div class="q5-session-row"><strong>Vocabulary notes</strong><span>08:31 · Sent · Technical</span></div></aside><article class="q5-main"><div class="session-meta"><span class="tag held">Held</span><span class="tag">Edited V3</span><span class="tag">Normal</span></div><h1 class="doc-title">Destination safety</h1><div class="doc-text"><p>The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</p><p>Live words stay inside Dictation until the canonical pass finishes. If the destination is unsafe, the result stays with this session.</p></div></article></div></div>
+      </section>
+      <section class="state-view state-history">
+        <div class="q5-history mock-window solid"><div class="window-head"><div class="window-title"><strong>All sessions</strong><span>Search, recover, reprocess, or delete</span></div><span class="tag held">Needs action: 1</span><div class="window-actions"><span class="mock-button">Filters</span><span class="mock-button">Export</span></div></div><div class="q5-body"><aside class="q5-sessions"><div class="search-field"><b>⌕</b><span>target window</span><span class="spacer"></span><span class="mock-kbd">/</span></div><div class="q5-session-row active"><strong>Destination safety</strong><span>Match: “…bound to the window…”</span></div><div class="q5-session-row"><strong>Compositor matrix</strong><span>Match: “…window identity…”</span></div><div class="q5-session-row"><strong>Delivery broker</strong><span>Match: “…saved target…”</span></div></aside><article class="q5-main"><div class="session-meta"><span class="tag held">Held</span><span class="tag">11:42</span><span class="tag">26 sec</span></div><h1 class="doc-title">Destination safety</h1><div class="doc-text"><p>The target should remain bound to the <span class="selection">window</span> that was active when dictation began.</p><p style="color:var(--ink-dim)">Outcome: preserved after focus changed. No delivery attempt was created.</p></div></article></div></div>
+      </section>
+    </div>
+  </template>
+
+  <template id="direction-6">
+    <div class="design-screen" aria-hidden="true">
+      <section class="state-view state-recording"><div class="q6-dock glass"><div class="q6-orb"></div><div class="q6-dock-copy"><div class="meta"><span>RECORDING</span><span>00:18</span><span style="color:var(--amber)">RESULT WILL BE HELD</span></div><div class="transcript-copy">The target should remain bound to the active window <span class="partial">even if I move to another workspace.</span></div></div><div class="level-bars"><i style="--h:32%"></i><i style="--h:77%"></i><i style="--h:49%"></i><i style="--h:90%"></i><i style="--h:61%"></i></div></div></section>
+      <section class="state-view state-held"><div class="q6-held glass"><div class="q6-handle"></div><div class="q6-held-head"><span>◇</span><span>Window changed — result held safely</span><span class="spacer"></span><span class="tag">Normal</span></div><div class="q6-held-copy">The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</div><div class="q6-held-actions"><span class="mock-button primary">Edit result</span><span class="mock-button">Copy text</span><span class="mock-button">Retry</span><span class="spacer"></span><span class="mock-button danger">Discard</span></div></div></section>
+      <section class="state-view state-editor"><div class="q6-editor mock-window solid"><div class="q6-sheet-head"><div class="q6-handle"></div><div class="q6-tabs"><span class="q6-tab active">Draft</span><span class="q6-tab">Raw</span><span class="q6-tab">Diff</span><span class="q6-tab">Versions</span></div><span class="spacer"></span><span class="tag held">Delivery target changed</span><span class="mock-button primary">Copy</span></div><div class="q6-editor-body"><article class="doc-column"><div class="doc-label">CURRENT DICTATION · EDITED V3</div><h1 class="doc-title">Target-safe desktop dictation</h1><div class="doc-text"><p>The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</p><p>Capture stays in the app-owned draft. Delivery remains a separate, guarded action.</p></div></article><aside class="context-panel"><div class="panel-title">Dock tools</div><div class="context-item"><strong>Technical prose</strong><span>Protect identifiers and Markdown</span></div><div class="context-item"><strong>Make concise</strong><span>Preview a derived version</span></div><div class="context-item"><strong>Playback</strong><span>Audio retained for recovery</span></div></aside></div></div></section>
+      <section class="state-view state-history"><div class="q6-history mock-window solid"><div class="q6-sheet-head"><div class="q6-handle"></div><div class="q6-tabs"><span class="q6-tab active">Today</span><span class="q6-tab">Held</span><span class="q6-tab">Sent</span><span class="q6-tab">Pinned</span></div><span class="spacer"></span><div class="search-field" style="width:25%"><b>⌕</b><span>Search</span></div></div><div class="q6-history-body"><div class="q6-timeline"><div class="q6-tick"><span class="mono">08:31</span><br>Sent</div><div class="q6-tick"><span class="mono">09:04</span><br>Copied</div><div class="q6-tick"><span class="mono">10:16</span><br>Sent</div><div class="q6-tick active"><span class="mono">11:42</span><br>Held safely</div></div><div class="q6-history-detail"><section class="history-list"><div class="history-row active"><span class="history-time">11:42</span><span class="history-copy"><strong>Destination safety</strong><span>target should remain bound…</span></span><span class="tag held">Held</span></div><div class="history-row"><span class="history-time">10:16</span><span class="history-copy"><strong>Benchmark review</strong><span>preview latency stayed…</span></span><span class="tag ready">Sent</span></div></section><article class="q1-detail"><div class="doc-label">SELECTED RESULT</div><h1 class="doc-title">Destination safety</h1><div class="doc-text"><p>The target should remain bound to the window that was active when dictation began.</p></div></article></div></div></div></section>
+    </div>
+  </template>
+
+  <template id="direction-7">
+    <div class="design-screen" aria-hidden="true">
+      <section class="state-view state-recording"><div class="q7-signal"><div class="q7-line"><span class="q7-pulse"></span><span class="q7-time">00:18</span><div class="transcript-copy">The target should remain bound to the active window <span class="partial">even if I move to another workspace.</span></div></div><div class="q7-rule"></div><div class="q7-meta"><span>RECORDING</span><span>NORMAL</span><span style="color:var(--amber)">RESULT WILL BE HELD</span></div></div></section>
+      <section class="state-view state-held"><div class="q7-held"><h2>Held safely.</h2><p>The window changed, so Dictation kept the canonical result here instead of following focus.</p><p style="font-size:1.05cqw;color:inherit">The target should remain bound to the window that was active when dictation began.</p><div class="q7-held-actions"><span>edit · configured</span><span>copy · configured</span><span>retry · configured</span><span>discard · configured</span></div></div></section>
+      <section class="state-view state-editor"><div class="q7-editor mock-window"><div class="q7-head"><strong>Current dictation</strong><div class="quiet-actions"><span>NORMAL</span><span>HELD</span><span>V3</span><span>COPY · CONFIGURED</span></div></div><article class="q7-editor-body"><div class="doc-label">CANONICAL DRAFT</div><h1>Target-safe desktop dictation</h1><div class="doc-text"><p>The target should remain bound to the window that was active when dictation began, even if I move to another workspace.</p><p>Live words stay inside Dictation until the canonical pass finishes. If the original destination cannot be proven safe, the result waits here instead of following focus.</p><p><span class="selection">Capture belongs to the draft. Delivery remains separate.</span></p></div></article><div class="q7-float-tools"><span class="q7-tool">✎</span><span class="q7-tool">Δ</span><span class="q7-tool">↺</span><span class="q7-tool">⋯</span></div></div></section>
+      <section class="state-view state-history"><div class="q7-history mock-window"><div class="q7-head"><strong>History</strong><div class="quiet-actions"><span>FILTER</span><span>MODES</span><span>SETTINGS</span></div></div><div class="q7-history-body"><div class="search-field"><b>⌕</b><span>Search transcript content</span><span class="spacer"></span><span class="mock-kbd">Configured</span></div><div class="q7-history-row"><time>11:42<br>TODAY</time><div><strong>Destination safety</strong><p>The target should remain bound to the window that was active…</p></div><span class="outcome" style="color:var(--amber)">HELD</span></div><div class="q7-history-row"><time>10:16<br>TODAY</time><div><strong>Benchmark review</strong><p>Preview latency stayed below the warm budget in each run…</p></div><span class="outcome">SENT</span></div><div class="q7-history-row"><time>09:04<br>TODAY</time><div><strong>Release checklist</strong><p>Verify compositor focus transitions separately from delivery…</p></div><span class="outcome" style="color:var(--ink-dim)">COPIED</span></div><div class="q7-history-row"><time>08:31<br>TODAY</time><div><strong>Vocabulary notes</strong><p>Add product and code identifiers at the mode scope…</p></div><span class="outcome">SENT</span></div></div></div></section>
+    </div>
+  </template>
+
+  <script>
+    const directions = [
+      {
+        name: "Quiet Orbit",
+        tagline: "One centered surface grows only when the task requires more space.",
+        idea: "The capture pill, Held card, and focused editor feel like stages of one object. Ordinary dictation stays peripheral; depth appears through a deliberate expansion.",
+        strengths: ["Clearest pill → Held → editor continuity", "Closest match to the existing qs-shell OSD and capsule language", "Balanced readability and Alpha feasibility"],
+        risks: ["Text growth must not destabilize the morph", "Held actions need global-shortcut clarity while the card remains non-focusable"],
+        patterns: "Otter-style capture continuity, Grammarly-style contextual editing, and Grain-style history snippets. Its compact capture primitive carries into the selected direction."
+      },
+      {
+        name: "Edge Ledger",
+        tagline: "A stable edge instrument keeps recording and outcome state in one place.",
+        idea: "A vertical rail anchors timer, level, privacy, and target safety while a caption wing extends inward. Focused surfaces use a chronological spine rather than conventional navigation.",
+        strengths: ["Target safety always occupies the same visual position", "Leaves the bottom-center desktop region unobstructed", "Makes version and outcome chronology unusually legible"],
+        risks: ["Long preview text fights the narrow edge geometry", "Multi-output edge collision behavior adds implementation work"],
+        patterns: "Desktop instrument panels, transcript timestamp rails, and contextual side inspectors."
+      },
+      {
+        name: "Command Strip",
+        tagline: "A keyboard-first lens keeps almost all capability one command away.",
+        idea: "Capture is a thin status strip. Held resolution, history, modes, and transformations share a queryable command lens, while the editor remains mostly document space.",
+        strengths: ["Fastest expert keyboard workflow", "Very little persistent application chrome", "One search grammar can span history, modes, and actions"],
+        risks: ["Weak discoverability if it becomes the only navigation model", "A command lens can look focusable even when the capture strip is not"],
+        patterns: "Launcher command lenses, local suggestion actions, and search-first retrieval."
+      },
+      {
+        name: "Paper & Margin",
+        tagline: "Treat dictated text as writing first, with system evidence kept in the margin.",
+        idea: "Capture uses the compact Quiet Orbit pill. Held and focused states become adaptive paper-like writing surfaces with versions, target state, transformations, and delivery evidence contained in an editorial margin.",
+        strengths: ["Best long-form transcript readability", "Strong separation between prose and system metadata", "Feels like a writing tool rather than an AI dashboard"],
+        risks: ["The paper treatment is less directly native to qs-shell", "Adaptive paper surfaces must preserve editorial contrast across dark, light, and forced-color themes"],
+        patterns: "Quiet Orbit capture, document-first editors, margin annotations, paper-styled history, and local review callouts.",
+        recommended: true
+      },
+      {
+        name: "Session Split",
+        tagline: "Fresh work and recoverable history remain visible side by side.",
+        idea: "The capture ribbon establishes a session receipt. Focused views retain a persistent searchable session list beside the current transcript, making recovery and prior results first-class.",
+        strengths: ["Strongest routine history and recovery workflow", "Held outcomes cannot quietly disappear", "Search context remains visible while reviewing a result"],
+        risks: ["Can make a simple dictation feel archived or administrative", "Persistent history consumes reading width"],
+        patterns: "Searchable transcript lists, list/detail history, and explicit delivery receipts."
+      },
+      {
+        name: "Morph Dock",
+        tagline: "A transport-like dock unfolds upward into results and focused work.",
+        idea: "Recording is treated as a calm transport control. The same bottom-anchored surface becomes a Held shelf, then a focused drawer for editing, versions, and a horizontal session timeline.",
+        strengths: ["Strong continuity with qs-shell's morphing-surface identity", "Excellent spatial relationship between capture and resolution", "Secondary tools stay out of view until expanded"],
+        risks: ["Large bottom sheets can dominate smaller outputs", "The transport metaphor may overemphasize audio over text"],
+        patterns: "Anchored morphing popouts, media transport controls, and progressive drawers."
+      },
+      {
+        name: "Bare Signal",
+        tagline: "Remove almost every container and let state plus typography carry the experience.",
+        idea: "Recording is a typographic signal rather than a card. Held feedback uses a single amber rule, while editor and history become nearly borderless reading and retrieval canvases.",
+        strengths: ["Calmest and least distracting capture treatment", "Excellent transcript hierarchy", "High implementation feasibility for the focused editor"],
+        risks: ["Minimalism can hide target safety or recovery affordances", "Wallpaper variance makes uncontained text contrast harder"],
+        patterns: "Caption overlays, chrome-free writing canvases, and sparse search lists."
+      }
+    ];
+
+    const stateLabels = {
+      recording: "Recording",
+      held: "Held result",
+      editor: "Editor",
+      history: "History"
+    };
+
+    const directionTabs = document.querySelector("#directionTabs");
+    const stateTabs = [...document.querySelectorAll(".state-tab")];
+    const singleMount = document.querySelector("#singleMount");
+    const compareMountA = document.querySelector("#compareMountA");
+    const compareMountB = document.querySelector("#compareMountB");
+    const compareA = document.querySelector("#compareA");
+    const compareB = document.querySelector("#compareB");
+    const compareButton = document.querySelector("#compareButton");
+    const themeButton = document.querySelector("#themeButton");
+    const inspectorButton = document.querySelector("#inspectorButton");
+    const workspace = document.querySelector("#workspace");
+    const singleLayout = document.querySelector("#singleLayout");
+    const compareLayout = document.querySelector("#compareLayout");
+    const activeStateSummary = document.querySelector("#activeStateSummary");
+
+    let activeDirection = 3;
+    let activeState = "recording";
+    let comparisonOpen = false;
+    let inspectorOpen = true;
+
+    function optionMarkup(selected) {
+      return directions.map((direction, index) =>
+        `<option value="${index}" ${index === selected ? "selected" : ""}>${String(index + 1).padStart(2, "0")} · ${direction.name}</option>`
+      ).join("");
+    }
+
+    function renderTabs() {
+      directionTabs.innerHTML = directions.map((direction, index) => `
+        <button class="direction-tab" type="button" data-index="${index}" aria-pressed="${index === activeDirection}">
+          <span class="num">${String(index + 1).padStart(2, "0")}</span>${direction.name}
+        </button>
+      `).join("");
+    }
+
+    function updateActiveSummary() {
+      const directionLabel = comparisonOpen
+        ? `Comparing ${directions[Number(compareA.value)].name} and ${directions[Number(compareB.value)].name}`
+        : directions[activeDirection].name;
+      activeStateSummary.textContent = `${directionLabel}, ${stateLabels[activeState]} state`;
+    }
+
+    function cloneDirection(index, mount) {
+      const template = document.querySelector(`#direction-${index + 1}`);
+      mount.replaceChildren(template.content.cloneNode(true));
+      mount.dataset.state = activeState;
+    }
+
+    function renderInspector() {
+      const direction = directions[activeDirection];
+      document.querySelector("#directionNumber").textContent = `Direction ${String(activeDirection + 1).padStart(2, "0")}`;
+      document.querySelector("#activeDirectionName").textContent = direction.name;
+      document.querySelector("#directionTagline").textContent = direction.tagline;
+      document.querySelector("#directionIdea").textContent = direction.idea;
+      document.querySelector("#directionStrengths").innerHTML = direction.strengths.map(item => `<li>${item}</li>`).join("");
+      document.querySelector("#directionRisks").innerHTML = direction.risks.map(item => `<li>${item}</li>`).join("");
+      document.querySelector("#directionPatterns").textContent = direction.patterns;
+      document.querySelector("#recommendation").classList.toggle("visible", Boolean(direction.recommended));
+      document.title = `${direction.name} · Dictation UX directions`;
+    }
+
+    function renderCompare() {
+      cloneDirection(Number(compareA.value), compareMountA);
+      cloneDirection(Number(compareB.value), compareMountB);
+    }
+
+    function updateHash() {
+      const theme = document.documentElement.dataset.theme;
+      const view = comparisonOpen ? "compare" : "single";
+      history.replaceState(null, "", `#d=${activeDirection + 1}&state=${activeState}&view=${view}&theme=${theme}`);
+    }
+
+    function setDirection(index, update = true) {
+      activeDirection = Math.max(0, Math.min(directions.length - 1, index));
+      cloneDirection(activeDirection, singleMount);
+      renderTabs();
+      renderInspector();
+      if (comparisonOpen) {
+        compareA.value = String(activeDirection);
+        renderCompare();
+      }
+      updateActiveSummary();
+      if (update) updateHash();
+    }
+
+    function setState(state, update = true) {
+      if (!stateLabels[state]) return;
+      activeState = state;
+      [singleMount, compareMountA, compareMountB].forEach(mount => mount.dataset.state = state);
+      stateTabs.forEach(tab => tab.setAttribute("aria-pressed", String(tab.dataset.state === state)));
+      if (comparisonOpen) renderCompare();
+      updateActiveSummary();
+      if (update) updateHash();
+    }
+
+    function setComparison(open, update = true) {
+      comparisonOpen = open;
+      compareButton.setAttribute("aria-pressed", String(open));
+      compareButton.textContent = open ? "Single" : "Compare";
+      singleLayout.classList.toggle("hidden", open);
+      compareLayout.classList.toggle("visible", open);
+      if (open) renderCompare();
+      updateActiveSummary();
+      if (update) updateHash();
+    }
+
+    function setInspector(open) {
+      inspectorOpen = open;
+      inspectorButton.setAttribute("aria-pressed", String(open));
+      workspace.classList.toggle("inspector-hidden", !open);
+      workspace.classList.toggle("inspector-open", open);
+    }
+
+    function setTheme(theme, update = true) {
+      document.documentElement.dataset.theme = theme;
+      const light = theme === "light";
+      themeButton.setAttribute("aria-pressed", String(light));
+      themeButton.setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
+      themeButton.title = light ? "Switch to dark theme" : "Switch to light theme";
+      if (update) updateHash();
+    }
+
+    function parseHash() {
+      const params = new URLSearchParams(location.hash.replace(/^#/, ""));
+      const direction = Number(params.get("d")) - 1;
+      const state = params.get("state");
+      const view = params.get("view");
+      const theme = params.get("theme");
+      if (Number.isInteger(direction) && direction >= 0 && direction < directions.length) activeDirection = direction;
+      if (stateLabels[state]) activeState = state;
+      comparisonOpen = view === "compare";
+      if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+    }
+
+    directionTabs.addEventListener("click", event => {
+      const button = event.target.closest(".direction-tab");
+      if (button) setDirection(Number(button.dataset.index));
+    });
+
+    directionTabs.addEventListener("keydown", event => {
+      if (!event.target.matches(".direction-tab") || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+      event.preventDefault();
+      const delta = event.key === "ArrowRight" ? 1 : -1;
+      const next = (activeDirection + delta + directions.length) % directions.length;
+      setDirection(next);
+      directionTabs.querySelector(`[data-index="${next}"]`).focus();
+    });
+
+    stateTabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => setState(tab.dataset.state));
+      tab.addEventListener("keydown", event => {
+        if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+        event.preventDefault();
+        const delta = event.key === "ArrowRight" ? 1 : -1;
+        const next = (index + delta + stateTabs.length) % stateTabs.length;
+        stateTabs[next].focus();
+        setState(stateTabs[next].dataset.state);
+      });
+    });
+
+    compareButton.addEventListener("click", () => setComparison(!comparisonOpen));
+    themeButton.addEventListener("click", () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
+    inspectorButton.addEventListener("click", () => setInspector(!inspectorOpen));
+    compareA.addEventListener("change", () => { renderCompare(); updateActiveSummary(); });
+    compareB.addEventListener("change", () => { renderCompare(); updateActiveSummary(); });
+
+    document.addEventListener("keydown", event => {
+      if (["INPUT", "SELECT", "TEXTAREA"].includes(event.target.tagName) || event.metaKey || event.ctrlKey || event.altKey) return;
+      const key = event.key.toLowerCase();
+      if (/^[1-7]$/.test(key)) setDirection(Number(key) - 1);
+      else if (key === "r") setState("recording");
+      else if (key === "h") setState("held");
+      else if (key === "e") setState("editor");
+      else if (key === "y") setState("history");
+      else if (key === "t") setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+      else if (key === "c") setComparison(!comparisonOpen);
+      else if (key === "i") setInspector(!inspectorOpen);
+    });
+
+    parseHash();
+    compareA.innerHTML = optionMarkup(activeDirection);
+    compareB.innerHTML = optionMarkup((activeDirection + 3) % directions.length);
+    setTheme(document.documentElement.dataset.theme, false);
+    setDirection(activeDirection, false);
+    setState(activeState, false);
+    setComparison(comparisonOpen, false);
+    setInspector(true);
+    updateHash();
+  </script>
+</body>
+</html>
