@@ -74,11 +74,14 @@ let
               extraSpecialArgs = {
                 inherit user pkgs-unstable;
                 inherit (inputs)
+                  basic-memory
                   google-workspace-cli
                   fenix
                   herdr
                   hermes-agent
                   hyprland
+                  playwright-cli
+                  qmd
                   ;
               };
               backupFileExtension = "hm-bak";

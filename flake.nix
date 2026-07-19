@@ -13,6 +13,18 @@
       url = "github:googleworkspace/cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    qmd = {
+      url = "github:tobi/qmd";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+    basic-memory = {
+      url = "github:basicmachines-co/basic-memory/v0.22.1";
+      flake = false;
+    };
+    playwright-cli = {
+      url = "github:microsoft/playwright-cli";
+      flake = false;
+    };
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     stylix = {
       url = "github:nix-community/stylix/release-25.11";

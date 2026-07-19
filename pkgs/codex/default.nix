@@ -15,15 +15,15 @@
 # Codex resolves codex-code-mode-host and the bundled bwrap relative to itself.
 # To update, bump version and both bundle hashes from the matching GitHub release.
 let
-  version = "0.144.0";
+  version = "0.144.5";
   bundles = {
     x86_64-linux = {
       target = "x86_64-unknown-linux-musl";
-      hash = "sha256-ETkdAweoXUaTgdRKTDlRfTK+wyu2jTlHyj9yYJNmkok=";
+      hash = "sha256-7JPrCcTOVnegKt8EcARy1w28xMPWcCegfizGnhqBnbk=";
     };
     aarch64-linux = {
       target = "aarch64-unknown-linux-musl";
-      hash = "sha256-gJIpyLUcnDNnEVt25e/+UmciZCsMpM2Td9sCCVNCafI=";
+      hash = "sha256-3i1k2Tlj80Xp2rmw0yz7+MVtLMFbDTCGcWNHwiKvXag=";
     };
   };
   bundle =

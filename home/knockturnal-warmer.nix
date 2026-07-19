@@ -8,7 +8,7 @@
 # Knockturnal cache-warmer — daily GSC hot-list push.
 #
 # The Knockturnal's WordPress cache warmer (mu-plugin kt-warm.php on Pressable,
-# project at ~/projects/knockturnal-audit) keeps its top pages hot from a list of
+# project at ~/projects/work/knockturnal-audit) keeps its top pages hot from a list of
 # top GSC earners. Only ComCreate's tooling can reach Search Console, so this
 # timer runs the project's push script daily: headless `claude` + the
 # comcreate-marketing MCP pull the top ~25 article pages and scp them to the host.
@@ -19,7 +19,7 @@
 # warmer ignores a >36h-stale file. Remove this file + its import to revert.
 let
   homeDir = config.home.homeDirectory;
-  script = "${homeDir}/projects/knockturnal-audit/scripts/kt-warmer-gsc-push.sh";
+  script = "${homeDir}/projects/work/knockturnal-audit/scripts/kt-warmer-gsc-push.sh";
 in
 {
   systemd.user.services.kt-warmer-gsc-push = {

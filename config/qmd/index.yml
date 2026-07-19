@@ -1,0 +1,36 @@
+global_context: Carter's local working corpus. Prefer source paths and exact excerpts when answering; distinguish durable notes from project-local implementation detail.
+collections:
+  obsidian:
+    path: /home/cjm/Documents/ObsidianVaults/OBSIDIAN2
+    pattern: "**/*.md"
+    context:
+      /: Carter's Obsidian knowledge base, source material, meetings, project documents, indexes, and zettelkasten
+      /2 - Source Material/Meeting Notes: Meeting notes and commitments
+      /2 - Source Material/Project Documents: Project briefs and supporting documents
+      /4- Indexes/Agent Briefings: Curated briefings for software agents
+  projects:
+    path: /home/cjm/projects
+    pattern: "**/*.{md,mdx,txt}"
+    ignore:
+      - "**/.direnv/**"
+      - "**/.devenv/**"
+      - "**/coverage/**"
+      - "**/.next/**"
+    context:
+      /: Active personal and client project documentation under the canonical projects tree
+  business-docs:
+    path: /home/cjm/Documents
+    pattern: "**/*.{md,mdx,txt}"
+    ignore:
+      - ObsidianVaults/**
+    context:
+      /: Business documents, proposals, and durable text outside the Obsidian vault
+  system-config:
+    path: /home/cjm/dotfiles
+    pattern: "**/*.{md,nix}"
+    context:
+      /: Declarative NixOS, Home Manager, workstation automation, and operating documentation
+models:
+  embed: hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf
+  generate: hf:tobil/qmd-query-expansion-1.7B-gguf/qmd-query-expansion-1.7B-q4_k_m.gguf
+  rerank: hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf

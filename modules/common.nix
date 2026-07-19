@@ -75,9 +75,14 @@ in
   };
   nixpkgs.config.allowUnfree = true;
   programs.nix-ld.enable = true;
+
+  # Expose the AT-SPI accessibility bus for background desktop automation
+  # (for example cua-driver). This is not enabled automatically outside GNOME.
+  services.gnome.at-spi2-core.enable = true;
+
   # Runtime libs for prebuilt/dynamically-linked binaries run via nix-ld.
-  # Covers the locally-built `hermes desktop` Electron shell (Chromium) and
-  # any uv-fetched interpreters or Playwright Chromium.
+  # Covers the locally-built `hermes desktop` Electron shell (Chromium),
+  # cua-driver, and uv-fetched / Playwright binaries.
   programs.nix-ld.libraries = with pkgs; [
     stdenv.cc.cc.lib
     zlib
@@ -98,6 +103,7 @@ in
     cairo
     gdk-pixbuf
     xorg.libX11
+    xorg.libXi
     xorg.libxcb
     xorg.libXcomposite
     xorg.libXdamage
@@ -171,6 +177,7 @@ in
       file
       killall
       pid-fan-controller
+      croc
     ])
     ++ [ hermesNrs ];
 

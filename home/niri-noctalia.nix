@@ -19,6 +19,18 @@ in
     spawn-at-startup "xwayland-satellite"
     spawn-at-startup "easyeffects" "--gapplication-service"
 
+    // Outputs — Dell U2414H portrait on the left, HP 27mq landscape to its right.
+    // Dell rotated 90° → occupies 1080x1920, so the HP starts at x=1080.
+    output "DP-1" {
+      mode "1920x1080@60"
+      transform "270"
+      position x=0 y=0
+    }
+    output "HDMI-A-1" {
+      mode "2560x1440@59.951"
+      position x=1080 y=0
+    }
+
     // Input
     input {
       keyboard {

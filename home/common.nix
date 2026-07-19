@@ -20,6 +20,7 @@
     ./dictation.nix
     ./tools.nix
     ./hermes.nix
+    ./hermes-meet.nix
     ./headroom.nix
     ./self-improve-loop.nix
     ./codex-self-improve-loop.nix
@@ -27,6 +28,7 @@
     ./ci-triage-loop.nix
     ./docs-gardener-loop.nix
     ./knockturnal-warmer.nix
+    ./hermes-events.nix
     ./ghostty.nix
     ./swaylock.nix
     ./spotify.nix

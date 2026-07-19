@@ -82,8 +82,10 @@ let
     local mod = "SUPER"
 
     -- Monitors
-    -- Pin the primary explicitly once verified: run `hyprctl monitors` in-session, then e.g.
-    -- hl.monitor({ output = "DP-1", mode = "2560x1440@165", position = "0x0", scale = 1, vrr = 1 })
+    -- Dell U2414H portrait on the left, HP 27mq landscape to its right.
+    -- Dell rotated 90° → occupies 1080x1920, so the HP starts at x=1080.
+    hl.monitor({ output = "DP-1", mode = "1920x1080@60", position = "0x0", scale = 1, transform = 3 })
+    hl.monitor({ output = "HDMI-A-1", mode = "2560x1440@60", position = "1080x0", scale = 1 })
     hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 
     -- Environment

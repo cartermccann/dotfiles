@@ -1,0 +1,9 @@
+{
+  "mode": "local",
+  "project": "hermes-memory",
+  "project_path": "/home/cjm/Documents/ObsidianVaults/OBSIDIAN2/Hermes Memory",
+  "capture_per_turn": true,
+  "capture_session_end": true,
+  "capture_folder": "Sessions",
+  "remember_folder": "Remembered"
+}
