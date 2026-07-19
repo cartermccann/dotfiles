@@ -14,6 +14,7 @@ let
   fim = "qwen2.5-coder:3b-base"; # FIM tab-completion (minuet): 1.9 GB, stays resident
   qwythos = "hf.co/empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q4_K_M"; # reasoning/tool-calling test model, 5.63 GB
   small = "llama3.2:3b"; # CPU-friendly fallback for low/medium tiers
+  embed = "nomic-embed-text:latest"; # vault-cognee-bridge embeddings: 274 MB, 768 dims, CPU-fine
 in
 {
   inherit
@@ -22,6 +23,7 @@ in
     fim
     qwythos
     small
+    embed
     ;
 
   tiers = {
@@ -30,13 +32,16 @@ in
       qwythos
       fim
       quick
+      embed
     ];
     medium = [
       quick
       small
+      embed
     ];
     low = [
       small
+      embed
     ];
   };
 }
