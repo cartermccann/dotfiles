@@ -22,6 +22,7 @@
     ./hermes.nix
     ./hermes-meet.nix
     ./headroom.nix
+    ./vault-brain-sync.nix
     ./self-improve-loop.nix
     ./codex-self-improve-loop.nix
     ./pr-babysit-loop.nix
