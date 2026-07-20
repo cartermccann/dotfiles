@@ -37,6 +37,37 @@ systemctl --user restart hermes-local-voice
 set -a; . "$ENVFILE"; set +a
 cd "$REPO"
 
+# Transient --user units don't inherit the login PATH, so resolve node absolutely.
+NODE="$(command -v node)"
+if [[ -z "$NODE" ]]; then
+  echo "node_not_found"
+  exit 4
+fi
+
+# Phase 2: when the Luna upstream points at the local Hermes-voice adapter, bring
+# it up (Nastija IS the real Hermes agent). Restarted per join so each meeting
+# gets a fresh Hermes session, mirroring the local-voice restart above.
+if printf '%s' "${LUNA_UPSTREAM_URL:-}" | grep -q "127.0.0.1:${HERMES_VOICE_UPSTREAM_PORT:-8785}"; then
+  systemctl --user reset-failed hermes-voice-upstream 2>/dev/null || true
+  systemctl --user stop hermes-voice-upstream 2>/dev/null || true
+  systemd-run --user --unit=hermes-voice-upstream --collect \
+    --property=EnvironmentFile="$ENVFILE" \
+    --working-directory="$REPO" \
+    "$NODE" scripts/hermes-voice-upstream.mjs >/dev/null
+  adapter_ready=""
+  for _ in $(seq 1 20); do
+    if curl -sf -m 2 "http://127.0.0.1:${HERMES_VOICE_UPSTREAM_PORT:-8785}/healthz" >/dev/null 2>&1; then
+      adapter_ready=yes
+      break
+    fi
+    sleep 1
+  done
+  if [[ -z "$adapter_ready" ]]; then
+    echo "hermes_voice_adapter_not_ready"
+    exit 4
+  fi
+fi
+
 # Wait for the voice sidecar (cold model load can take ~1 min).
 ready=""
 for _ in $(seq 1 24); do
@@ -60,7 +91,7 @@ fi
 systemd-run --user --unit="$UNIT" --collect \
   --working-directory="$REPO" \
   --property=EnvironmentFile="$ENVFILE" \
-  node scripts/run-meet-voice-poc.mjs --enable \
+  "$NODE" scripts/run-meet-voice-poc.mjs --enable \
   --consent-all-participants --consent-local-voice \
   --meeting-url "$url" >/dev/null
 
