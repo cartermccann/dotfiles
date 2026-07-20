@@ -38,9 +38,9 @@ in
     Service = {
       Type = "oneshot";
       WorkingDirectory = bridgeDir;
-      # codex + uv + git resolved from the user PATH additions.
+      # codex lives in the home-manager per-user profile, not the system path.
       Environment = [
-        "PATH=${homeDir}/.local/bin:${homeDir}/.npm-global/bin:/run/current-system/sw/bin"
+        "PATH=${config.home.profileDirectory}/bin:${homeDir}/.local/bin:${homeDir}/.npm-global/bin:/run/current-system/sw/bin"
       ];
       ExecStart = "${pkgs.uv}/bin/uv run python ${bridgeDir}/drive_codex.py";
       # A full first-run backfill can be long; steady-state runs are minutes.
