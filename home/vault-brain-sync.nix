@@ -39,8 +39,12 @@ in
       Type = "oneshot";
       WorkingDirectory = bridgeDir;
       # codex lives in the home-manager per-user profile, not the system path.
+      # LD_LIBRARY_PATH: native wheels (tokenizers/onnx) dlopen libstdc++,
+      # which NixOS keeps off the default search path; nix-ld's lib dir is a
+      # rebuild-stable location for it (same quirk headroom pins per-store-path).
       Environment = [
         "PATH=${config.home.profileDirectory}/bin:${homeDir}/.local/bin:${homeDir}/.npm-global/bin:/run/current-system/sw/bin"
+        "LD_LIBRARY_PATH=/run/current-system/sw/share/nix-ld/lib"
       ];
       ExecStart = "${pkgs.uv}/bin/uv run python ${bridgeDir}/drive_codex.py";
       # A full first-run backfill can be long; steady-state runs are minutes.
