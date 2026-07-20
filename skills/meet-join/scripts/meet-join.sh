@@ -46,14 +46,20 @@ fi
 
 # Phase 2: when the Luna upstream points at the local Hermes-voice adapter, bring
 # it up (Nastija IS the real Hermes agent). Restarted per join so each meeting
-# gets a fresh Hermes session, mirroring the local-voice restart above.
+# gets a fresh Hermes session, mirroring the local-voice restart above. Prefer
+# the declarative service (home/hermes-meet.nix); fall back to a transient unit
+# so this works before the next `nrs` rebuild activates it.
 if printf '%s' "${LUNA_UPSTREAM_URL:-}" | grep -q "127.0.0.1:${HERMES_VOICE_UPSTREAM_PORT:-8785}"; then
-  systemctl --user reset-failed hermes-voice-upstream 2>/dev/null || true
-  systemctl --user stop hermes-voice-upstream 2>/dev/null || true
-  systemd-run --user --unit=hermes-voice-upstream --collect \
-    --property=EnvironmentFile="$ENVFILE" \
-    --working-directory="$REPO" \
-    "$NODE" scripts/hermes-voice-upstream.mjs >/dev/null
+  if systemctl --user list-unit-files 2>/dev/null | grep -q '^hermes-voice-upstream\.service'; then
+    systemctl --user restart hermes-voice-upstream
+  else
+    systemctl --user reset-failed hermes-voice-upstream 2>/dev/null || true
+    systemctl --user stop hermes-voice-upstream 2>/dev/null || true
+    systemd-run --user --unit=hermes-voice-upstream --collect \
+      --property=EnvironmentFile="$ENVFILE" \
+      --working-directory="$REPO" \
+      "$NODE" scripts/hermes-voice-upstream.mjs >/dev/null
+  fi
   adapter_ready=""
   for _ in $(seq 1 20); do
     if curl -sf -m 2 "http://127.0.0.1:${HERMES_VOICE_UPSTREAM_PORT:-8785}/healthz" >/dev/null 2>&1; then

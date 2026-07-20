@@ -88,6 +88,31 @@ in
     };
   };
 
+  # Phase 2 (voice-in-Hermes): the OpenAI-SSE adapter that makes the real Hermes
+  # agent the meeting voice. The Luna router POSTs chat completions here and this
+  # drives Hermes's WS gateway (prompt.submit -> streamed message.delta). Only
+  # runs when the operator env points LUNA_UPSTREAM_URL at it; meet-join restarts
+  # it per meeting for a fresh Hermes session.
+  systemd.user.services.hermes-voice-upstream = {
+    Unit = {
+      Description = "Hermes-voice upstream adapter (OpenAI-SSE facade over the Hermes gateway)";
+      After = [ "network-online.target" "hermes-agent-backend.service" ];
+      Wants = [ "network-online.target" ];
+      ConditionPathExists = [
+        meetEnv
+        "${repo}/scripts/hermes-voice-upstream.mjs"
+      ];
+    };
+    Service = {
+      Type = "simple";
+      WorkingDirectory = repo;
+      EnvironmentFile = meetEnv;
+      ExecStart = "${pkgs.nodejs_24}/bin/node ${repo}/scripts/hermes-voice-upstream.mjs";
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+  };
+
   systemd.user.services.hermes-attendee = {
     Unit = {
       Description = "Self-hosted Attendee meeting transport (pinned v1.58.1 Compose stack)";
