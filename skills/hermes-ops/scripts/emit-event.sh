@@ -99,10 +99,31 @@ printf '%s\n' "$event_path"
 
 if [[ $notify == true ]]; then
   hermes_bin=${HERMES_BIN:-hermes}
-  body="$source_name/$kind"
-  [[ -n $unit ]] && body+=" | unit: $unit"
-  [[ -n $repo ]] && body+=" | repo: $repo"
-  [[ -n $url ]] && body+=" | url: $url"
-  [[ -n $details ]] && body+=" | details: $details"
-  "$hermes_bin" send -t telegram -s "Hermes $severity: $subject" "$body"
+
+  # These alerts are read on a phone. Lead with one human sentence, keep the
+  # machine detail in a quiet context line, and fold the log out of the way
+  # rather than pasting a state-dir path nobody can act on from mobile.
+  case "$severity" in
+    critical | error) icon='🔴' ;;
+    warning) icon='⚠️' ;;
+    notice | info) icon='ℹ️' ;;
+    *) icon='•' ;;
+  esac
+
+  # "kt-warmer-gsc-push.service failed" reads better without the suffix.
+  headline=${subject//.service/}
+
+  body="$(hostname) · $(date +'%H:%M') · $source_name"
+  [[ -n $repo ]] && body+=$'\n'"repo: $repo"
+  [[ -n $url ]] && body+=$'\n'"$url"
+
+  # Collapsible so the headline stays scannable; expand in place for the log.
+  if [[ -n $details && -r $details ]]; then
+    body+=$'\n\n'"<details><summary>Recent log</summary>"$'\n\n'
+    body+='```'$'\n'
+    body+="$(tail -n 12 -- "$details")"$'\n'
+    body+='```'$'\n'"</details>"
+  fi
+
+  "$hermes_bin" send -t telegram -s "$icon $headline" "$body"
 fi
