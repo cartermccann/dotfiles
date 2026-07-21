@@ -48,7 +48,12 @@ for unit in "$@"; do
   previous=$(cat "$state_file" 2>/dev/null || true)
   transition_recorded=true
 
-  if [[ $signature != "$previous" && $condition == no ]]; then
+  # An empty ConditionTimestamp means systemd has not evaluated this unit's
+  # conditions yet this boot — that is "never started", not "skipped". Every
+  # unit looks like `no||success` after a reboot until its timer first fires,
+  # so alerting on $condition alone reports a false skip for each pending unit
+  # on every boot. A genuine skip always carries a populated timestamp.
+  if [[ $signature != "$previous" && $condition == no && -n $condition_time ]]; then
     details=$(mktemp "$details_dir/unit-condition-${key:0:12}.XXXXXX.log")
     printf '%s\n' "$snapshot" >"$details"
     chmod 600 "$details"
