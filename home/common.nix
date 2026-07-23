@@ -108,6 +108,10 @@
         # GTK3/WebKit hits "Error 71 (Protocol error)" on this Wayland session
         # and dies; XWayland is stable (the upstream AppImage also ran under it).
         export GDK_BACKEND=x11
+        # WebKit's DMABUF renderer cannot allocate GBM buffers here ("Failed to
+        # create GBM buffer ... Invalid argument") and paints an empty window.
+        export WEBKIT_DISABLE_DMABUF_RENDERER=1
+        export WEBKIT_DISABLE_COMPOSITING_MODE=1
         # System GStreamer for media/notification sounds; bad+libav supply the
         # AAC decoder the app asks for on boot.
         export GST_PLUGIN_SYSTEM_PATH_1_0="${
