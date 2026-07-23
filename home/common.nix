@@ -137,6 +137,10 @@
           )
         }"
         export BUZZ_RELAY_URL="''${BUZZ_RELAY_URL:-ws://localhost:3000}"
+        # Agent mentions spawn the ACP harness (buzz-acp) plus the other
+        # workspace binaries; the app resolves them beside itself or on PATH.
+        # Built by: cargo build --release --workspace
+        export PATH="$repo/target/release:$PATH"
         exec "$repo/desktop/src-tauri/target/release/buzz-desktop" "$@"
       ''
     );
