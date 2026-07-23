@@ -25,6 +25,19 @@ let
   };
 in
 {
+  # Run AppImages directly (e.g. Buzz); extraPkgs covers libs missing from
+  # appimage-run's FHS env (Buzz needs libzstd + libelf)
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
+    package = pkgs.appimage-run.override {
+      extraPkgs = p: [
+        p.zstd
+        p.elfutils
+      ];
+    };
+  };
+
   programs._1password = {
     enable = true;
     package = pkgs-unstable._1password-cli;
