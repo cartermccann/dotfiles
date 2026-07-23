@@ -105,12 +105,25 @@
             done
           fi
         fi
-        # appimage-run's FHS env exposes no NVIDIA GL driver, so WebKitGTK's
-        # EGL/dri2 init fails and the web view paints nothing. llvmpipe renders
-        # in software instead (verified: EGL errors 3 -> 0).
-        export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe
+        # GTK3/WebKit hits "Error 71 (Protocol error)" on this Wayland session
+        # and dies; XWayland is stable (the upstream AppImage also ran under it).
+        export GDK_BACKEND=x11
+        # System GStreamer for media/notification sounds; bad+libav supply the
+        # AAC decoder the app asks for on boot.
+        export GST_PLUGIN_SYSTEM_PATH_1_0="${
+          lib.makeSearchPath "lib/gstreamer-1.0" (
+            with pkgs.gst_all_1;
+            [
+              gstreamer
+              gst-plugins-base
+              gst-plugins-good
+              gst-plugins-bad
+              gst-libav
+            ]
+          )
+        }"
         export BUZZ_RELAY_URL="''${BUZZ_RELAY_URL:-ws://localhost:3000}"
-        exec "$HOME/Applications/Buzz.AppImage" "$@"
+        exec "$repo/desktop/src-tauri/target/release/buzz-desktop" "$@"
       ''
     );
     terminal = false;
