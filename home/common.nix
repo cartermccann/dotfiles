@@ -88,7 +88,9 @@
       pkgs.writeShellScript "buzz-launch" ''
         repo="$HOME/projects/buzz"
         if ! ${pkgs.curl}/bin/curl -sf -o /dev/null --max-time 2 http://127.0.0.1:3000; then
-          if [ -x "$repo/target/debug/buzz-relay" ]; then
+          relay="$repo/target/release/buzz-relay"
+          [ -x "$relay" ] || relay="$repo/target/debug/buzz-relay"
+          if [ -x "$relay" ]; then
             (
               cd "$repo"
               /run/current-system/sw/bin/docker compose up -d >/dev/null 2>&1
@@ -97,7 +99,7 @@
               set +a
               # serve the built web UI alongside the relay (http://localhost:3000)
               export BUZZ_WEB_DIR=./web/dist BUZZ_SERVE_GIT_WEB_GUI=true
-              setsid ./target/debug/buzz-relay >> "$HOME/.cache/buzz-relay.log" 2>&1 < /dev/null &
+              setsid "$relay" >> "$HOME/.cache/buzz-relay.log" 2>&1 < /dev/null &
             )
             for _ in $(seq 1 30); do
               ${pkgs.curl}/bin/curl -sf -o /dev/null --max-time 1 http://127.0.0.1:3000 && break
