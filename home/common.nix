@@ -112,6 +112,16 @@
         # create GBM buffer ... Invalid argument") and paints an empty window.
         export WEBKIT_DISABLE_DMABUF_RENDERER=1
         export WEBKIT_DISABLE_COMPOSITING_MODE=1
+        # The binary is built outside a derivation, so wrapGAppsHook never wraps
+        # it and GTK finds no GSettings schemas. Opening a file dialog then hits
+        # a fatal GLib-GIO-ERROR (schema 'org.gtk.Settings.FileChooser') and
+        # aborts the process. Point it at the schemas explicitly.
+        export GSETTINGS_SCHEMA_DIR="${
+          lib.concatMapStringsSep ":" (p: "${p}/share/gsettings-schemas/${p.name}/glib-2.0/schemas") [
+            pkgs.gtk3
+            pkgs.gsettings-desktop-schemas
+          ]
+        }"
         # System GStreamer for media/notification sounds; bad+libav supply the
         # AAC decoder the app asks for on boot.
         export GST_PLUGIN_SYSTEM_PATH_1_0="${
