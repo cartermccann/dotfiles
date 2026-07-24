@@ -112,11 +112,30 @@ in
     xorg.libXrandr
     xorg.libxshmfence
     mesa
+    libgbm # gbm split out of mesa in nixpkgs 25.x; Electron 29 (Work Louder Input) needs libgbm.so.1
     libGL
     libxkbcommon
     alsa-lib
     systemd
   ];
+
+  # Work Louder / Nomad device access (macropads, keyboards, ESP32-S3 serial).
+  # Declarative replacement for the port's install-udev-worklouder.sh.
+  # Espressif VID 303a (current WL boards) + legacy Nomad VID 574c; the
+  # uaccess tag grants the logged-in user access without group juggling.
+  services.udev.extraRules = ''
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="303a", MODE="0660", GROUP="input", TAG+="uaccess"
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="574c", MODE="0660", GROUP="input", TAG+="uaccess"
+    # Bluetooth HID (HID-over-GATT) has no USB parent, so ATTRS{idVendor} never
+    # matches — match the HID parent kernel name (bus 0005 = BT) instead.
+    # Codex Micro configures over BLE HID; its USB-C is charge-only.
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", KERNELS=="0005:303A:*", MODE="0660", GROUP="input", TAG+="uaccess"
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", KERNELS=="0005:574C:*", MODE="0660", GROUP="input", TAG+="uaccess"
+    SUBSYSTEM=="usb", ATTR{idVendor}=="303a", MODE="0660", GROUP="input", TAG+="uaccess"
+    SUBSYSTEM=="usb", ATTR{idVendor}=="574c", MODE="0660", GROUP="input", TAG+="uaccess"
+    SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", MODE="0660", GROUP="input", TAG+="uaccess"
+    SUBSYSTEM=="tty", ATTRS{idVendor}=="574c", MODE="0660", GROUP="input", TAG+="uaccess"
+  '';
 
   # Symlink /bin/bash for FHS compatibility (e.g. Claude Code plugin hooks)
   system.activationScripts.binbash = ''
