@@ -55,6 +55,8 @@ let
     '';
   };
 
+  qmdPackage = import ../pkgs/qmd-nixos { inherit pkgs qmd; };
+
   githubMcpHermes = pkgs.writeShellApplication {
     name = "github-mcp-hermes";
     text = ''
@@ -87,7 +89,7 @@ in
     poppler-utils # pdftotext/pdfinfo utilities used by ingestion scripts
     pandoc # document format conversion fallback
     pythonPackagesFixed.markitdown # Office/PDF/email/audio -> Markdown ingestion
-    qmd.packages.${pkgs.stdenv.hostPlatform.system}.default # local hybrid search for vault/project docs
+    qmdPackage # local hybrid search for vault/project docs
     basicMemoryCli # native Hermes graph memory provider, pinned through uvx
     githubMcpHermes # official typed GitHub MCP, reusing the existing gh login
     playwrightCli # deterministic browser automation alongside agent-browser

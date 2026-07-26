@@ -10,7 +10,7 @@ let
   homeDir = config.home.homeDirectory;
   stateDir = "${homeDir}/.local/state/hermes-ops";
   hermesBin = "${homeDir}/.local/bin/hermes";
-  qmdPackage = qmd.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  qmdPackage = import ../pkgs/qmd-nixos { inherit pkgs qmd; };
 
   scriptBody = path: lib.removePrefix "#!/usr/bin/env bash\n" (builtins.readFile path);
   mkScript =
