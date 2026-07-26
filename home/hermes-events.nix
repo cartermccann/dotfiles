@@ -147,7 +147,6 @@ lib.mkIf (config.home.username == "cjm") {
     ci-triage-loop.Unit.OnFailure = failureTarget;
     codex-self-improve-loop.Unit.OnFailure = failureTarget;
     docs-gardener-loop.Unit.OnFailure = failureTarget;
-    kt-warmer-gsc-push.Unit.OnFailure = failureTarget;
     self-improve-loop.Unit.OnFailure = failureTarget;
 
     hermes-gateway-health = {

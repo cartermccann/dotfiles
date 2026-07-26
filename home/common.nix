@@ -28,7 +28,6 @@
     ./pr-babysit-loop.nix
     ./ci-triage-loop.nix
     ./docs-gardener-loop.nix
-    ./knockturnal-warmer.nix
     ./hermes-events.nix
     ./ghostty.nix
     ./swaylock.nix
