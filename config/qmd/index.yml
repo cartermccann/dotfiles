@@ -16,6 +16,12 @@ collections:
       - "**/.devenv/**"
       - "**/coverage/**"
       - "**/.next/**"
+      - "**/_bmad/**"
+      - "**/bmad/**"
+      - "agent-config/skills/**"
+      - "**/venv/**"
+      - "**/.venv/**"
+      - "**/site-packages/**"
     context:
       /: Active personal and client project documentation under the canonical projects tree
   business-docs:
