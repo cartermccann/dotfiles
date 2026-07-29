@@ -25,6 +25,7 @@
     ./vault-brain-sync.nix
     ./self-improve-loop.nix
     ./codex-self-improve-loop.nix
+    ./codex-desktop.nix
     ./pr-babysit-loop.nix
     ./ci-triage-loop.nix
     ./docs-gardener-loop.nix
