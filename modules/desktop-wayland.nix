@@ -5,8 +5,15 @@
   ...
 }:
 
+# Shared Wayland base for EVERY session on this host, not a niri-only module
+# (it was called desktop-niri.nix, which badly undersold it). Owns the Ly
+# display manager, XDG portals, polkit, gnome-keyring, and the terminal /
+# launcher / screenshot / clipboard / wallpaper packages that the Hyprland
+# sessions depend on just as much as the niri one. desktop-hyprland.nix and
+# desktop-niri-noctalia.nix layer session-specific bits on top of this.
 {
-  # Niri Wayland compositor
+  # Niri compositor. Hyprland is the daily driver; niri is kept as a working
+  # fallback session, so this stays enabled.
   programs.niri.enable = true;
 
   # Ly TUI display manager

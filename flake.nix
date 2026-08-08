@@ -30,10 +30,13 @@
       url = "github:nix-community/stylix/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    niri = {
-      url = "github:sodiboo/niri-flake";
-      inputs.niri-unstable.url = "github:niri-wm/niri?ref=wip/branch";
-    };
+    # Niri is the fallback session (Hyprland is the daily driver), so it tracks
+    # niri-flake's release channel rather than a dev branch. The previous
+    # `inputs.niri-unstable.url = ".../niri?ref=wip/branch"` override arrived
+    # incidentally (de7e930) with no rationale, went five months without a lock
+    # bump, and forced a from-source compile plus `doCheck = false` to get past
+    # the branch's failing tests. niri-stable is cached and actually released.
+    niri.url = "github:sodiboo/niri-flake";
     # Hyprland 0.55+ (Lua config). Pinned to a release tag; intentionally NOT
     # following nixpkgs so prebuilt artifacts hit hyprland.cachix.org rather than
     # forcing a local source compile (substituter added in modules/common.nix).

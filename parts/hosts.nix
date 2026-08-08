@@ -40,9 +40,10 @@ let
           { pkgs, ... }:
           {
             nixpkgs.overlays = overlays;
-            programs.niri.package = pkgs.niri-unstable.overrideAttrs (old: {
-              doCheck = false;
-            });
+            # niri-stable (a tagged release) instead of niri-unstable off a dev
+            # branch — the latter needed `doCheck = false` purely to skip tests
+            # that fail on that branch, and rebuilt from source on every update.
+            programs.niri.package = pkgs.niri-stable;
           }
         )
         (

@@ -9,7 +9,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/common.nix
-    ../../modules/desktop-niri.nix
+    ../../modules/desktop-wayland.nix
     ../../modules/desktop-niri-noctalia.nix
     ../../modules/desktop-hyprland.nix
     ../../modules/nvidia.nix
