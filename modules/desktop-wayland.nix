@@ -11,15 +11,39 @@
 # launcher / screenshot / clipboard / wallpaper packages that the Hyprland
 # sessions depend on just as much as the niri one. desktop-hyprland.nix and
 # desktop-niri-noctalia.nix layer session-specific bits on top of this.
+let
+  # Ly reads a flat directory of .desktop files. Start from the one NixOS
+  # generates from sessionPackages, then drop the plain "Niri" tile.
+  #
+  # Why filter here instead of at the source: programs.niri.enable hard-sets
+  # `services.displayManager.sessionPackages = [ cfg.package ]` (niri-flake
+  # flake.nix:496), and NixOS rejects a session package whose
+  # passthru.providedSessions is empty, so the tile cannot be removed by
+  # overriding the package without also rebuilding niri from source. Ly's
+  # `settings` is documented as "merged in and overwriting defaults", so
+  # pointing waylandsessions at a filtered copy is the cheap, supported route.
+  #
+  # The plain tile runs `niri-session` against ~/.config/niri/config.kdl, a file
+  # this config has never written — the standalone niri session was retired in
+  # favour of Niri (Noctalia). Choosing it lands you in niri's compiled-in
+  # defaults: no output layout, no keybinds, no shell.
+  lySessions = pkgs.runCommand "ly-wayland-sessions" { } ''
+    mkdir -p "$out"
+    cp ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions/*.desktop "$out"/
+    chmod u+w "$out"/*.desktop
+    rm -f "$out/niri.desktop"
+  '';
+in
 {
   # Niri compositor. Hyprland is the daily driver; niri is kept as a working
-  # fallback session, so this stays enabled.
+  # fallback session (Niri (Noctalia)), so this stays enabled.
   programs.niri.enable = true;
 
   # Ly TUI display manager
   services.displayManager.ly = {
     enable = true;
     settings = {
+      waylandsessions = "${lySessions}";
       animation = "none";
       hide_borders = true;
       hide_key_hints = true;
