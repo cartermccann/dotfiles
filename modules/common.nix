@@ -149,6 +149,15 @@ in
     options = "--delete-older-than 14d";
   };
 
+  # Deduplicate identical store files via hard links. The GC log reports
+  # ~1.7 GiB already saved by incidental linking; making it automatic keeps
+  # that compounding instead of depending on whatever last ran --optimise.
+  # Runs on a timer rather than after every build so `nrs` stays fast.
+  nix.optimise = {
+    automatic = true;
+    dates = [ "weekly" ];
+  };
+
   # Passwordless rebuilds for Hermes/Telegram.
   # Scoped to this immutable wrapper instead of broad sudo access to nh/shells.
   # This is still effectively root for anyone who can write to ~/dotfiles.
