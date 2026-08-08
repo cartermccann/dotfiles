@@ -1,6 +1,5 @@
 {
   config,
-  lib,
   pkgs,
   user,
   hermes-agent,
@@ -75,83 +74,6 @@
     categories = [
       "Graphics"
       "Development"
-    ];
-  };
-
-  # Buzz (Block's agent workspace) — AppImage in ~/Applications, runs via
-  # programs.appimage binfmt; wrapper auto-starts the local relay stack from
-  # ~/projects/buzz if ws://localhost:3000 is down
-  xdg.desktopEntries.buzz = {
-    name = "Buzz";
-    genericName = "Agent Workspace";
-    comment = "Block's human + AI agent workspace (local relay)";
-    exec = toString (
-      pkgs.writeShellScript "buzz-launch" ''
-        repo="$HOME/projects/buzz"
-        if ! ${pkgs.curl}/bin/curl -sf -o /dev/null --max-time 2 http://127.0.0.1:3000; then
-          relay="$repo/target/release/buzz-relay"
-          [ -x "$relay" ] || relay="$repo/target/debug/buzz-relay"
-          if [ -x "$relay" ]; then
-            (
-              cd "$repo"
-              /run/current-system/sw/bin/docker compose up -d >/dev/null 2>&1
-              set -a
-              . ./.env 2>/dev/null
-              set +a
-              # serve the built web UI alongside the relay (http://localhost:3000)
-              export BUZZ_WEB_DIR=./web/dist BUZZ_SERVE_GIT_WEB_GUI=true
-              setsid "$relay" >> "$HOME/.cache/buzz-relay.log" 2>&1 < /dev/null &
-            )
-            for _ in $(seq 1 30); do
-              ${pkgs.curl}/bin/curl -sf -o /dev/null --max-time 1 http://127.0.0.1:3000 && break
-              sleep 1
-            done
-          fi
-        fi
-        # GTK3/WebKit hits "Error 71 (Protocol error)" on this Wayland session
-        # and dies; XWayland is stable (the upstream AppImage also ran under it).
-        export GDK_BACKEND=x11
-        # WebKit's DMABUF renderer cannot allocate GBM buffers here ("Failed to
-        # create GBM buffer ... Invalid argument") and paints an empty window.
-        export WEBKIT_DISABLE_DMABUF_RENDERER=1
-        export WEBKIT_DISABLE_COMPOSITING_MODE=1
-        # The binary is built outside a derivation, so wrapGAppsHook never wraps
-        # it and GTK finds no GSettings schemas. Opening a file dialog then hits
-        # a fatal GLib-GIO-ERROR (schema 'org.gtk.Settings.FileChooser') and
-        # aborts the process. Point it at the schemas explicitly.
-        export GSETTINGS_SCHEMA_DIR="${
-          lib.concatMapStringsSep ":" (p: "${p}/share/gsettings-schemas/${p.name}/glib-2.0/schemas") [
-            pkgs.gtk3
-            pkgs.gsettings-desktop-schemas
-          ]
-        }"
-        # System GStreamer for media/notification sounds; bad+libav supply the
-        # AAC decoder the app asks for on boot.
-        export GST_PLUGIN_SYSTEM_PATH_1_0="${
-          lib.makeSearchPath "lib/gstreamer-1.0" (
-            with pkgs.gst_all_1;
-            [
-              gstreamer
-              gst-plugins-base
-              gst-plugins-good
-              gst-plugins-bad
-              gst-libav
-            ]
-          )
-        }"
-        export BUZZ_RELAY_URL="''${BUZZ_RELAY_URL:-ws://localhost:3000}"
-        # Agent mentions spawn the ACP harness (buzz-acp) plus the other
-        # workspace binaries; the app resolves them beside itself or on PATH.
-        # Built by: cargo build --release --workspace
-        export PATH="$repo/target/release:$PATH"
-        exec "$repo/desktop/src-tauri/target/release/buzz-desktop" "$@"
-      ''
-    );
-    terminal = false;
-    icon = ./icons/Buzz.png;
-    categories = [
-      "Development"
-      "Network"
     ];
   };
 
