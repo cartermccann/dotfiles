@@ -16,30 +16,40 @@
     wireplumber.enable = true;
   };
 
-  # Pin the default sink to the Schiit Gunnr USB DAC.
+  # Rank the outputs so the default sink lands on whatever is actually being
+  # listened to, in the order they're actually used:
   #
-  # Without this, WirePlumber picks by its own priority scoring and the default
-  # drifts between the DAC, the FIIO SA1 and the HDMI output depending on what
-  # enumerated first. Volume keys target @DEFAULT_AUDIO_SINK@, so a drifting
-  # default is a drifting volume key. The HDMI sink in particular is on the
-  # GPU and is almost never what's wanted.
+  #   Bluetooth headphones > FIIO SA1 (desk speakers) > Schiit Gunnr > HDMI
   #
-  # priority.session is what `wpctl status` sorts on when choosing a default;
-  # the two alternates are pushed below the DAC rather than disabled, so they
-  # are still selectable in pavucontrol.
+  # This matters because volume keys target @DEFAULT_AUDIO_SINK@. If the
+  # default is a device nothing is playing on, the OSD moves and the sound
+  # doesn't — which is exactly the symptom that prompted this. Without explicit
+  # ranking WirePlumber scores by its own heuristics and the default drifts
+  # with enumeration order; the GPU's HDMI sink in particular is almost never
+  # wanted and is pushed to the bottom.
+  #
+  # Bluetooth sits above the wired outputs so headphones take over on connect
+  # and hand back on disconnect. Nothing is disabled — everything is still
+  # selectable in pavucontrol.
   services.pipewire.wireplumber.extraConfig."51-default-sink" = {
     "monitor.alsa.rules" = [
       {
-        matches = [ { "node.name" = "alsa_output.usb-Schiit_Audio_Schiit_Gunnr-00.analog-stereo"; } ];
+        matches = [ { "node.name" = "alsa_output.usb-BAB_FIIO_SA1_20240416905926-00.analog-stereo"; } ];
         actions.update-props."priority.session" = 2000;
       }
       {
-        matches = [ { "node.name" = "alsa_output.usb-BAB_FIIO_SA1_20240416905926-00.analog-stereo"; } ];
-        actions.update-props."priority.session" = 1000;
+        matches = [ { "node.name" = "alsa_output.usb-Schiit_Audio_Schiit_Gunnr-00.analog-stereo"; } ];
+        actions.update-props."priority.session" = 1500;
       }
       {
         matches = [ { "node.name" = "alsa_output.pci-0000_01_00.1.hdmi-stereo"; } ];
         actions.update-props."priority.session" = 100;
+      }
+    ];
+    "monitor.bluez.rules" = [
+      {
+        matches = [ { "device.api" = "bluez5"; } ];
+        actions.update-props."priority.session" = 3000;
       }
     ];
   };
