@@ -1,12 +1,14 @@
 -- Palette — neovim colorscheme derived from lib/palette.nix
--- Warm espresso/cream monochrome base + azure accent + phosphor-green motif.
--- Mirrors the Hyprland rice so the editor matches the desktop.
+-- Ouranos night: cobalt on near-black. Mirrors the Hyprland session so the
+-- editor matches the desktop.
 --
--- Palette source of truth: ~/dotfiles/lib/palette.nix (Base16).
--- A few shades below are derived tints (string-green, bg washes, selection)
--- kept tasteful for code over a full file — noted inline.
+-- Palette source of truth: ~/dotfiles/lib/palette.nix (Base16). This file
+-- mirrors those values BY HAND — nix cannot reach into a Lua colorscheme, so
+-- when lib/palette.nix changes, the `c` table below has to change with it.
+-- A few shades are derived tints (string-green, bg washes, selection, indent
+-- guides) kept restrained for reading a full file — noted inline.
 --
--- Transparency: defaults ON so the espresso comes from the terminal/compositor
+-- Transparency: defaults ON so the ground comes from the terminal/compositor
 -- blur (matches square.lua + the catppuccin/transparent roster). Set
 -- `vim.g.palette_transparent = false` before `:colorscheme palette` for a solid bg.
 
@@ -20,35 +22,35 @@ vim.g.colors_name = "palette"
 local transparent = vim.g.palette_transparent ~= false
 
 local c = {
-  -- ── Base16 slots (lib/palette.nix) ──
-  bg = "#141210", -- base00 espresso black
-  surface = "#1b1917", -- base01 raised bg / status
-  raised = "#211e1a", -- base02 selection / raised
-  muted = "#6b655d", -- base03 comments / disabled
-  taupe = "#8a847c", -- base04 dark fg
-  fg = "#e8e4df", -- base05 warm cream (default fg)
-  fg_light = "#c5bfb5", -- base06 light fg
-  white = "#f2efe9", -- base07 lightest
-  red = "#e06c5e", -- base08
-  orange = "#d99a5c", -- base09
-  yellow = "#cbb46a", -- base0A
-  green = "#3ddc84", -- base0B phosphor
-  cyan = "#72b8ff", -- base0C azure-bright
-  azure = "#7b7bff", -- base0D PRIMARY accent (focus/active)
-  periwinkle = "#a98bff", -- base0E magenta
-  green_deep = "#2d8a4e", -- base0F brand deep green
-  dim = "#a39d94", -- textDim
+  -- ── Base16 slots — Ouranos night (lib/palette.nix) ──
+  bg = "#0a0c11", -- base00 near-black ground
+  surface = "#0f1218", -- base01 panels / status
+  raised = "#171b23", -- base02 selection / raised
+  muted = "#3a4152", -- base03 comments / disabled
+  taupe = "#8b93a4", -- base04 dark fg (subtext)
+  fg = "#e7ebf2", -- base05 default fg
+  fg_light = "#c7cdd8", -- base06 light fg
+  white = "#f4f7fc", -- base07 lightest
+  red = "#f87171", -- base08
+  orange = "#fb923c", -- base09
+  yellow = "#fbbf24", -- base0A
+  green = "#34d399", -- base0B
+  cyan = "#22d3ee", -- base0C
+  azure = "#3b6bff", -- base0D PRIMARY accent — cobalt (focus/active)
+  periwinkle = "#a78bfa", -- base0E magenta
+  green_deep = "#2a4bbd", -- base0F deep cobalt
+  dim = "#8b93a4", -- textDim
 
   -- ── Derived tints (kept restrained for full-file readability) ──
-  overlay = "#26221e", -- cursorline / subtle raise above raised
-  green_soft = "#8fcf9d", -- gentler phosphor for strings
-  sel = "#2b2a3a", -- visual: faint azure-tinted selection
-  hairline = "#332f2a", -- inactive separators / borders (japandi hairline)
-  border_active = "#4a4960", -- active win separator (azure-leaning)
-  red_bg = "#241715",
-  green_bg = "#13231a",
-  blue_bg = "#171a2b",
-  yellow_bg = "#23200f",
+  overlay = "#212734", -- cursorline / subtle raise above raised (SURFACE2)
+  green_soft = "#6ee7b7", -- gentler green for strings
+  sel = "#1c2740", -- visual: faint cobalt-tinted selection
+  hairline = "#242b38", -- inactive separators / borders
+  border_active = "#2a4bbd", -- active win separator (cobalt-leaning)
+  red_bg = "#2a1618",
+  green_bg = "#0e2620",
+  blue_bg = "#111a33",
+  yellow_bg = "#2a2210",
   none = "NONE",
 }
 
@@ -68,14 +70,14 @@ hl("FloatBorder", { fg = c.hairline, bg = FB })
 hl("FloatTitle", { fg = c.azure, bg = FB, bold = true })
 hl("Visual", { bg = c.sel })
 hl("VisualNOS", { bg = c.sel })
-hl("Search", { fg = c.white, bg = "#3a3414" })
+hl("Search", { fg = c.white, bg = "#463813" })
 hl("IncSearch", { fg = c.bg, bg = c.azure })
 hl("CurSearch", { fg = c.bg, bg = c.azure })
 hl("Substitute", { fg = c.bg, bg = c.orange })
 hl("CursorLine", { bg = c.overlay })
 hl("CursorColumn", { bg = c.overlay })
 hl("ColorColumn", { bg = c.surface })
-hl("LineNr", { fg = "#46413a" })
+hl("LineNr", { fg = "#39414f" })
 hl("CursorLineNr", { fg = c.azure, bold = true })
 hl("SignColumn", { fg = c.muted, bg = NB })
 hl("FoldColumn", { fg = c.muted, bg = NB })
@@ -97,9 +99,9 @@ hl("WildMenu", { fg = c.bg, bg = c.azure })
 hl("Directory", { fg = c.azure })
 hl("Title", { fg = c.azure, bold = true })
 hl("MatchParen", { fg = c.azure, bg = c.raised, bold = true })
-hl("NonText", { fg = "#3a352f" })
-hl("SpecialKey", { fg = "#3a352f" })
-hl("Whitespace", { fg = "#2a2622" })
+hl("NonText", { fg = "#2f3648" })
+hl("SpecialKey", { fg = "#2f3648" })
+hl("Whitespace", { fg = "#232a37" })
 hl("EndOfBuffer", { fg = NB == c.none and c.bg or c.bg })
 hl("Conceal", { fg = c.muted })
 hl("QuickFixLine", { bg = c.sel })
@@ -342,15 +344,15 @@ hl("NeoTreeGitUntracked", { fg = c.green })
 hl("NeoTreeGitAdded", { fg = c.green })
 hl("NeoTreeGitDeleted", { fg = c.red })
 hl("NeoTreeGitConflict", { fg = c.orange })
-hl("NeoTreeIndentMarker", { fg = "#2a2622" })
+hl("NeoTreeIndentMarker", { fg = "#232a37" })
 hl("NeoTreeDimText", { fg = c.muted })
 hl("NeoTreeTabActive", { fg = c.azure, bold = true })
 hl("NeoTreeTabInactive", { fg = c.taupe })
 
 -- ── Indent-blankline ──
-hl("IblIndent", { fg = "#221f1b" })
+hl("IblIndent", { fg = "#1b212c" })
 hl("IblScope", { fg = c.hairline })
-hl("IndentBlanklineChar", { fg = "#221f1b" })
+hl("IndentBlanklineChar", { fg = "#1b212c" })
 hl("IndentBlanklineContextChar", { fg = c.hairline })
 
 -- ── Rainbow delimiters (warm spectrum from the palette) ──
@@ -392,7 +394,7 @@ hl("SnacksNotifierInfo", { fg = c.cyan })
 hl("SnacksNotifierWarn", { fg = c.yellow })
 hl("SnacksNotifierError", { fg = c.red })
 hl("SnacksNotifierDebug", { fg = c.muted })
-hl("SnacksIndent", { fg = "#221f1b" })
+hl("SnacksIndent", { fg = "#1b212c" })
 hl("SnacksIndentScope", { fg = c.hairline })
 
 -- ── Blink cmp ──

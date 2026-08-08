@@ -31,7 +31,7 @@ parts/             # flake-parts modules: hosts (mkHost), templates
 hosts/             # per-machine configuration + hardware config
 modules/           # NixOS system modules (desktop, nvidia, ollama, oom-protection, ...)
 home/              # home-manager modules (shell, tools, neovim, tmux, niri, hyprland, ...)
-lib/               # overlays + the hyprland palette
+lib/               # overlays + the Ouranos palette (night/day)
 pkgs/              # custom package definitions
 templates/         # dev-shell templates for `nix flake init -t ~/dotfiles#<lang>`
 config/nvim/       # Neovim config, symlinked out of the store so it stays live-editable
@@ -55,10 +55,16 @@ wallpaper/
 
 ## Desktop sessions
 
-- **Niri (Noctalia)** — primary session; config in `home/niri-noctalia.nix`.
-- **Hyprland** — the glass rice (Hyprland 0.55 Lua config), two tiles: "Hyprland" (waybar) and "Hyprland (QS)" (qs-shell/Quickshell); `home/hyprland.nix` + `lib/palette.nix`.
+- **Hyprland** — primary. Hyprland 0.55 Lua config, two tiles: "Hyprland" (waybar, the daily driver) and "Hyprland (QS)" (qs-shell/Quickshell); `home/hyprland.nix` + `lib/palette.nix`.
+- **Niri (Noctalia)** — kept as a working fallback; config in `home/niri-noctalia.nix`. The standalone plain-Niri session was retired and its login tile is filtered out in `modules/desktop-wayland.nix`.
 
-Both share ghostty, tmux, and the helper scripts in `home/niri.nix`.
+All sessions share ghostty, tmux, the shared Wayland base in `modules/desktop-wayland.nix`, and the helper scripts in `home/niri.nix`.
+
+Colours come from `lib/palette.nix` — **Ouranos**, cobalt on near-black (`night`)
+or near-white (`day`), named for the sky Atlas holds up and the father Kronos
+was born to. Both variants are always defined; `active` picks which one the
+session components get. qs-shell and Caelestia do their own theming and are
+deliberately not wired to it.
 
 ## Local LLMs
 
