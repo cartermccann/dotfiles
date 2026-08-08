@@ -33,23 +33,20 @@ let
     nrs = "nh os switch ~/dotfiles";
     update = "nh os switch ~/dotfiles --update";
 
-    # Modern replacements
+    # Modern replacements.
+    # Dropped as unused over a full history window: ll (fish ships its own `la`,
+    # which is what actually gets typed), df=duf, http=xh, md=glow.
     ls = "eza --icons";
-    ll = "eza -la --icons";
     cat = "bat";
     grep = "rg";
     y = "yazi";
-    df = "duf";
-    http = "xh";
-    md = "glow";
 
     # Ollama chat (server runs in the rootful podman container; the host CLI
     # from tools.nix talks to its API on 127.0.0.1:11434 — no sudo needed).
     # Model tags come from lib/llm-models.nix, same list the preloader pulls.
+    # Only `ai` survives; qwen/coder/qwy were never invoked. `fim` stays in the
+    # preload list because neovim's minuet completion uses it directly.
     ai = "ollama run ${llm.daily}";
-    qwen = "ollama run ${llm.quick}";
-    coder = "ollama run ${llm.fim}";
-    qwy = "ollama run ${llm.qwythos}";
   };
 
   comcreateBanner = pkgs.writeShellScriptBin "comcreate-banner" (

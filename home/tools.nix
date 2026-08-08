@@ -39,53 +39,33 @@ in
     rustToolchain
 
     # CLI staples
+    # Kept despite zero interactive history: rg/fd/jq/yq are what coding agents
+    # reach for constantly, and atuin only records what *you* type.
     ripgrep
     fd
     jq
     yq
     tree
     eza
-    dust
-    duf # prettier df
-    tldr
+    dust # backs the "Disk Usage" desktop entry in home/common.nix
     tree-sitter
     yazi
-    glow # markdown reader
-    xh # httpie-style curl
+    glow # markdown reader; referenced by home/hyprland.nix
     gum # shell prompts/confirm (gwr worktree fn, menu scripts)
-    ouch # universal compress/decompress
-    procs # modern ps
-    sd # modern sed
-    broot # interactive tree/file navigator
-    television # general-purpose fuzzy finder TUI
-    cht-sh # cheat.sh client
+    procs # modern ps; used by home/codex-desktop.nix
 
     # Dev workflow
-    just # command runner
-    watchexec # file watcher
-    tokei # code statistics
-    hyperfine # CLI benchmarking
-    difftastic # syntax-aware diffs
     lazygit
-    lazydocker
+    lazydocker # backs the "Docker" desktop entry in home/common.nix
     git-lfs
-    git-bug # issue tracker embedded in git
-    posting # terminal API client
-    bruno # Git-friendly API client
-    rainfrog # Postgres TUI
+    bruno # Git-friendly API client (GUI — usage not visible in shell history)
 
     # Networking
-    whois
     netcat-openbsd
-    doggo # DNS lookup
-    gping # graphical ping
-    bandwhich # per-process bandwidth
 
     # Cloud & deploy
     flyctl
-    stripe-cli
-    google-cloud-sdk
-    awscli2
+    google-cloud-sdk # GA4/GSC/BigQuery client work
 
     # Nix tooling
     nh
@@ -97,28 +77,23 @@ in
     pkgs-unstable.bubblewrap # PATH bwrap preferred by Codex over its bundled fallback
     codexCli
     pkgs-unstable.ollama # CLI client only (server is the podman container) — unstable to stay near the 0.30.x server API
-    fabric-ai # reusable AI prompt patterns
     grokCli # official xAI Grok CLI (grok/agent) — prebuilt binary in ../pkgs/grok-cli
 
     # Media & recording
-    obs-studio
+    # obs-studio lives in modules/media.nix (system-level) — it was declared in
+    # both, so this copy was redundant.
     yt-dlp
     anarlog # local-first AI meeting notes (ex-Hyprnote) — .deb repacked in ../pkgs/anarlog
 
     # SEO
     screamingFrog # proprietary crawler, bundled JDK
 
-    # Rice
-    cava
-    pipes-rs
-    cbonsai
+    # Rice — trimmed to the ones that are actually wired to something.
+    # Dropped (zero invocations, nothing references them): pipes-rs, cbonsai,
+    # asciiquarium, sl, lolcat, peaclock, tty-clock.
+    cava # rice-dashboard pane; bound to mod+CTRL+D in home/hyprland.nix
     cmatrix
-    asciiquarium
-    sl # the train you typo into
-    figlet # big ascii banners
-    lolcat # rainbow pipe (figlet | lolcat)
-    peaclock # zen full-screen terminal clock
-    tty-clock # minimal digital clock (tty-clock -c -C 4)
+    figlet # required by scripts/comcreate-banner.sh (runs on every bash shell)
 
     # From flake inputs
     google-workspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.default # gws
