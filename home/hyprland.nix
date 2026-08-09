@@ -66,6 +66,46 @@ let
       --transition-fps 165 --transition-duration 0.7 --transition-bezier .05,.7,.1,1
   '';
 
+  # Audio output picker. Three outputs are in regular rotation (FIIO SA1 desk
+  # speakers, Schiit Gunnr for the Arya, Bluetooth headphones) and the only way
+  # to switch was a pavucontrol round-trip.
+  #
+  # Switching the default is enough to move audio: every stream here runs with
+  # target.object=auto, so they follow the default rather than pinning to a
+  # device. Verified by flipping a live Zen stream between sinks.
+  #
+  # The awk pass strips wpctl's tree glyphs and the "*" that marks the current
+  # default, leaving "<id>. <description>"; the id is recovered from the pick.
+  # Monitor sources and the EasyEffects virtual sink are filtered out — the
+  # former are not real outputs, and the latter is a processing stage, not a
+  # destination (picking it is what made volume keys feel broken).
+  hyprAudioSink = pkgs.writeShellScriptBin "hypr-audio-sink" ''
+    LIST=$(${pkgs.wireplumber}/bin/wpctl status \
+      | ${pkgs.gawk}/bin/awk '/^ ├─ Sinks:/{s=1;next} /^ ├─ Sources:/{s=0} s' \
+      | ${pkgs.gnused}/bin/sed 's/^[^0-9*]*//; s/^\*[[:space:]]*/ /' \
+      | ${pkgs.gnugrep}/bin/grep -E '^[[:space:]]*[0-9]+\.' \
+      | ${pkgs.gnugrep}/bin/grep -viE 'easy effects|monitor' \
+      | ${pkgs.gnused}/bin/sed 's/^[[:space:]]*//; s/[[:space:]]*\[vol:.*$//')
+
+    [ -n "$LIST" ] || exit 0
+
+    PICK=$(printf '%s' "$LIST" \
+      | ${pkgs.fuzzel}/bin/fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini --prompt="󰓃  ")
+    [ -n "$PICK" ] || exit 0
+
+    ID=''${PICK%%.*}
+    case "$ID" in
+      ""|*[!0-9]*) exit 0 ;;
+    esac
+
+    ${pkgs.wireplumber}/bin/wpctl set-default "$ID" || exit 1
+
+    NAME=$(printf '%s' "$PICK" | ${pkgs.gnused}/bin/sed 's/^[0-9]*\.[[:space:]]*//')
+    ${pkgs.libnotify}/bin/notify-send -a "audio" -i audio-speakers \
+      -h string:x-canonical-private-synchronous:audio-sink \
+      "Output" "$NAME"
+  '';
+
   # Night-light toggle via hyprsunset's hyprctl IPC (replaces the wlsunset pkill dance)
   hyprNightToggle = pkgs.writeShellScriptBin "hypr-night-toggle" ''
     STATE="''${XDG_RUNTIME_DIR:-/tmp}/.hypr-night-on"
@@ -431,7 +471,10 @@ let
     }
 
     -- Control panels
+    -- CTRL+A is the full mixer; CTRL+S is the quick output picker (three
+    -- outputs are in regular rotation, so switching shouldn't need a GUI).
     hl.bind(mod .. " + CTRL + A", hl.dsp.exec_cmd("pavucontrol"))
+    hl.bind(mod .. " + CTRL + S", hl.dsp.exec_cmd("hypr-audio-sink"))
     hl.bind(mod .. " + CTRL + B", hl.dsp.exec_cmd("ghostty --class=TUI.float -e bluetui"))
     hl.bind(mod .. " + CTRL + T", hl.dsp.exec_cmd("ghostty -e btop"))
     hl.bind(mod .. " + CTRL + D", hl.dsp.exec_cmd("ghostty -e rice-dashboard"))
@@ -550,6 +593,7 @@ in
         hyprPowerMenu
         hyprWallpaperPick
         hyprNightToggle
+        hyprAudioSink
         pkgs.hyprsunset # night light daemon (autostarted below; hyprland session only)
         pkgs.grimblast # screenshot wrapper (adds --freeze; wraps grim+slurp)
         pkgs.hyprpicker # color picker → clipboard (SUPER+SHIFT+C)
@@ -679,12 +723,18 @@ in
               tooltip-format-enumerate-connected = "{device_alias}";
               on-click = "ghostty --class=TUI.float -e bluetui";
             };
+            # Left-click is the output picker rather than pavucontrol: switching
+            # between the desk speakers, the Schiit and Bluetooth headphones is
+            # the frequent action, and the full mixer is rarely what's wanted.
+            # Middle-click still opens pavucontrol for per-app routing.
             pulseaudio = {
               format = "VOL {volume}%";
               format-muted = "MUTED";
               scroll-step = 3;
-              on-click = "pavucontrol";
+              on-click = "hypr-audio-sink";
+              on-click-middle = "pavucontrol";
               on-click-right = "swayosd-client --output-volume mute-toggle";
+              tooltip-format = "{desc} — {volume}%";
             };
             "custom/notifications" = {
               format = "{icon}";
