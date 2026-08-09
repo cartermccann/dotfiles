@@ -46,9 +46,15 @@
         actions.update-props."priority.session" = 100;
       }
     ];
+    # Match the bluez *node*, not the device. `device.api = "bluez5"` matches
+    # the device object, and priority.session is read off the node, so that
+    # form silently does nothing: a connected WH-1000XM6 kept its stock 1010
+    # and lost to the FIIO at 2000. The "~" prefix is WirePlumber's regex
+    # match, covering every headset without hardcoding MAC addresses
+    # (bluez_output.80_99_E7_F8_6D_74.1 and friends).
     "monitor.bluez.rules" = [
       {
-        matches = [ { "device.api" = "bluez5"; } ];
+        matches = [ { "node.name" = "~bluez_output.*"; } ];
         actions.update-props."priority.session" = 3000;
       }
     ];
