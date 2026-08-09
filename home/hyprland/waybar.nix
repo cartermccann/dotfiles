@@ -6,7 +6,6 @@
 # Waybar: the bar config and its stylesheet.
 let
   pal = import ../../lib/palette.nix;
-  cssRgb = import ./css.nix lib;
 in
 {
   xdg.configFile."waybar/config".text =
@@ -180,124 +179,12 @@ in
       )
     ];
 
-  xdg.configFile."waybar/style.css".text = ''
-    * {
-      font-family: "JetBrainsMono Nerd Font", monospace;
-      font-size: 13px;
-      border: none;
-      border-radius: 0;
-      min-height: 0;
-    }
-    window#waybar {
-      background: transparent;
-      color: ${pal.base05};
-    }
-    tooltip {
-      background: rgba(${cssRgb pal.base01}, 0.95);
-      border: 1px solid rgba(${cssRgb pal.base05}, 0.08);
-      border-radius: 10px;
-    }
-    tooltip label {
-      color: ${pal.base05};
-    }
-    /* Floating frosted-glass module groups (Hyprland layer blur does the frosting).
-       Site language: borders are NEUTRAL hairlines; accent only where focus lives.
-       The inset top highlight is a PillNav-style "liquid sheen". */
-    .modules-left,
-    .modules-center,
-    .modules-right {
-      background: rgba(${cssRgb pal.base01}, 0.45);
-      border: 1px solid rgba(${cssRgb pal.base05}, 0.07);
-      box-shadow: inset 0 1px 0 rgba(${cssRgb pal.base05}, 0.06);
-      border-radius: 14px;
-      padding: 1px 10px;
-      margin: 0 4px;
-    }
-    #workspaces button {
-      color: ${pal.base04};
-      padding: 0 9px;
-      margin: 2px 2px;
-      border-radius: 10px;
-      font-size: 12px;
-    }
-    #workspaces button.active {
-      color: ${pal.base07};
-      background: rgba(${cssRgb pal.base0D}, 0.18);
-    }
-    #workspaces button.urgent {
-      color: ${pal.base08};
-    }
-    #workspaces button:hover {
-      background: rgba(${cssRgb pal.base05}, 0.06);
-    }
-    #submap {
-      color: ${pal.base0D};
-      padding: 0 10px;
-      font-size: 11px;
-      letter-spacing: 0.08em;
-    }
-    #clock {
-      color: ${pal.base05};
-      font-weight: bold;
-      padding: 0 10px;
-      font-size: 12px;
-    }
-    #mpris {
-      color: ${pal.base06};
-      padding: 0 9px;
-      font-size: 12px;
-    }
-    #mpris.paused {
-      color: ${pal.base04};
-    }
-    #idle_inhibitor {
-      color: ${pal.base04};
-      padding: 0 8px;
-    }
-    #idle_inhibitor.activated {
-      color: ${pal.base0D};
-    }
-    /* HUD micro-labels: uppercase comes from the module format strings (GTK CSS
-       has no text-transform); tracking lives here. mpris exempt — titles keep case. */
-    #custom-gpu,
-    #cpu,
-    #memory,
-    #network,
-    #bluetooth,
-    #pulseaudio {
-      color: ${pal.base06};
-      padding: 0 9px;
-      font-size: 11px;
-      letter-spacing: 0.08em;
-    }
-    #pulseaudio.muted,
-    #bluetooth.disabled,
-    #network.disconnected {
-      color: ${pal.base03};
-    }
-    #custom-notifications {
-      color: ${pal.base06};
-      padding: 0 8px;
-    }
-    #custom-notifications.notification,
-    #custom-notifications.inhibited-notification {
-      color: ${pal.base0D};
-    }
-    #custom-notifications.dnd-notification,
-    #custom-notifications.dnd-none {
-      color: ${pal.base03};
-    }
-    #tray {
-      padding: 0 6px;
-    }
-    #custom-power {
-      color: ${pal.base04};
-      padding: 0 10px 0 8px;
-    }
-    #custom-power:hover {
-      color: ${pal.base08};
-    }
-  '';
+  # The stylesheet lives in config/hyprland/waybar.css as real CSS. It carries
+  # no Nix interpolation at all: the palette is emitted alongside it as
+  # _ouranos.css and pulled in with @import, so the two travel together and the
+  # stylesheet stays editable with normal CSS tooling.
+  xdg.configFile."waybar/style.css".source = ../../config/hyprland/waybar.css;
+  xdg.configFile."waybar/_ouranos.css".text = import ./palette-css.nix lib pal;
 
   # fuzzel: session launcher (separate config path; launched via --config)
 }

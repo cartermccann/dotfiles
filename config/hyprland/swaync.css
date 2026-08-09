@@ -1,0 +1,72 @@
+/* swaync stylesheet for the Hyprland session.
+ *
+ * Colours come from _ouranos.css, generated next to this file from
+ * lib/palette.nix by home/hyprland/palette-css.nix. Use @slot for solids and
+ * alpha(@slot, a) for translucency. */
+@import url("_ouranos.css");
+
+/* Explicit type scale — swaync otherwise inherits the (oversized) GTK default. */
+* {
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  font-size: 12px;
+}
+.control-center {
+  background: alpha(@base00, 0.60);
+  color: @base05;
+  border: 1px solid alpha(@base05, 0.08);
+  border-radius: 16px;
+  margin: 8px;
+  padding: 12px;
+}
+.notification-row .notification-background .notification {
+  background: alpha(@base01, 0.65);
+  color: @base05;
+  border: 1px solid alpha(@base05, 0.08);
+  border-radius: 14px;
+  margin: 6px 4px;
+  padding: 4px;
+}
+.notification-row .notification-background .notification.critical {
+  border-color: @base08;
+}
+.notification .summary {
+  font-size: 13px;
+  font-weight: 600;
+  color: @base05;
+}
+.notification .body {
+  font-size: 12px;
+  color: @base06;
+}
+.notification .app-name {
+  font-size: 10px;
+  color: @base04;
+}
+.notification .time {
+  font-size: 10px;
+  color: @base04;
+}
+.widget-title {
+  color: @base05;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 4px 8px;
+}
+.widget-title > button {
+  background: alpha(@base0D, 0.14);
+  color: @base05;
+  font-size: 12px;
+  border-radius: 10px;
+  padding: 2px 10px;
+}
+.widget-dnd {
+  color: @base04;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+.notification-action {
+  background: alpha(@base01, 0.6);
+  color: @base05;
+  font-size: 12px;
+  border-radius: 10px;
+}

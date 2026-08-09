@@ -16,9 +16,16 @@
 #   menus.nix       fuzzel + swayosd
 #   lock.nix        hyprlock + hypridle
 #   css.nix         shared hex -> "r, g, b" helper (not a module)
+#   palette-css.nix palette -> GTK @define-color block (not a module)
 #
 # Colours come from lib/palette.nix; each module imports it directly rather
 # than threading it through, so any one of them can be read on its own.
+#
+# The two large stylesheets (waybar, swaync) are plain .css files under
+# config/hyprland/ with no interpolation; palette-css.nix emits the palette
+# next to each as _ouranos.css, which they pull in with @import. The small
+# ones (fuzzel, swayosd, hyprlock, hypridle) stay inline — extracting a
+# 19-line blob costs more indirection than it saves.
 {
   imports = [
     ./scripts.nix
