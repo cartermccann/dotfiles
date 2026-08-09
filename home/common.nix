@@ -13,7 +13,7 @@
     ./neovim.nix
     ./niri.nix
     ./niri-noctalia.nix
-    ./hyprland.nix
+    ./hyprland
     ./tmux.nix
     ./dictation.nix
     ./whisperlivekit.nix
