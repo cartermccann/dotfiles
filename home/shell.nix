@@ -305,10 +305,20 @@ in
 
         # No fill, so it sits next to the pills rather than being flung to the
         # right margin — a one-line prompt has nowhere sensible to fling it.
+        #
+        # It IS a pill, though, and that is load-bearing rather than cosmetic:
+        # ghostty runs at background-opacity 0.68, so anything drawn with the
+        # default cell background sits on the wallpaper and its contrast is
+        # whatever happens to be behind the window. An explicit background is
+        # composited opaque, which is the only reason the other pills stay
+        # readable. This module used to be bare text in base03 and was
+        # effectively invisible (~1.3:1 over a mid-tone wallpaper). Amber, not
+        # another grey: a duration only prints past min_time, so it always
+        # means "that took a while" and should read as its own kind of fact.
         cmd_duration = {
           min_time = 2000;
-          style = "fg:muted";
-          format = " [${g.timer} $duration]($style)";
+          style = "bg:surface fg:warn";
+          format = " [${g.capL}](fg:surface)[${g.timer} $duration ]($style)[${g.capR}](fg:surface)";
         };
 
         character = {
@@ -329,7 +339,7 @@ in
           raised = pal.base02; # git pill, one step up
           text = pal.base05;
           subtext = pal.textDim;
-          muted = pal.base03; # command duration
+          warn = pal.base0A; # amber — command duration
           cyan = pal.base0C; # dev shell
           err = pal.base08; # failed command
         };
