@@ -100,15 +100,31 @@ let
           dim_strength = 0.08, -- carries more focus signal now that borders are hairlines
           blur = {
             enabled = true,
-            size = 12, -- heavy frost; drop back toward 6/3 if the GPU runs hot
+            -- Numbers carried over from the gentoo dotfiles' mango/scenefx
+            -- block (config/mango/config.conf), where the glass idiom was
+            -- worked out against a real wallpaper and the findings written
+            -- down. Two of them are load-bearing:
+            --
+            --   brightness BELOW 1.0 darkens the backdrop toward invisibility.
+            --   At 0.86 there it pulled the blurred wallpaper down ~40%, which
+            --   was most of why the glass could not be seen. Above 1.0 lifts.
+            --
+            --   radius is what makes a surface read as glass rather than grey
+            --   paint. At 26 the desktop looked solid; 14 keeps enough shape
+            --   to see through.
+            size = 14,
             passes = 4,
             new_optimizations = true,
             xray = true, -- biggest NVIDIA perf lever: blur samples the wallpaper, not stacked windows
             ignore_opacity = true,
             noise = 0.055, -- coarser grain = the diffusion through the frost
-            contrast = 0.9,
-            brightness = 0.85, -- darkened backdrop = contrast for the cream type
-            vibrancy = 0.25,
+            contrast = 0.94,
+            brightness = 1.12,
+            -- The one value without a 1:1 mapping: scenefx takes a saturation
+            -- multiplier (1.7 there), Hyprland takes a 0–1 vibrancy. 0.5 is
+            -- the eyeball equivalent, not a conversion — tune it first if the
+            -- backdrop reads too grey or too lurid.
+            vibrancy = 0.5,
             vibrancy_darkness = 0.0,
             popups = true, -- blurred right-click menus
             popups_ignorealpha = 0.2,

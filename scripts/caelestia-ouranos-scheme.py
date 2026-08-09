@@ -21,7 +21,15 @@ Emits `dark.txt` and `light.txt` for the package graft, plus a `scheme.json`
 that home-manager seeds into ~/.local/state/caelestia so a fresh state dir
 starts on Ouranos rather than the CLI's hardcoded catppuccin-mocha fallback.
 
-Usage: caelestia-ouranos-scheme.py <seed-hex> <name> <flavour> <variant> <outdir>
+Material derives every role from one seed, including `tertiary` — the
+contrasting accent Caelestia puts on the clock and the distro icon. From a
+cobalt seed that lands on magenta (#f5adff), which is not a colour Ouranos
+owns. So tertiary is re-seeded separately: the generator runs a second time
+with the tertiary seed as the source and its primary* roles are copied over
+the tertiary* ones, which keeps the tone ladder M3 expects instead of pasting
+one flat colour into eleven slots.
+
+Usage: caelestia-ouranos-scheme.py <seed-hex> <tertiary-hex> <name> <flavour> <variant> <outdir>
 """
 
 import json
@@ -44,13 +52,36 @@ class Seed:
         self.flavour = flavour
 
 
+# tertiary role -> the primary role it is taken from in the second pass.
+TERTIARY_FROM_PRIMARY = {
+    "tertiary": "primary",
+    "tertiaryDim": "primaryDim",
+    "onTertiary": "onPrimary",
+    "tertiaryContainer": "primaryContainer",
+    "onTertiaryContainer": "onPrimaryContainer",
+    "tertiaryFixed": "primaryFixed",
+    "tertiaryFixedDim": "primaryFixedDim",
+    "onTertiaryFixed": "onPrimaryFixed",
+    "onTertiaryFixedVariant": "onPrimaryFixedVariant",
+    "tertiaryPaletteKeyColor": "primaryPaletteKeyColor",
+    "tertiary_paletteKeyColor": "primary_paletteKeyColor",
+}
+
+
+def reseed_tertiary(colours: dict, tertiary: dict) -> None:
+    """Overwrite the tertiary ladder with the second pass's primary ladder."""
+    for role, source in TERTIARY_FROM_PRIMARY.items():
+        if role in colours and source in tertiary:
+            colours[role] = tertiary[source]
+
+
 def main() -> int:
-    if len(sys.argv) != 6:
+    if len(sys.argv) != 7:
         print(__doc__.strip().splitlines()[-1], file=sys.stderr)
         return 2
 
-    seed, name, flavour, variant = sys.argv[1:5]
-    outdir = Path(sys.argv[5])
+    seed, tertiary_seed, name, flavour, variant = sys.argv[1:6]
+    outdir = Path(sys.argv[6])
     outdir.mkdir(parents=True, exist_ok=True)
 
     generated = {}
@@ -60,6 +91,10 @@ def main() -> int:
         # already land on the Ouranos near-black ground (#11131b against the
         # palette's #0a0c11), and hard drops them to near-#000.
         colours = gen_scheme(Seed(mode, variant, flavour), hex_to_hct(seed.lstrip("#")))
+        reseed_tertiary(
+            colours,
+            gen_scheme(Seed(mode, variant, flavour), hex_to_hct(tertiary_seed.lstrip("#"))),
+        )
         generated[mode] = colours
         body = "".join(f"{key} {value}\n" for key, value in colours.items())
         (outdir / f"{mode}.txt").write_text(body)

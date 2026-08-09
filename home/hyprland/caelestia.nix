@@ -44,6 +44,14 @@ let
   # at 274.8°, which is what makes it read as the house colour.
   schemeVariant = "content";
 
+  # M3 wants `tertiary` to contrast with primary, and from a cobalt seed it
+  # picks magenta (#f5adff). Caelestia spends that role on the clock and the
+  # distro icon (modules/bar/components/{Clock,OsIcon}.qml), so those two were
+  # the last pink things on the bar. Re-seeded from the palette's cyan, which
+  # is still a real step away from cobalt but stays in the sky family the whole
+  # scheme is named for. base0E (#a78bfa violet) is the other sane pick.
+  schemeTertiary = palette.night.raw.base0C;
+
   baseCli = caelestia.inputs.caelestia-cli.packages.${system}.default;
   cliDeps = baseCli.propagatedBuildInputs or [ ];
   cliPython =
@@ -68,7 +76,8 @@ let
       }
       ''
         python3 ${../../scripts/caelestia-ouranos-scheme.py} \
-          "${palette.night.raw.base0D}" "${schemeName}" "${schemeFlavour}" "${schemeVariant}" "$out"
+          "${palette.night.raw.base0D}" "${schemeTertiary}" \
+          "${schemeName}" "${schemeFlavour}" "${schemeVariant}" "$out"
       '';
 
   ouranosCli = baseCli.overrideAttrs (old: {
@@ -89,11 +98,66 @@ let
   # has to be rebuilt against the grafted copy too — otherwise the scheme is
   # visible to the `caelestia` on PATH but not to the one the shell shells out
   # to for its own picker.
-  ouranosShell = caelestia.packages.${system}.with-cli.override { caelestia-cli = ouranosCli; };
+  #
+  # The patch on top of it is the corner logo. Upstream draws the distro icon
+  # through ColouredIcon, whose Colouriser layer flattens the whole SVG to a
+  # single role colour — so the Nix snowflake arrived as a monochrome blob in
+  # whatever tertiary happened to be. Dropping to a bare IconImage renders the
+  # file as authored, which for nixos-icons is the real two-tone mark
+  # (#5277c3 / #7ebae4). --replace-fail so a flake update that reshapes this
+  # component fails the build instead of silently reverting the logo.
+  ouranosShell =
+    (caelestia.packages.${system}.with-cli.override { caelestia-cli = ouranosCli; }).overrideAttrs
+      (old: {
+        # Line-at-a-time rather than one block replace, so the patch does not
+        # depend on upstream's indentation surviving a reformat.
+        postPatch =
+          (old.postPatch or "")
+          + "\n"
+          + ''
+            substituteInPlace modules/bar/components/OsIcon.qml \
+              --replace-fail 'import QtQuick'                        'import QtQuick
+            import Quickshell.Widgets' \
+              --replace-fail 'ColouredIcon {'                        'IconImage {' \
+              --replace-fail 'colour: Colours.palette.m3tertiary'    'asynchronous: true'
+          '';
+      });
 
   # Seed values for ~/.config/caelestia/shell.json. NOT fed to
   # `programs.caelestia.settings` — see the activation script below for why.
   shellSeed = {
+    appearance.transparency = {
+      # Off by default upstream, which is why every Caelestia surface painted
+      # flat over a compositor that was already blurring behind it: the
+      # `^caelestia-` layer rule in compositor.nix sets blur = true, but blur
+      # is invisible under an opaque layer. Turning this on is what makes the
+      # bar, dashboard and launcher read as glass.
+      enabled = true;
+
+      # 0.55 is the bar alpha from the gentoo dotfiles (bar_a=0x8c in
+      # bin/atlas-theme), where the glass idiom was tuned against a real
+      # wallpaper. The lesson recorded there is that readability comes from a
+      # large blur radius at moderate opacity, not from more transparency —
+      # so this pairs with the raised radius in compositor.nix rather than
+      # going lower. Caelestia keeps its own Hyprland layer rule in step
+      # (ignore_alpha = base - 0.03, Colours.qml reloadHyprRules).
+      base = 0.55;
+
+      # Alpha of the raised layers stacked on top — cards, rows, popovers.
+      # Upstream's 0.4: the same reference warns that stacking materials looks
+      # wrong, so inner surfaces want to read as a tint over the panel, not as
+      # a second pane of glass over the desktop.
+      layers = 0.4;
+    };
+
+    # The corner logo. Left unset, SysInfo reads LOGO=nix-snowflake out of
+    # /etc/os-release and hands it to Quickshell.iconPath, which searches the
+    # icon theme — and Papirus has no nix-snowflake, so it silently fell back
+    # to Caelestia's own mark. Pointing straight at nixos-icons' SVG makes it
+    # the real thing, and with the ColouredIcon patch above it keeps its own
+    # two-tone blue instead of being flattened to a role colour.
+    general.logo = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
+
     background = {
       # swww owns the wallpaper on this machine across all three sessions,
       # and ~/wallpaper.png is a cross-session contract (niri autostart,
@@ -121,6 +185,19 @@ in
     cli = {
       enable = true;
       package = ouranosCli;
+
+      # cli.json, unlike shell.json, really is a read-only input — the CLI only
+      # ever read_text()s it (utils/paths.py) — so it is safe to declare here.
+      settings.theme = {
+        # `caelestia scheme set` otherwise writes OSC colour sequences straight
+        # into every /dev/pts on the machine (apply_terms in utils/theme.py),
+        # repainting live terminals in EVERY session, not just this one. That
+        # overrode Ghostty's Ouranos palette and, because OSC 11 replaces the
+        # background outright, took its background-opacity with it. Ghostty is
+        # themed from lib/palette.nix in home/ghostty.nix; Caelestia keeps its
+        # hands off. Already-open terminals stay repainted until they restart.
+        enableTerm = false;
+      };
     };
 
     # The upstream module binds a systemd user service to
