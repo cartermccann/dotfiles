@@ -11,8 +11,10 @@
 # keeps its global Stylix palette. config/nvim/colors/palette.lua mirrors these
 # values by hand — update it alongside this file.
 #
-# NOT consumed by Caelestia: it derives its own Material scheme and owns that
-# end to end, so it is deliberately left alone.
+# Caelestia consumes base0D only, and indirectly: it is Material 3 end to end,
+# so home/hyprland/caelestia.nix feeds the cobalt in as the seed of a generated
+# M3 scheme rather than mapping these slots onto its roles. Changing base0D
+# therefore restyles that session too, via a rebuild.
 #
 #   let pal = import ../lib/palette.nix;
 #   pal.base00        # active variant (night)
