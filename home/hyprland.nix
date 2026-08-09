@@ -614,7 +614,6 @@ in
       # config directly. The compositor + portal come from modules/desktop-hyprland.nix.
       # API reference: $hyprland/share/hypr/stubs/hl.meta.lua
       xdg.configFile."hypr/hyprland.lua".text = mkHyprlandLua "waybar";
-      xdg.configFile."hypr/hyprland-qs.lua".text = mkHyprlandLua "qs";
 
       # hyprsunset: scheduled night light (config read by the autostart daemon)
       xdg.configFile."hypr/hyprsunset.conf".text = ''

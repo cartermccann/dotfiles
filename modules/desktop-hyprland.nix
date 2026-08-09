@@ -47,27 +47,10 @@ in
     swaynotificationcenter
   ];
 
-  # No custom login tile for the waybar variant: programs.hyprland registers a
-  # plain "Hyprland" session, and its theming lives in
-  # ~/.config/hypr/hyprland.lua, so that stock tile already loads this exact
-  # look. The Quickshell variant needs its own tile since it points at a
-  # different Lua config (~/.config/hypr/hyprland-qs.lua).
-  services.displayManager.sessionPackages = [
-    (
-      (pkgs.writeTextDir "share/wayland-sessions/hyprland-qs.desktop" ''
-        [Desktop Entry]
-        Name=Hyprland (QS)
-        Comment=Hyprland with qs-shell (Quickshell)
-        # start-hyprland is 0.55's watchdog launcher (bare Hyprland shows a
-        # "started without start-hyprland" error overlay in-session, and that
-        # overlay is itself a top layer that shoves other surfaces down).
-        # Args after `--` are forwarded to Hyprland.
-        Exec=start-hyprland -- --config /home/${user}/.config/hypr/hyprland-qs.lua
-        Type=Application
-      '').overrideAttrs
-      (_: {
-        passthru.providedSessions = [ "hyprland-qs" ];
-      })
-    )
-  ];
+  # No custom login tile is needed: programs.hyprland registers a plain
+  # "Hyprland" session, and its theming lives in ~/.config/hypr/hyprland.lua,
+  # so that stock tile already loads this exact look.
+  #
+  # The "Hyprland (QS)" tile was removed with the qs-shell session — that shell
+  # is being replaced by Caelestia, which ships its own home-manager module.
 }

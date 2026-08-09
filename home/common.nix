@@ -14,7 +14,6 @@
     ./niri.nix
     ./niri-noctalia.nix
     ./hyprland.nix
-    ./qs-shell.nix
     ./tmux.nix
     ./dictation.nix
     ./tools.nix
