@@ -483,21 +483,34 @@ let
       hl.on("hyprland.start", function()
         -- Import env into systemd/dbus, then bounce the portals (mirrors the niri startup line)
         --
-        -- xdg-desktop-portal-gtk is in the restart list for the same reason the
-        -- niri line has it, and leaving it out cost ~90s of session startup.
-        -- The systemd *user* manager outlives individual sessions, so portal
-        -- state carries across a logout. A session that reaches
-        -- graphical-session.target before anything exported WAYLAND_DISPLAY —
-        -- e.g. niri falling back to its compiled-in defaults, which skips its
-        -- own import-environment spawn-at-startup — starts -gtk blind, and it
-        -- dies with "cannot open display". Nothing restarts it afterwards.
-        -- xdg-desktop-portal then blocks 25s per proxy waiting on the dead
-        -- implementation, fails its own 90s start timeout, and every GTK app
-        -- launched meanwhile (Ghostty asks the Settings portal for
-        -- color-scheme) hangs until dbus gives up at service_start_timeout.
-        -- Restarting portal.Desktop without also restarting -gtk just re-enters
-        -- the same wait, which is exactly what this session used to do.
-        hl.exec_cmd([[bash -c 'systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE && systemctl --user start hyprland-session.target && systemctl --user restart xdg-desktop-portal-gtk xdg-desktop-portal-hyprland xdg-desktop-portal 2>/dev/null']])
+        -- Every step is `;`-separated, NOT `&&`. This line used to chain on
+        -- `&&` through `systemctl --user start hyprland-session.target` — a
+        -- unit that does not exist on this host and never has. Nothing defines
+        -- it: the HM Hyprland module would, but this session builds its config
+        -- as lua and is launched from the greeter, so the target was never
+        -- generated. `systemctl start` on an unknown unit exits 5, the `&&`
+        -- short-circuited, and the portal restart after it was dead code for
+        -- the entire life of this session type. The niri line works only
+        -- because it has no target start between the import and the restart.
+        --
+        -- Why the restart has to happen at all: the systemd *user* manager
+        -- outlives individual sessions, so portal state carries across a
+        -- logout. On logout xdg-desktop-portal-gtk dies with the compositor,
+        -- gets re-activated by the still-running xdg-desktop-portal seconds
+        -- before the next compositor exists, and comes up blind — "cannot open
+        -- display". The stale portal then holds a broken proxy to it, and
+        -- every GTK client that asks the Settings portal for color-scheme
+        -- (Ghostty, at startup) blocks on ReadAll until that resolves.
+        -- Measured on a logout/login round trip: session up at 17:31:45, first
+        -- Ghostty surface at 17:33:39, one second after -gtk finally came up
+        -- on its own. 114 seconds of a terminal that will not open, while
+        -- non-GTK apps launched instantly.
+        --
+        -- reset-failed precedes the restart because xdg-desktop-portal-hyprland
+        -- rate-limits itself out of existence during this window: it retries
+        -- while there is no compositor, hits "Start request repeated too
+        -- quickly", and a plain restart on a start-limited unit fails.
+        hl.exec_cmd([[bash -c 'systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME; dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE; systemctl --user reset-failed xdg-desktop-portal-gtk xdg-desktop-portal-hyprland xdg-desktop-portal 2>/dev/null; systemctl --user restart xdg-desktop-portal-gtk xdg-desktop-portal-hyprland xdg-desktop-portal 2>/dev/null']])
         hl.exec_cmd("swww-daemon")
         -- Give the daemon a moment to bind its socket, then restore the shared
         -- still wallpaper used by Niri, Hyprland, and hyprlock.
