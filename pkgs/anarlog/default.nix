@@ -119,6 +119,15 @@ stdenv.mkDerivation (finalAttrs: {
       install -Dm755 usr/bin/$prog $out/libexec/$prog
     done
 
+    # Upstream ships `Exec=anarlog`, resolved through PATH. The app's own
+    # self-updater cannot write to the read-only store, so it falls back to
+    # dropping its *CLI* binary at ~/.local/bin/anarlog — which then shadows
+    # this package and makes the launcher run the CLI, which exits instantly
+    # and looks like "the app won't start". Pin Exec to the store path so the
+    # desktop entry is immune to whatever lands in ~/.local/bin.
+    substituteInPlace $out/share/applications/Anarlog.desktop \
+      --replace-fail "Exec=anarlog" "Exec=$out/bin/anarlog"
+
     runHook postInstall
   '';
 
