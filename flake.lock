@@ -932,22 +932,6 @@
         "type": "github"
       }
     },
-    "nerd-dictation": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1760091796,
-        "narHash": "sha256-xjaHrlJvk8bNvWp1VE4EAHi2VJlAutBxUgWB++3Qo+s=",
-        "owner": "ideasman42",
-        "repo": "nerd-dictation",
-        "rev": "41f372789c640e01bb6650339a78312661530843",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ideasman42",
-        "repo": "nerd-dictation",
-        "type": "github"
-      }
-    },
     "niri": {
       "inputs": {
         "niri-stable": "niri-stable",
@@ -1477,7 +1461,6 @@
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager_2",
         "hyprland": "hyprland",
-        "nerd-dictation": "nerd-dictation",
         "niri": "niri",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_6",

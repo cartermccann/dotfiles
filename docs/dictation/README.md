@@ -8,6 +8,14 @@ Updated: 2026-07-10
 
 Target: Local-first NixOS desktop application for Hyprland and Niri
 
+> [!NOTE]
+> **Design-doc caveat (2026-08-09).** `ux-design-specification.md` and
+> `ux-design-directions.html` are written against `qs-shell`, which was removed
+> from the flake in `a02bf09`. Caelestia now fills that Quickshell role. The
+> interaction design still holds; the theming/component references do not. See
+> the warning at the top of the specification. `architecture.md` and
+> `task-plan.md` are unaffected.
+
 ## Product promise
 
 Capture speech into a recoverable session, show it live, transform it transparently, and deliver it deliberately to a known target.

@@ -59,9 +59,6 @@ in
     };
   };
 
-  # Swaylock (screen locker)
-  security.pam.services.swaylock = { };
-
   # XDG portals for Wayland
   xdg.portal = {
     enable = true;
@@ -91,16 +88,13 @@ in
     slurp
     wl-clipboard
     # mako removed: its package ships a dbus-activatable user service that
-    # grabs org.freedesktop.Notifications in ANY session (it hijacked the QS
-    # session notification server). Every session has its own daemon now:
-    # noctalia (niri), swaync (waybar Hyprland), qs-shell (QS).
+    # grabs org.freedesktop.Notifications in ANY session (it hijacked another
+    # session's notification server). Every session has its own daemon now:
+    # noctalia (niri), swaync (waybar Hyprland), Caelestia (its own tile).
     waybar
     xwayland-satellite
-    networkmanagerapplet
     brightnessctl
     wlsunset
-    swaylock-effects
-    swayidle
     cliphist
     satty
     swayosd

@@ -11,8 +11,8 @@
 # keeps its global Stylix palette. config/nvim/colors/palette.lua mirrors these
 # values by hand — update it alongside this file.
 #
-# NOT consumed by qs-shell or Caelestia: those ship their own theming and are
-# deliberately left alone.
+# NOT consumed by Caelestia: it derives its own Material scheme and owns that
+# end to end, so it is deliberately left alone.
 #
 #   let pal = import ../lib/palette.nix;
 #   pal.base00        # active variant (night)

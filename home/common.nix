@@ -30,7 +30,6 @@
     ./docs-gardener-loop.nix
     ./hermes-events.nix
     ./ghostty.nix
-    ./swaylock.nix
     ./spotify.nix
   ];
 
