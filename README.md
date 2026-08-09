@@ -72,9 +72,13 @@ Ollama runs in a podman container (`modules/ollama.nix`); models are preloaded p
 
 | Tier | Hardware | Models |
 |------|----------|--------|
-| **high** | 12GB VRAM | gemma4:12b-it-qat, Qwythos-9B, qwen2.5-coder:3b, qwen3.5:4b |
-| **medium** | CPU, 32GB RAM | qwen3.5:4b, llama3.2:3b |
+| **high** | 12GB VRAM | gemma4:12b-it-qat, qwen2.5-coder:3b-base |
+| **medium** | CPU, 32GB RAM | llama3.2:3b |
 | **low** | smaller | llama3.2:3b |
+
+Model tags live in `lib/llm-models.nix`. `gemma4` is the only chat model (the
+`ai` alias, and anarlog's summaries); `qwen2.5-coder` is FIM tab-completion for
+minuet in nvim and is never used interactively.
 
 `heavy` / `heavy-stop` (fish functions) swap the GPU between Ollama and a llama.cpp server running Qwen3.6-35B MoE with expert offload (`modules/llama-heavy.nix`).
 

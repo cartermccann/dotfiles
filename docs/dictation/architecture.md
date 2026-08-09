@@ -79,6 +79,9 @@ Candidate model stack:
 - Optional multilingual: Nemotron 3.5 ASR Streaming 0.6B only after the English spine is stable.
 - Endpointing: Silero VAD plus maximum-duration and manual-stop controls.
 - Cleanup: qwen3.5:4b through the existing local Ollama service, after canonical final ASR only.
+  Note (2026-08-08): qwen3.5:4b was retired from `lib/llm-models.nix` and deleted locally, as
+  nothing consumed it. This phase must re-add it to the preload tiers, or pick a different
+  model, before cleanup can be built. `gemma4:12b-it-qat` is the only chat-capable model installed.
 
 The preview candidate provides cache-aware streaming, punctuation/capitalization, token timing, and bounded look-ahead. ASR model files are fixed-output Nix derivations with checksums; “acquisition” means Nix-store realization, never an application runtime download. The Ollama model is an external local dependency until its manifest digest and realization strategy are approved.
 

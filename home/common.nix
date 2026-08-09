@@ -22,7 +22,6 @@
     ./hermes-meet.nix
     ./headroom.nix
     ./webctx-tunnel.nix
-    ./vault-brain-sync.nix
     ./self-improve-loop.nix
     ./codex-self-improve-loop.nix
     ./codex-desktop.nix
