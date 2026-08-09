@@ -6,8 +6,102 @@
 }:
 let
   c = config.lib.stylix.colors.withHashtag;
+  pal = import ../lib/palette.nix;
+
+  # Ouranos as a Noctalia colour scheme.
+  #
+  # Noctalia reads schemes from ~/.config/noctalia/colorschemes/<Name>/<Name>.json
+  # (Services/Theming/ColorSchemeService.qml) and only ever reads them — it
+  # writes the *selection* to settings.json and the resolved colours to
+  # colors.json, never back to the scheme file. So unlike Caelestia's shell.json
+  # this is a genuine read-only input and can be a store symlink. Its `find -L`
+  # follows the link, so home-manager's symlink is discovered normally.
+  #
+  # Where Caelestia needed a Material generator to expand one seed into 120
+  # roles, Noctalia wants a flat sixteen plus a terminal block — which is the
+  # shape Base16 already has, so lib/palette.nix maps straight across.
+  #
+  # The ANSI ramp is deliberately identical to home/ghostty.nix (0=base01,
+  # 7=base06, 8=base03, 15=base07) so a terminal keeps the same colours whether
+  # its palette came from ghostty's own config or from a Noctalia template.
+  mkScheme =
+    {
+      v, # palette variant (pal.night / pal.day)
+      onPrimary, # cobalt sits mid-tone in both variants, so this is light in both
+      shadow,
+    }:
+    {
+      mPrimary = v.base0D; # cobalt — the house accent
+      mOnPrimary = onPrimary;
+      mSecondary = v.accentBright;
+      mTertiary = v.base0C; # cyan, same tertiary choice as the Caelestia scheme
+      mError = v.base08;
+
+      # Every accent above contrasts with the ground by construction, so the
+      # ground *is* the correct "on" colour — and it flips meaning with the
+      # variant (near-black at night, off-white by day) exactly as needed.
+      mOnSecondary = v.base00;
+      mOnTertiary = v.base00;
+      mOnError = v.base00;
+
+      mSurface = v.base00;
+      mOnSurface = v.base05;
+      mSurfaceVariant = v.base01;
+      mOnSurfaceVariant = v.base04;
+      mOutline = v.base03;
+      mShadow = shadow;
+      mHover = v.base02;
+      mOnHover = v.base05;
+
+      terminal = {
+        foreground = v.base05;
+        background = v.base00;
+        normal = {
+          black = v.base01;
+          red = v.base08;
+          green = v.base0B;
+          yellow = v.base0A;
+          blue = v.base0D;
+          magenta = v.base0E;
+          cyan = v.base0C;
+          white = v.base06;
+        };
+        bright = {
+          black = v.base03;
+          red = v.base08;
+          green = v.base0B;
+          yellow = v.base0A;
+          blue = v.base0D;
+          magenta = v.base0E;
+          cyan = v.base0C;
+          white = v.base07;
+        };
+        cursor = v.cursor;
+        cursorText = v.base00;
+        selectionFg = v.base05;
+        selectionBg = v.base02;
+      };
+    };
 in
 {
+  # Selecting this is a Noctalia setting, not a file we own: its Settings UI
+  # writes colorSchemes.{predefinedScheme,useWallpaperColors,darkMode} into
+  # settings.json, which is 20KB of live user state. Declaring those keys would
+  # fight the UI on every rebuild, so the scheme is shipped here and picked
+  # there — Settings → Color scheme → Ouranos, wallpaper colours off.
+  xdg.configFile."noctalia/colorschemes/Ouranos/Ouranos.json".text = builtins.toJSON {
+    dark = mkScheme {
+      v = pal.night;
+      onPrimary = pal.night.base07; # #f4f7fc
+      shadow = "#000000";
+    };
+    light = mkScheme {
+      v = pal.day;
+      onPrimary = pal.day.base00; # #f7f7f8
+      shadow = pal.day.base03; # a black shadow reads as dirt on a light ground
+    };
+  };
+
   # Noctalia-specific Niri config — spawns noctalia-shell instead of waybar/fuzzel/mako/etc.
   xdg.configFile."niri/config-noctalia.kdl".text = ''
     // Startup — env import + restart failed portal services, then launch noctalia-shell
