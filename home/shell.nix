@@ -53,16 +53,40 @@ let
     builtins.readFile ../scripts/comcreate-banner.sh
   );
 
-  # Animated cascade-reveal wrapper for the neon fastfetch config.
-  ff = pkgs.writeShellScriptBin "ff" (builtins.readFile ../scripts/ff-cascade.sh);
+  # "#3b6bff" -> "59;107;255" for the ANSI 24-bit escapes in the banner.
+  pal = import ../lib/palette.nix;
+  ansiRgb =
+    hex:
+    let
+      h = lib.removePrefix "#" hex;
+    in
+    lib.concatStringsSep ";" (
+      map (i: toString (lib.fromHexString (builtins.substring i 2 h))) [
+        0
+        2
+        4
+      ]
+    );
+
+  # Host wordmark shown on each new interactive shell. This replaced `ff`, a
+  # wrapper that replayed fastfetch line-by-line with a sleep between lines —
+  # so every terminal paid an animation plus a full system probe before it was
+  # usable. Plain `fastfetch` is still installed (modules/apps.nix) for when
+  # the system readout is actually wanted.
+  kronosBanner = pkgs.writeShellScriptBin "kronos-banner" (
+    builtins.replaceStrings [ "@from@" "@to@" ] [ (ansiRgb pal.base0D) (ansiRgb pal.accentBright) ] (
+      builtins.readFile ../scripts/kronos-banner.sh
+    )
+  );
 in
 {
   home.packages = [
     comcreateBanner
-    ff
+    kronosBanner
   ];
 
-  # Neon-gradient fastfetch config (declarative; `ff` animates its reveal).
+  # Neon-gradient fastfetch config. No longer runs at shell startup — kept so
+  # that running `fastfetch` on demand still looks like the rest of the setup.
   xdg.configFile."fastfetch/config.jsonc".source = ./fastfetch/config.jsonc;
 
   programs.fish = {
@@ -71,7 +95,7 @@ in
     interactiveShellInit = ''
       function fish_greeting
         if not set -q TMUX
-          ff
+          kronos-banner
         end
       end
       set -gx NH_FLAKE $HOME/dotfiles
@@ -148,7 +172,7 @@ in
     inherit shellAliases;
     initExtra = ''
       export PATH="$HOME/.local/bin:$PATH"
-      if [[ $- == *i* && -z "$TMUX" ]]; then comcreate-banner; fi
+      if [[ $- == *i* && -z "$TMUX" ]]; then kronos-banner; fi
     '';
   };
 
