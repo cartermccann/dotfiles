@@ -433,6 +433,7 @@ let
       hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
       hl.bind(mod .. " + CTRL + N",  hl.dsp.exec_cmd("hypr-night-toggle"))
       hl.bind(mod .. " + ALT + L",   hl.dsp.exec_cmd("~/.local/bin/toggle-dictation.sh"))
+      hl.bind(mod .. " + ALT + SHIFT + L", hl.dsp.exec_cmd("~/.local/bin/toggle-dictation-batch.sh"))
 
       -- Session
       hl.bind(mod .. " + SHIFT + E", hl.dsp.exit())

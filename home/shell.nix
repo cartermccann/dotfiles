@@ -181,167 +181,157 @@ in
   stylix.targets.neovim.enable = false;
   stylix.targets.niri.enable = false;
 
+  # Starship: the Ouranos prompt.
+  #
+  # Ported from the atlas prompt in the gentoo dotfiles (config/starship/
+  # body.toml) and retinted from lib/palette.nix. The shape is that file's:
+  # rounded caps rather than pointed separators, and each group its own
+  # detached pill instead of one continuous powerline bar — which is the same
+  # read as the Caelestia bar's separated surfaces and the compositor's
+  # squircle rounding, rather than the Tokyo Night preset this replaces.
+  #
+  # Every glyph goes through fromJSON as an ASCII escape. Literal Nerd Font
+  # PUA characters do not survive editing round-trips (they arrive stripped),
+  # which is silent — you get a config that parses and renders nothing. All of
+  # the codepoints below were checked against JetBrainsMono Nerd Font, the
+  # family home/ghostty.nix actually renders with, via
+  # `fc-list ':charset=<cp>:family=JetBrainsMono Nerd Font'`.
   programs.starship = {
     enable = true;
     settings =
       let
-        # Tokyo Night theme (starship.rs preset palette): ░▒▓ periwinkle fade-in,
-        # pointed separators, segments stepping into navy, rounded cap, blue accent
-        # text. https://starship.rs/presets/tokyo-night
-        # Powerline glyphs via fromJSON so the ASCII escapes survive editing.
-        arrow = builtins.fromJSON ''"\uE0B0"'';
-        capR = builtins.fromJSON ''"\uE0B4"'';
-        dither = "░▒▓";
+        g = builtins.fromJSON ''
+          {
+            "capL":  "\uE0B6",
+            "capR":  "\uE0B4",
+            "nix":   "\uF313",
+            "shell": "\uF1B2",
+            "git":   "\uE0A0",
+            "node":  "\uE718",
+            "rust":  "\uE7A8",
+            "go":    "\uE627",
+            "py":    "\uE606",
+            "timer": "\uF017"
+          }
+        '';
+
+        # A language version reads as ambient context, so the pills sit on the
+        # quietest surface with dim text. One helper because all four are
+        # identical apart from the glyph.
+        langPill = symbol: {
+          symbol = "${symbol} ";
+          style = "bg:surface fg:subtext";
+          format = " [${g.capL}](fg:surface)[$symbol$version ]($style)[${g.capR}](fg:surface)";
+        };
       in
       {
-        palette = "cc";
+        palette = "ouranos";
         add_newline = true;
+        command_timeout = 800;
+
+        # One line, prompt character trailing. No $time: both bars already show
+        # the clock, and a third copy on every prompt line is noise.
         format = builtins.concatStringsSep "" [
-          "[${dither}](fg:cc1)"
           "$os"
-          "$username"
-          "[${arrow}](fg:cc1 bg:cc2)"
           "$directory"
-          "[${arrow}](fg:cc2 bg:cc3)"
           "$git_branch"
           "$git_status"
-          "[${arrow}](fg:cc3 bg:cc4)"
+          "$nix_shell"
           "$nodejs"
           "$rust"
           "$golang"
           "$python"
-          "$php"
-          "$java"
-          "[${arrow}](fg:cc4 bg:cc5)"
-          "$docker_context"
-          "[${arrow}](fg:cc5 bg:cc6)"
-          "$time"
-          "[${capR}](fg:cc6)"
-          "$fill"
           "$cmd_duration"
-          "$line_break"
           "$character"
         ];
 
-        fill.symbol = " ";
-
+        # Head and directory are one cobalt pill: the left cap opens it, the
+        # OS glyph and path share the fill, the right cap closes it.
         os = {
           disabled = false;
-          format = "[ $symbol]($style)";
-          style = "bg:cc1 fg:cc_ink";
-        };
-
-        os.symbols = {
-          NixOS = " ";
-          Linux = "󰌽 ";
-          Arch = "󰣇 ";
-          Ubuntu = "󰕈 ";
-          Fedora = "󰣛 ";
-          Debian = "󰣚 ";
-          Macos = "󰀵 ";
-          Windows = "󰍲 ";
-        };
-
-        username = {
-          show_always = true;
-          style_user = "bg:cc1 fg:cc_ink";
-          style_root = "bg:cc1 fg:cc_ink";
-          format = "[ $user ]($style)";
+          format = "[${g.capL}](fg:accent)[$symbol](bg:accent fg:ground)";
+          symbols.NixOS = "${g.nix} ";
         };
 
         directory = {
-          format = "[ $path ]($style)";
-          style = "fg:cc_fg bg:cc2";
+          style = "bg:accent fg:ground bold";
+          format = "[$path ]($style)[${g.capR}](fg:accent)";
           truncation_length = 3;
+          truncate_to_repo = true;
           truncation_symbol = "…/";
-          substitutions = {
-            "Documents" = "󰈙 ";
-            "Downloads" = " ";
-            "Music" = "󰝚 ";
-            "Pictures" = " ";
-          };
+          read_only = " ";
         };
 
+        # Git on the raised surface, one step up from the language pills —
+        # branch in full text, status in the brighter cobalt so dirt is the
+        # thing that catches the eye.
         git_branch = {
-          symbol = "";
-          style = "bg:cc3";
-          format = "[[ $symbol $branch ](fg:cc2 bg:cc3)]($style)";
+          symbol = "${g.git} ";
+          style = "bg:raised fg:text";
+          format = " [${g.capL}](fg:raised)[$symbol$branch ]($style)";
         };
 
         git_status = {
-          style = "bg:cc3";
-          format = "[[($all_status$ahead_behind )](fg:cc2 bg:cc3)]($style)";
+          style = "bg:raised fg:accent_soft";
+          format = "[$all_status$ahead_behind]($style)[${g.capR}](fg:raised)";
         };
 
-        nodejs = {
-          symbol = "";
-          style = "bg:cc4";
-          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
-        };
-        rust = {
-          symbol = "";
-          style = "bg:cc4";
-          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
-        };
-        golang = {
-          symbol = "";
-          style = "bg:cc4";
-          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
-        };
-        python = {
-          symbol = "";
-          style = "bg:cc4";
-          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
-        };
-        php = {
-          symbol = "";
-          style = "bg:cc4";
-          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
-        };
-        java = {
-          symbol = "";
-          style = "bg:cc4";
-          format = "[[ $symbol( $version) ](fg:cc2 bg:cc4)]($style)";
+        # Dev shell. Cyan is the scheme's tertiary — the same role that colours
+        # the Caelestia clock — so "you are inside a nix shell" reads as a
+        # different kind of fact from a language version, not just another pill.
+        #
+        # `heuristic` stays OFF. It is the documented way to catch shells that
+        # do not export IN_NIX_SHELL, but what it actually tests is whether the
+        # environment looks nix-shaped, which on NixOS is always true: with it
+        # on the pill rendered in $HOME, outside any project, with the
+        # environment scrubbed. An indicator that is always lit indicates
+        # nothing. It is also unnecessary here — nix-direnv's `use flake`
+        # sources `nix print-dev-env`, which does export IN_NIX_SHELL=impure
+        # (verified against a real project), so the plain signal covers the
+        # direnv workflow this machine actually uses.
+        nix_shell = {
+          symbol = "${g.shell} ";
+          pure_msg = "pure";
+          impure_msg = "shell";
+          unknown_msg = "shell";
+          style = "bg:surface fg:cyan";
+          format = " [${g.capL}](fg:surface)[$symbol$state ]($style)[${g.capR}](fg:surface)";
         };
 
-        docker_context = {
-          symbol = "";
-          style = "bg:cc5";
-          format = "[[ $symbol( $context) ](fg:cc2 bg:cc5)]($style)";
-        };
+        nodejs = langPill g.node;
+        rust = langPill g.rust;
+        golang = langPill g.go;
+        python = langPill g.py;
 
-        time = {
-          disabled = false;
-          time_format = "%R";
-          style = "bg:cc6";
-          format = "[[  $time ](fg:cc_dim bg:cc6)]($style)";
-        };
-
+        # No fill, so it sits next to the pills rather than being flung to the
+        # right margin — a one-line prompt has nowhere sensible to fling it.
         cmd_duration = {
-          min_time = 500;
-          format = "[ 󰔟 $duration ](fg:cc_dim)";
+          min_time = 2000;
+          style = "fg:muted";
+          format = " [${g.timer} $duration]($style)";
         };
 
         character = {
-          success_symbol = "[❯](bold fg:cc_green)";
-          error_symbol = "[❯](bold fg:cc_red)";
-          vimcmd_symbol = "[❮](bold fg:cc1)";
+          success_symbol = "  [❯](bold fg:accent)";
+          error_symbol = "  [❯](bold fg:err)";
+          vimcmd_symbol = "  [❮](bold fg:cyan)";
         };
 
         aws.disabled = true;
 
-        palettes.cc = {
-          cc1 = "#a3aed2"; # periwinkle head
-          cc2 = "#769ff0"; # blue (directory bg + accent text)
-          cc3 = "#394260"; # git
-          cc4 = "#212736"; # languages (navy)
-          cc5 = "#212736"; # docker (navy)
-          cc6 = "#1d2230"; # time (darkest navy)
-          cc_ink = "#090c0c"; # text on periwinkle head
-          cc_fg = "#e3e5e5"; # text on directory
-          cc_dim = "#a0a9cb"; # text on time
-          cc_green = "#9ece6a"; # success prompt char
-          cc_red = "#f7768e"; # error prompt char
+        # Role names, not colour names, so the whole prompt retints from
+        # lib/palette.nix in one place — same discipline as the atlas palette.
+        palettes.ouranos = {
+          accent = pal.base0D; # cobalt — directory pill
+          accent_soft = pal.accentBright; # git status
+          ground = pal.base00; # text on the cobalt pill
+          surface = pal.base01; # language + nix-shell pills
+          raised = pal.base02; # git pill, one step up
+          text = pal.base05;
+          subtext = pal.textDim;
+          muted = pal.base03; # command duration
+          cyan = pal.base0C; # dev shell
+          err = pal.base08; # failed command
         };
       };
   };

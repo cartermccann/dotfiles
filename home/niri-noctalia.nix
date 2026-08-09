@@ -357,6 +357,7 @@ in
 
       // Dictation
       Mod+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
+      Mod+Shift+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation-batch.sh"; }
 
       // Control panels
       Mod+Ctrl+A { spawn "pavucontrol"; }
