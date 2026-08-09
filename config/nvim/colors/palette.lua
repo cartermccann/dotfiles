@@ -42,6 +42,14 @@ local c = {
   dim = "#8b93a4", -- textDim
 
   -- ── Derived tints (kept restrained for full-file readability) ──
+  -- Comments do NOT use base03. Base16 nominates base03 for "comments /
+  -- disabled", but the Ouranos ramp puts it three steps off base00 and it
+  -- measures 1.92:1 against the ground — under even the 3:1 UI floor, and a
+  -- comment-heavy file (the nix modules in this repo) reads as empty space.
+  -- This sits at 4.54:1, i.e. WCAG AA for small text, while staying far below
+  -- the 16.36:1 of base05 body text so comments still recede. base03 keeps its
+  -- other jobs (fold/sign column, ghost text, ANSI 8) where faint is correct.
+  comment = "#6f7a92", -- 4.54:1 on base00 — readable, still recessive
   overlay = "#212734", -- cursorline / subtle raise above raised (SURFACE2)
   green_soft = "#6ee7b7", -- gentler green for strings
   sel = "#1c2740", -- visual: faint cobalt-tinted selection
@@ -135,7 +143,7 @@ hl("SpellLocal", { undercurl = true, sp = c.cyan })
 -- Palette logic: azure = keywords/flow, periwinkle = functions, yellow = types,
 -- green = strings, orange = numbers/constants, cyan = props/builtins,
 -- cream = plain identifiers, muted = punctuation/comments.
-hl("Comment", { fg = c.muted, italic = true })
+hl("Comment", { fg = c.comment, italic = true })
 hl("Constant", { fg = c.orange })
 hl("String", { fg = c.green_soft })
 hl("Character", { fg = c.green_soft })
@@ -281,6 +289,13 @@ hl("DiagnosticWarn", { fg = c.yellow })
 hl("DiagnosticInfo", { fg = c.cyan })
 hl("DiagnosticHint", { fg = c.periwinkle })
 hl("DiagnosticOk", { fg = c.green })
+-- Unused imports / dead bindings. Stated rather than inherited: neovim's
+-- default links DiagnosticUnnecessary to Comment, so unused code took whatever
+-- comments happened to be — which was base03, and invisible. base04 at 6.34:1
+-- reads as code that has been demoted, and the missing italic keeps it from
+-- looking like prose. Declaring it also decouples it from future Comment
+-- tuning, which is how it went wrong in the first place.
+hl("DiagnosticUnnecessary", { fg = c.taupe })
 hl("DiagnosticUnderlineError", { undercurl = true, sp = c.red })
 hl("DiagnosticUnderlineWarn", { undercurl = true, sp = c.yellow })
 hl("DiagnosticUnderlineInfo", { undercurl = true, sp = c.cyan })
