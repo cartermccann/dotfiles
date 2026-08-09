@@ -16,6 +16,7 @@
     ./hyprland.nix
     ./tmux.nix
     ./dictation.nix
+    ./whisperlivekit.nix
     ./tools.nix
     ./hermes.nix
     ./hermes-meet.nix
