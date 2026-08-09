@@ -12,6 +12,14 @@
 # sessions depend on just as much as the niri one. desktop-hyprland.nix and
 # desktop-niri-noctalia.nix layer session-specific bits on top of this.
 let
+  pal = import ../lib/palette.nix;
+
+  # Ly colours are 0x00RRGGBB. The most significant byte is a *styling* flag,
+  # not alpha, which is why 0x20000000 below is TB_HI_BLACK rather than a
+  # translucent black — and why a plain colour keeps that byte at 00. pal.raw.*
+  # is the palette slot without its leading '#'.
+  lyColor = raw: "0x00${raw}";
+
   # Ly reads a flat directory of .desktop files. Start from the one NixOS
   # generates from sessionPackages, then drop the plain "Niri" tile.
   #
@@ -42,19 +50,57 @@ in
   # Ly TUI display manager
   services.displayManager.ly = {
     enable = true;
+    # The greeter is ported from the atlas one (cartermccann/gentoo-dotfiles,
+    # system/ly/config.ini) and retinted from lib/palette.nix, so it stops
+    # being the last Catppuccin Macchiato surface on a host that is Ouranos
+    # everywhere else.
+    #
+    # Two things did not survive the version gap. Atlas ran an older Ly with
+    # `animation_frame_delay = 24` ("higher = slower/calmer; default 5 is
+    # frantic"); 1.3.2 has no such key, and the knob that actually paces the
+    # animation is now min_refresh_delta, the event-loop timeout. And the
+    # atlas file set gameoflife_fg, which is dead weight when the chosen
+    # animation is colormix, so it is dropped rather than carried over.
     settings = {
       waylandsessions = "${lySessions}";
-      animation = "none";
-      hide_borders = true;
-      hide_key_hints = true;
-      hide_version_string = true;
-      bigclock = "en";
+      full_color = true;
+
+      bg = lyColor pal.raw.base02; # #171b23 — dark and blue-cast, not black
+      fg = lyColor pal.raw.base07; # #f4f7fc — the atlas config's "white"
+      border_fg = lyColor pal.raw.base0D; # cobalt accent, on the box border
+      error_fg = lyColor pal.raw.base08;
+
+      # The box keeps its border here: that cobalt line IS the accent, which is
+      # why hide_borders flips false relative to the config this replaces.
+      box_title = "kronos";
+      hide_borders = false;
+      blank_box = true;
+      text_in_center = true;
+      margin_box_h = 4;
+      margin_box_v = 2;
+      input_len = 34;
+      edge_margin = 2;
+
       clock = "%A, %B %d";
-      bg = "0x0024273a"; # Catppuccin Macchiato base
-      fg = "0x00cad3f5"; # Catppuccin Macchiato text
-      border_fg = "0x00363a4f"; # Catppuccin Macchiato surface0
-      input_len = 40;
+      bigclock = "en";
+      bigclock_12hr = false; # 24h, matching waybar and the Ouranos prompt
+      bigclock_seconds = false; # a ticking seconds column fights the animation
+
+      asterisk = "0x2022"; # bullet instead of *
+      hide_version_string = true;
+      hide_key_hints = true;
+      hide_keyboard_locks = true;
+
+      animation = "colormix";
+      animation_timeout_sec = 0; # run for as long as the greeter is up
+      colormix_col1 = lyColor pal.raw.base0D; # cobalt — the accent
+      colormix_col2 = "0x00102a66"; # deep navy; no palette slot sits this low
+      colormix_col3 = "0x20000000"; # TB_HI_BLACK — keeps the base truly black
+      min_refresh_delta = 24; # ms per event loop pass — paces the shader
+
+      allow_empty_password = false;
       clear_password = true;
+      numlock = false;
       save = true;
     };
   };
