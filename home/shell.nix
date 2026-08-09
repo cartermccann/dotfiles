@@ -74,9 +74,10 @@ let
   # usable. Plain `fastfetch` is still installed (modules/apps.nix) for when
   # the system readout is actually wanted.
   kronosBanner = pkgs.writeShellScriptBin "kronos-banner" (
-    builtins.replaceStrings [ "@from@" "@to@" ] [ (ansiRgb pal.base0D) (ansiRgb pal.accentBright) ] (
-      builtins.readFile ../scripts/kronos-banner.sh
-    )
+    builtins.replaceStrings
+      [ "@fill0@" "@fill1@" "@shadow@" ]
+      [ (ansiRgb pal.base0D) (ansiRgb pal.accentBright) (ansiRgb pal.base0F) ]
+      (builtins.readFile ../scripts/kronos-banner.sh)
   );
 in
 {

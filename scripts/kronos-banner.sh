@@ -3,15 +3,19 @@
 #
 # Replaces the old `ff` cascade, which replayed fastfetch line-by-line with a
 # sleep between each one: every new terminal paid an animation plus a full
-# system probe before it was usable.
+# system probe before it was usable. This probes nothing.
 #
-# This is deliberately dumb by comparison. The art is a literal heredoc, the
-# only work is one awk pass to colour it, and nothing is probed — no uptime,
-# no package count, no GPU query. It prints and gets out of the way.
+# The art is a literal heredoc rather than a figlet call, so there is no
+# startup dependency and the output cannot drift when a font package updates.
+# Colours are injected from lib/palette.nix at build time (@fill0@ / @fill1@ /
+# @shadow@ are "r;g;b" triplets), so the banner follows Ouranos without a
+# second source of truth.
 #
-# Colours are injected from lib/palette.nix at build time (@from@ / @to@ are
-# "r;g;b" triplets), so the banner follows Ouranos without a second source of
-# truth. Deps: awk only.
+# The letterforms are solid blocks (█) with box-drawing glyphs standing in for
+# the drop shadow. Those two classes are coloured differently — the blocks get
+# a left-to-right ramp across the cobalt, the shadow gets a single dark cobalt
+# — which is what makes the wordmark read as lit from the left and raised off
+# the background rather than as flat ASCII.
 set -u
 
 # Nothing to draw when piped, redirected, or on a dumb terminal.
@@ -20,22 +24,38 @@ set -u
 
 pad="  "
 
-# Left-to-right gradient across the widest line, so the sweep stays square
-# regardless of which row a character sits on.
-grad() {
-  awk -v from="@from@" -v to="@to@" '
-  function part(s, i,   n) { n = split(s, a, ";"); return a[i] + 0 }
+# The art is multibyte, and awk's substr() is byte-based under the C locale —
+# it splits these glyphs mid-sequence, producing mojibake plus an "Invalid
+# multibyte data" warning on every shell start. Forcing a UTF-8 locale makes
+# gawk's string functions character-based, which is what the per-character
+# colouring below depends on.
+export LC_ALL=C.UTF-8
+
+paint() {
+  awk -v fill0="@fill0@" -v fill1="@fill1@" -v shadow="@shadow@" -v pad="$pad" '
+  function part(s, i,   a) { split(s, a, ";"); return a[i] + 0 }
   function lerp(a, b, t) { return a + (b - a) * t }
   { lines[NR] = $0; if (length($0) > maxw) maxw = length($0) }
   END {
     for (i = 1; i <= NR; i++) {
-      n = length(lines[i]); out = ""
+      n = length(lines[i]); out = pad; prev = ""
       for (j = 1; j <= n; j++) {
-        f = (maxw > 1) ? (j - 1) / (maxw - 1) : 0
-        r = lerp(part(from,1), part(to,1), f)
-        g = lerp(part(from,2), part(to,2), f)
-        b = lerp(part(from,3), part(to,3), f)
-        out = out sprintf("\033[1;38;2;%d;%d;%dm%s", int(r+0.5), int(g+0.5), int(b+0.5), substr(lines[i], j, 1))
+        ch = substr(lines[i], j, 1)
+        if (ch == " ") { out = out " "; prev = ""; continue }
+        if (ch == "\342\226\210" || ch == "█") {
+          f = (maxw > 1) ? (j - 1) / (maxw - 1) : 0
+          col = sprintf("%d;%d;%d",
+            int(lerp(part(fill0,1), part(fill1,1), f) + 0.5),
+            int(lerp(part(fill0,2), part(fill1,2), f) + 0.5),
+            int(lerp(part(fill0,3), part(fill1,3), f) + 0.5))
+          style = "1;38;2;" col
+        } else {
+          style = "38;2;" shadow
+        }
+        # Only re-emit the escape when the colour actually changes; a solid run
+        # of blocks is one sequence instead of one per column.
+        if (style != prev) { out = out "\033[" style "m"; prev = style }
+        out = out ch
       }
       printf "%s\033[0m\n", out
     }
@@ -43,31 +63,28 @@ grad() {
 }
 
 echo
-# figlet "slant", baked in rather than generated: no figlet dependency at
-# startup and the output can never drift with a font-package update.
-cat <<'ART' | sed "s/^/$pad/" | grad
-    __ __ ____  ____  _   ______  _____
-   / //_// __ \/ __ \/ | / / __ \/ ___/
-  / ,<  / /_/ / / / /  |/ / / / /\__ \
- / /| |/ _, _/ /_/ / /|  / /_/ /___/ /
-/_/ |_/_/ |_|\____/_/ |_/\____//____/
+paint <<'ART'
+██╗  ██╗██████╗  ██████╗ ███╗   ██╗ ██████╗ ███████╗
+██║ ██╔╝██╔══██╗██╔═══██╗████╗  ██║██╔═══██╗██╔════╝
+█████╔╝ ██████╔╝██║   ██║██╔██╗ ██║██║   ██║███████╗
+██╔═██╗ ██╔══██╗██║   ██║██║╚██╗██║██║   ██║╚════██║
+██║  ██╗██║  ██║╚██████╔╝██║ ╚████║╚██████╔╝███████║
+╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝
 ART
 
-# Hairline rule, matched to the wordmark's width and fading along the same
-# cobalt ramp. Coloured in whole segments rather than per character: the box
-# glyph is multibyte and awk's substr() is byte-based, so running it through
-# grad() above splits it mid-sequence — mojibake plus an "Invalid multibyte
-# data" warning on every single shell start.
+# Hairline rule under the wordmark, stepping along the same ramp. Coloured in
+# whole segments rather than per character — cheap, and the width matches the
+# art above it.
 rule() {
-  local width=38 segs=8 i seg from_r from_g from_b to_r to_g to_b r g b f
-  IFS=';' read -r from_r from_g from_b <<<"@from@"
-  IFS=';' read -r to_r to_g to_b <<<"@to@"
+  local width=52 segs=13 i seg f r g b f0r f0g f0b f1r f1g f1b
+  IFS=';' read -r f0r f0g f0b <<<"@fill0@"
+  IFS=';' read -r f1r f1g f1b <<<"@fill1@"
   printf '%s' "$pad"
   for ((i = 0; i < segs; i++)); do
     f=$(((i * 100) / (segs - 1)))
-    r=$((from_r + (to_r - from_r) * f / 100))
-    g=$((from_g + (to_g - from_g) * f / 100))
-    b=$((from_b + (to_b - from_b) * f / 100))
+    r=$((f0r + (f1r - f0r) * f / 100))
+    g=$((f0g + (f1g - f0g) * f / 100))
+    b=$((f0b + (f1b - f0b) * f / 100))
     seg=$(printf '%*s' $((width / segs)) '')
     printf '\033[38;2;%d;%d;%dm%s' "$r" "$g" "$b" "${seg// /─}"
   done
