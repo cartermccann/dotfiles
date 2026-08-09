@@ -24,25 +24,44 @@ let
   # The ANSI ramp is deliberately identical to home/ghostty.nix (0=base01,
   # 7=base06, 8=base03, 15=base07) so a terminal keeps the same colours whether
   # its palette came from ghostty's own config or from a Noctalia template.
+  # The "on" colours are stated per accent rather than derived. The tempting
+  # rule — "the ground always contrasts with the accent, so use base00" — holds
+  # for every night accent but breaks for two day ones, because base0C and
+  # base08 are darkened for a light ground and then want dark text, not the
+  # off-white ground. Contrast against each accent, WCAG AA wanting 4.5:1 for
+  # small text and 3:1 for UI:
+  #
+  #             night (on=base00)   day (on=base00 / on=base05)
+  #   secondary      6.52               4.83  /  3.75   → base00
+  #   tertiary      10.82               3.44  /  5.26   → base05
+  #   error          7.07               3.66  /  4.95   → base05
+  #
+  # mPrimary is the exception with no good answer: cobalt sits at tone 50, so
+  # nothing clears AA against it — white is 4.44, near-black 4.41, and the
+  # light-on-cobalt reading is the conventional one. Material dodges this by
+  # re-toning the seed (which is why Caelestia's primary is #b6c4ff, not
+  # #3b6bff); Noctalia takes the colour as given. Fine at the 3:1 UI bar it is
+  # actually used at — fills, indicators, focus rings — but do not put small
+  # body text on it.
   mkScheme =
     {
       v, # palette variant (pal.night / pal.day)
-      onPrimary, # cobalt sits mid-tone in both variants, so this is light in both
+      onPrimary,
+      onSecondary,
+      onTertiary,
+      onError,
       shadow,
     }:
     {
       mPrimary = v.base0D; # cobalt — the house accent
-      mOnPrimary = onPrimary;
       mSecondary = v.accentBright;
       mTertiary = v.base0C; # cyan, same tertiary choice as the Caelestia scheme
       mError = v.base08;
 
-      # Every accent above contrasts with the ground by construction, so the
-      # ground *is* the correct "on" colour — and it flips meaning with the
-      # variant (near-black at night, off-white by day) exactly as needed.
-      mOnSecondary = v.base00;
-      mOnTertiary = v.base00;
-      mOnError = v.base00;
+      mOnPrimary = onPrimary;
+      mOnSecondary = onSecondary;
+      mOnTertiary = onTertiary;
+      mOnError = onError;
 
       mSurface = v.base00;
       mOnSurface = v.base05;
@@ -93,11 +112,18 @@ in
     dark = mkScheme {
       v = pal.night;
       onPrimary = pal.night.base07; # #f4f7fc
+      # Night accents are all bright, so the near-black ground carries them.
+      onSecondary = pal.night.base00;
+      onTertiary = pal.night.base00;
+      onError = pal.night.base00;
       shadow = "#000000";
     };
     light = mkScheme {
       v = pal.day;
       onPrimary = pal.day.base00; # #f7f7f8
+      onSecondary = pal.day.base00; # #2563eb is dark enough to carry off-white
+      onTertiary = pal.day.base05; # cyan and red are not — they take the text
+      onError = pal.day.base05; # colour instead, see the table above
       shadow = pal.day.base03; # a black shadow reads as dirt on a light ground
     };
   };
