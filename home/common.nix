@@ -20,7 +20,6 @@
     ./tools.nix
     ./hermes.nix
     ./hermes-meet.nix
-    ./headroom.nix
     ./webctx-tunnel.nix
     ./self-improve-loop.nix
     ./codex-self-improve-loop.nix

@@ -24,15 +24,15 @@
 # Transcription, which matches what anarlog builds. Verified end to end on
 # kronos: raw s16le PCM in, correct transcript out.
 #
-# The package itself is a uv tool, not a nix derivation — same call as
-# headroom-ai, because torch + CUDA wheels in nixpkgs are a quagmire. Install
+# The package itself is a uv tool, not a nix derivation, because torch +
+# CUDA wheels in nixpkgs are a quagmire. Install
 # (or upgrade) it with:
 #
 #   uv tool install --force "whisperlivekit[cu129]" \
 #     --with nvidia-cublas-cu12 --with nvidia-cudnn-cu12 --python 3.13
 #
 # Three NixOS-specific facts are load-bearing in the env below:
-#   * torch needs libstdc++ on LD_LIBRARY_PATH (same gotcha as headroom).
+#   * torch needs libstdc++ on LD_LIBRARY_PATH.
 #   * CUDA_VISIBLE_DEVICES="" forces CPU. GPU *works* (torch sees the 5070 at
 #     sm_120 once /run/opengl-driver/lib is on the path), but nvidia's
 #     cuda-pathfinder shells out to /sbin/ldconfig during model warmup, and

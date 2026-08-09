@@ -11,19 +11,26 @@
 }:
 
 # Codex releases faster than nixpkgs, so package OpenAI's official static
-# release bundle directly. Keep the bundle's binaries and resources together:
-# Codex resolves codex-code-mode-host and the bundled bwrap relative to itself.
-# To update, bump version and both bundle hashes from the matching GitHub release.
+# release archive directly. Keep the archive's binaries and resources together:
+# Codex resolves codex-code-mode-host and the bundled bwrap relative to itself,
+# so the tree is installed whole and only the entry point is wrapped.
+#
+# The asset is `codex-package-<target>.tar.zst`. Up to 0.146 this was
+# `codex-<target>-bundle.tar.zst`; 0.147 stopped publishing those ("Stop
+# publishing redundant Linux bundle archives", #36342) and the layout gained a
+# bin/ prefix, so a naive version bump silently 404s.
+#
+# To update, bump version and both hashes from the matching GitHub release.
 let
-  version = "0.144.5";
+  version = "0.147.0";
   bundles = {
     x86_64-linux = {
       target = "x86_64-unknown-linux-musl";
-      hash = "sha256-7JPrCcTOVnegKt8EcARy1w28xMPWcCegfizGnhqBnbk=";
+      hash = "sha256-SUNoEn4nq2JbKl51n4NEfh19ALauSaXiwX31/XxKrB0=";
     };
     aarch64-linux = {
       target = "aarch64-unknown-linux-musl";
-      hash = "sha256-3i1k2Tlj80Xp2rmw0yz7+MVtLMFbDTCGcWNHwiKvXag=";
+      hash = "sha256-aS/1xdnrhndMBEjZMIleRmWe7mosEvRrlzmdpFjB6Lc=";
     };
   };
   bundle =
@@ -35,7 +42,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   inherit version;
 
   src = fetchurl {
-    url = "https://github.com/openai/codex/releases/download/rust-v${finalAttrs.version}/codex-${bundle.target}-bundle.tar.zst";
+    url = "https://github.com/openai/codex/releases/download/rust-v${finalAttrs.version}/codex-package-${bundle.target}.tar.zst";
     inherit (bundle) hash;
   };
 
@@ -56,7 +63,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --use-compress-program=unzstd \
       --directory=$out/libexec/codex
 
-    makeWrapper $out/libexec/codex/codex $out/bin/codex \
+    makeWrapper $out/libexec/codex/bin/codex $out/bin/codex \
       --prefix PATH : ${
         lib.makeBinPath [
           ripgrep

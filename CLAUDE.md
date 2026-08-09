@@ -7,7 +7,7 @@ Flake-parts layout. This repo defines the entire system (kronos) + home-manager 
 - `flake.nix` / `parts/` — flake outputs (hosts in `parts/hosts.nix`, templates in `parts/templates.nix`)
 - `hosts/` — per-machine config
 - `modules/` — NixOS system modules (desktop, nvidia, ollama, oom-protection, ...)
-- `home/` — home-manager modules (tools, shell, neovim, tmux, niri, hyprland, headroom, ...)
+- `home/` — home-manager modules (tools, shell, neovim, tmux, niri, hyprland, ...)
 - `templates/` — `nix flake init -t ~/dotfiles#<lang>` dev-shell templates
 - `scripts/`, `config/`, `wallpaper/` — non-Nix assets referenced by modules
 
@@ -32,4 +32,4 @@ Flake-parts layout. This repo defines the entire system (kronos) + home-manager 
 - Audio: the Arya EQ is a PipeWire filter-chain sink declared in `modules/audio.nix`, not EasyEffects (removed). Sinks are ranked by `priority.session` there, but a `default.configured.audio.sink` entry in `~/.local/state/wireplumber/default-nodes` — written by `wpctl set-default`, pavucontrol, or `hypr-audio-sink` — **overrides that ranking permanently**. If the default sink looks wrong, check that file before touching the priorities.
 - Big generated blobs live as real files under `config/`, not inline strings: `config/hyprland/*.css` (waybar + swaync, with the palette emitted alongside as `_ouranos.css` and pulled in via `@import`) and `config/audio/` (the EasyEffects presets the EQ curve was ported from). `hyprland.lua` stays inline — it interpolates ~40 Nix values and templating it would relocate the complexity, not remove it.
 - First rebuild after adding a cachix substituter may prompt for trust — expected.
-- uv-tool installs (e.g. headroom-ai) are NOT in this flake; manage with `uv tool upgrade <name>`.
+- uv-tool installs (e.g. whisperlivekit) are NOT in this flake; manage with `uv tool upgrade <name>`.
