@@ -116,10 +116,6 @@ in
       source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/skills/hermes-ops";
       force = true;
     };
-    ".hermes/skills/meetings/meet-join" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/skills/meet-join";
-      force = true;
-    };
     ".hermes/plugins/basic-memory" = {
       source = "${basic-memory}/integrations/hermes";
       force = true;

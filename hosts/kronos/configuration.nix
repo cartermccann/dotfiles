@@ -28,9 +28,6 @@
 
   networking.hostName = "kronos";
 
-  # Hermes' self-hosted Attendee worker reaches the host-only voice bridge here.
-  networking.firewall.interfaces."hermes-att0".allowedTCPPorts = [ 8784 ];
-
   # Larger console font for Ly login manager on high-res display
   console = {
     font = "ter-v24n";

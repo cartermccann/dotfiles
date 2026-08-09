@@ -100,8 +100,11 @@ let
     fi
   '';
 
-  # Single session now: waybar + fuzzel + swaync + swayosd. This used to take a
-  # `shellKind` argument and branch on "waybar" vs "qs" throughout; the qs-shell
+  # These scripts are shell-agnostic and shipped to both session tiles: they
+  # drive the compositor and PipeWire directly, not the bar. The waybar session
+  # binds all four; the Caelestia session uses the wallpaper picker and the
+  # audio-sink picker, since Caelestia supplies its own launcher, power menu and
+  # night light. (compositor.nix is where the two sessions actually diverge.)
 in
 {
   home.packages = [
