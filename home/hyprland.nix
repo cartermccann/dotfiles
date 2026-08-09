@@ -116,7 +116,10 @@ let
     fi
   '';
 
-  mkHyprlandLua = shellKind: ''
+  # Single session now: waybar + fuzzel + swaync + swayosd. This used to take a
+  # `shellKind` argument and branch on "waybar" vs "qs" throughout; the qs-shell
+  # session is gone, so the branches collapsed to their waybar side.
+  hyprlandLua = ''
     -- Hyprland session (Hyprland 0.55+ Lua config)
 
     local mod = "SUPER"
@@ -175,12 +178,7 @@ let
           size = 12, -- heavy frost; drop back toward 6/3 if the GPU runs hot
           passes = 4,
           new_optimizations = true,
-          ${
-            if shellKind == "qs" then
-              "xray = false, -- xray breaks layer-shell blur in this build; qs-shell is glass-first (bar/popouts are layers) so it pays full blur"
-            else
-              "xray = true, -- biggest NVIDIA perf lever: blur samples the wallpaper, not stacked windows"
-          }
+          xray = true, -- biggest NVIDIA perf lever: blur samples the wallpaper, not stacked windows
           ignore_opacity = true,
           noise = 0.055, -- coarser grain = the diffusion through the frost
           contrast = 0.9,
@@ -285,21 +283,13 @@ let
     -- Layer rules: frost the bar / launcher / notifications / OSD
     -- ignore_alpha sits just below each surface's CSS alpha so fully-transparent
     -- gaps (between waybar pills, around fuzzel) don't haze.
-    ${
-      if shellKind == "waybar" then
-        lib.concatStringsSep "\n" [
-          ''hl.layer_rule({ match = { namespace = "waybar" },                     blur = true, ignore_alpha = 0.2 })''
-          ''hl.layer_rule({ match = { namespace = "launcher" },                   blur = true, ignore_alpha = 0.5, dim_around = true }) -- fuzzel: spotlight dim''
-          ''hl.layer_rule({ match = { namespace = "swaync-control-center" },      blur = true, ignore_alpha = 0.5 })''
-          ''hl.layer_rule({ match = { namespace = "swaync-notification-window" }, blur = true, ignore_alpha = 0.5 })''
-          ''hl.layer_rule({ match = { namespace = "swayosd" },                    blur = true, ignore_alpha = 0.4 })''
-        ]
-      else
-        lib.concatStringsSep "\n" [
-          ''hl.layer_rule({ match = { namespace = "launcher" },                   blur = true, ignore_alpha = 0.5, dim_around = true }) -- fuzzel: spotlight dim''
-          ''hl.layer_rule({ match = { namespace = "qs-shell" }, blur = true, ignore_alpha = 0.35, blur_popups = true })''
-        ]
-    }
+    ${lib.concatStringsSep "\n" [
+      ''hl.layer_rule({ match = { namespace = "waybar" },                     blur = true, ignore_alpha = 0.2 })''
+      ''hl.layer_rule({ match = { namespace = "launcher" },                   blur = true, ignore_alpha = 0.5, dim_around = true }) -- fuzzel: spotlight dim''
+      ''hl.layer_rule({ match = { namespace = "swaync-control-center" },      blur = true, ignore_alpha = 0.5 })''
+      ''hl.layer_rule({ match = { namespace = "swaync-notification-window" }, blur = true, ignore_alpha = 0.5 })''
+      ''hl.layer_rule({ match = { namespace = "swayosd" },                    blur = true, ignore_alpha = 0.4 })''
+    ]}
 
     -- Window rules
     -- The terminal is the glass centerpiece. Ghostty owns its background alpha
@@ -329,27 +319,8 @@ let
     hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("ghostty"))
     -- canonical tmux session ("work"), same bind as the niri session
     hl.bind(mod .. " + ALT + RETURN", hl.dsp.exec_cmd("ghostty -e fish -c 'tmux attach; or tmux new -s work'"))
-    ${
-      if shellKind == "waybar" then
-        ''hl.bind(mod .. " + SPACE",  hl.dsp.exec_cmd("fuzzel --config ${cfgHome}/fuzzel/hypr.ini"))''
-      else
-        # qs-shell's own launcher (M4): scrim + app search + calc/run
-        # fallback. fuzzel stays for dmenu scripts (power-menu/cliphist/
-        # wallpaper) until M7 — only the app-launcher bind itself flips.
-        ''hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd("qs -c qs-shell ipc call launcher toggle"))''
-    }
-    ${
-      if shellKind == "waybar" then
-        ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini | cliphist decode | wl-copy"))''
-      else
-        # M7: qs-shell's own clipboard + emoji overlays (the emoji bind is a
-        # qs-only ADDITION — the waybar session never had one); the fuzzel
-        # dmenu clipboard pipeline stays on the waybar side.
-        lib.concatStringsSep "\n" [
-          ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("qs -c qs-shell ipc call clipboard toggle"))''
-          ''hl.bind(mod .. " + period", hl.dsp.exec_cmd("qs -c qs-shell ipc call emoji toggle"))''
-        ]
-    }
+    hl.bind(mod .. " + SPACE",  hl.dsp.exec_cmd("fuzzel --config ${cfgHome}/fuzzel/hypr.ini"))
+    hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini | cliphist decode | wl-copy"))
 
     -- Screenshots (grimblast adds --freeze: the screen stops while you aim)
     hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd([[grimblast --freeze save area - | satty -f - --output-filename ~/Pictures/Screenshots/satty-$(date +%Y%m%d-%H%M%S).png]]))
@@ -453,22 +424,11 @@ let
     hl.bind(mod .. " + SHIFT + TAB", hl.dsp.focus({ workspace = "e-1" }))
 
     -- Notifications (swaync)
-    ${
-      if shellKind == "waybar" then
-        lib.concatStringsSep "\n" [
-          ''hl.bind(mod .. " + comma",         hl.dsp.exec_cmd("swaync-client -d -sw")) -- dismiss latest''
-          ''hl.bind(mod .. " + SHIFT + comma", hl.dsp.exec_cmd("swaync-client -C -sw")) -- close all''
-          ''hl.bind(mod .. " + N",             hl.dsp.exec_cmd("swaync-client -t -sw")) -- toggle panel''
-        ]
-      else
-        # qs-shell IPC instead — the "notifs" handler lands alongside the
-        # notification center, a parallel M3 lane.
-        lib.concatStringsSep "\n" [
-          ''hl.bind(mod .. " + comma",         hl.dsp.exec_cmd("qs -c qs-shell ipc call notifs dismiss"))  -- dismiss latest''
-          ''hl.bind(mod .. " + SHIFT + comma", hl.dsp.exec_cmd("qs -c qs-shell ipc call notifs clearAll")) -- close all''
-          ''hl.bind(mod .. " + N",             hl.dsp.exec_cmd("qs -c qs-shell ipc call popout toggle notifications")) -- toggle panel''
-        ]
-    }
+    ${lib.concatStringsSep "\n" [
+      ''hl.bind(mod .. " + comma",         hl.dsp.exec_cmd("swaync-client -d -sw")) -- dismiss latest''
+      ''hl.bind(mod .. " + SHIFT + comma", hl.dsp.exec_cmd("swaync-client -C -sw")) -- close all''
+      ''hl.bind(mod .. " + N",             hl.dsp.exec_cmd("swaync-client -t -sw")) -- toggle panel''
+    ]}
 
     -- Control panels
     -- CTRL+A is the full mixer; CTRL+S is the quick output picker (three
@@ -482,27 +442,11 @@ let
     -- Utilities
     hl.bind(mod .. " + CTRL + L",  hl.dsp.exec_cmd("hyprlock"))
     hl.bind(mod .. " + SHIFT + X", hl.dsp.exec_cmd("hypr-power-menu"))
+    hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("hypr-wallpaper-pick"))
     ${
-      if shellKind == "waybar" then
-        ''hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("hypr-wallpaper-pick"))''
-      else
-        # M7: qs-shell's own wallpaper picker overlay (ipc target
-        # "wallpaper"). It runs the same magick → swww pipeline as
-        # hypr-wallpaper-pick, writing the ~/wallpaper.png cross-session
-        # contract; the fuzzel dmenu script stays on the waybar variant.
-        ''hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("qs -c qs-shell ipc call wallpaper toggle"))''
-    }
-    ${
-      if shellKind == "waybar" then
-        # Waybar handles SIGUSR2 as an in-process reload, avoiding a layer-shell
-        # teardown/recreate flash. Start it only when no process is running.
-        ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill -USR2 -x waybar || ${waybarCmd}"))''
-      else
-        # A restart, not a kill/start toggle — the shell should never stay dead
-        # after one press. NB: the running process is `quickshell -c qs-shell`
-        # (`qs` is just a launcher), so a pkill pattern containing 'qs -c'
-        # never matches and silently no-ops.
-        ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd([[bash -c "pkill -f 'quickshell -c qs-shell'; sleep 0.3; exec qs -c qs-shell"]]))''
+      # Waybar handles SIGUSR2 as an in-process reload, avoiding a layer-shell
+      # teardown/recreate flash. Start it only when no process is running.
+      ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill -USR2 -x waybar || ${waybarCmd}"))''
     }
     hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
     hl.bind(mod .. " + CTRL + N",  hl.dsp.exec_cmd("hypr-night-toggle"))
@@ -512,39 +456,18 @@ let
     hl.bind(mod .. " + SHIFT + E", hl.dsp.exit())
 
     -- Repeating volume/brightness (via swayosd for the OSD)
-    ${
-      if shellKind == "waybar" then
-        lib.concatStringsSep "\n" [
-          ''hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("swayosd-client --output-volume raise"), { repeating = true })''
-          ''hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("swayosd-client --output-volume lower"), { repeating = true })''
-        ]
-      else
-        # qs-shell's own IPC + OSD instead of swayosd.
-        lib.concatStringsSep "\n" [
-          ''hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("qs -c qs-shell ipc call audio up"),   { repeating = true })''
-          ''hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("qs -c qs-shell ipc call audio down"), { repeating = true })''
-        ]
-    }
+    ${lib.concatStringsSep "\n" [
+      ''hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("swayosd-client --output-volume raise"), { repeating = true })''
+      ''hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("swayosd-client --output-volume lower"), { repeating = true })''
+    ]}
     hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("swayosd-client --brightness raise"),    { repeating = true })
     hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("swayosd-client --brightness lower"),    { repeating = true })
 
     -- Locked binds (work while the lock screen is active)
-    ${
-      if shellKind == "waybar" then
-        lib.concatStringsSep "\n" [
-          ''hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle"), { locked = true })''
-          ''hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("swayosd-client --input-volume mute-toggle"),  { locked = true })''
-        ]
-      else
-        # Output mute -> qs-shell IPC. Mic-mute: swaync/swayosd's client is
-        # otherwise inert in the qs session (no swayosd-server running
-        # there); wpctl works standalone and needs no OSD, so mic-mute flips
-        # for real here instead of staying a dead bind.
-        lib.concatStringsSep "\n" [
-          ''hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("qs -c qs-shell ipc call audio mute"), { locked = true })''
-          ''hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), { locked = true })''
-        ]
-    }
+    ${lib.concatStringsSep "\n" [
+      ''hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle"), { locked = true })''
+      ''hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("swayosd-client --input-volume mute-toggle"),  { locked = true })''
+    ]}
     hl.bind("XF86AudioPlay",    hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
     hl.bind("XF86AudioNext",    hl.dsp.exec_cmd("playerctl next"),       { locked = true })
     hl.bind("XF86AudioPrev",    hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
@@ -562,23 +485,11 @@ let
       -- still wallpaper used by Niri, Hyprland, and hyprlock.
       hl.exec_cmd([[bash -c 'sleep 1 && ${pkgs.swww}/bin/swww img ${config.home.homeDirectory}/wallpaper.png --transition-type fade --transition-duration 1']])
       hl.exec_cmd("wl-paste --watch cliphist store")
-      ${
-        if shellKind == "waybar" then
-          lib.concatStringsSep "\n  " [
-            ''hl.exec_cmd("swayosd-server --style ${cfgHome}/swayosd/style.css")''
-            ''hl.exec_cmd("${waybarCmd}")''
-            ''hl.exec_cmd("swaync")''
-          ]
-        else
-          # M7: hyprpolkitagent rides along — quickshell 0.2.1 has no polkit
-          # QML API, so the QS session needs a standalone auth agent (the
-          # waybar session keeps whatever it had; this is qs-only). Plain
-          # autostart = session-scoped by construction, same as hyprsunset.
-          lib.concatStringsSep "\n  " [
-            ''hl.exec_cmd("qs -c qs-shell")''
-            ''hl.exec_cmd("${pkgs.hyprpolkitagent}/libexec/hyprpolkitagent")''
-          ]
-      }
+      ${lib.concatStringsSep "\n  " [
+        ''hl.exec_cmd("swayosd-server --style ${cfgHome}/swayosd/style.css")''
+        ''hl.exec_cmd("${waybarCmd}")''
+        ''hl.exec_cmd("swaync")''
+      ]}
       hl.exec_cmd("hypridle")
       -- hyprsunset as a plain autostart = hyprland-session-only by construction
       -- (a systemd user service would leak into the niri session and fight wlsunset).
@@ -613,7 +524,7 @@ in
       # hyprlang `.conf` (which 0.55 ignores), so we bypass it and write the Lua
       # config directly. The compositor + portal come from modules/desktop-hyprland.nix.
       # API reference: $hyprland/share/hypr/stubs/hl.meta.lua
-      xdg.configFile."hypr/hyprland.lua".text = mkHyprlandLua "waybar";
+      xdg.configFile."hypr/hyprland.lua".text = hyprlandLua;
 
       # hyprsunset: scheduled night light (config read by the autostart daemon)
       xdg.configFile."hypr/hyprsunset.conf".text = ''
