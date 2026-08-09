@@ -8,6 +8,32 @@ let
   c = config.lib.stylix.colors.withHashtag;
   pal = import ../lib/palette.nix;
 
+  # Parse the config at build time with the same niri that runs the session.
+  #
+  # niri does not refuse to start on a bad config — it reports the error and
+  # falls back to its compiled-in defaults, which is a bare grey desktop with
+  # no outputs, keybinds or autostart, and looks exactly like "niri was never
+  # set up". That failure is invisible from `nh os build`, invisible from
+  # activation, and only shows up at the greeter. Two dead nodes sat in this
+  # file from its first commit and broke the session that whole time.
+  #
+  # config.programs.niri.package, not pkgs.niri: those are different versions
+  # here (25.08 vs nixpkgs' 25.11), and the one that matters is the one the
+  # session Exec's.
+  validatedNiriConfig =
+    text:
+    pkgs.runCommand "niri-config-noctalia.kdl"
+      {
+        inherit text;
+        passAsFile = [ "text" ];
+        nativeBuildInputs = [ config.programs.niri.package ];
+      }
+      ''
+        cp "$textPath" config.kdl
+        niri validate -c config.kdl
+        cp config.kdl "$out"
+      '';
+
   # Ouranos as a Noctalia colour scheme.
   #
   # Noctalia reads schemes from ~/.config/noctalia/colorschemes/<Name>/<Name>.json
@@ -129,7 +155,7 @@ in
   };
 
   # Noctalia-specific Niri config — spawns noctalia-shell instead of waybar/fuzzel/mako/etc.
-  xdg.configFile."niri/config-noctalia.kdl".text = ''
+  xdg.configFile."niri/config-noctalia.kdl".source = validatedNiriConfig ''
     // Startup — env import + restart failed portal services, then launch noctalia-shell
     spawn-at-startup "bash" "-c" "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && systemctl --user restart xdg-desktop-portal-gtk xdg-desktop-portal 2>/dev/null; noctalia-shell &"
     spawn-at-startup "swww-daemon"
@@ -214,13 +240,18 @@ in
       }
     }
 
-    // Blur settings (global)
-    blur {
-      passes 4
-      offset 5.0
-      noise 0.035
-      saturation 1.5
-    }
+    // NO BLUR HERE. Mainline niri has none — not a `blur` node, not
+    // `background-effect`, on 25.08 or 25.11 (checked with `niri validate`
+    // against both, and there is no blur symbol in the binary at all). Those
+    // nodes were in this file from its first commit and made the whole config
+    // fail to parse, at which point niri silently falls back to its
+    // compiled-in defaults: no outputs, no keybinds, no autostart, no shell.
+    // That is the grey "nothing is set up" screen, and it is what this session
+    // did every time it was booted. The validate step on the derivation below
+    // now makes that a build failure instead of a surprise at the greeter.
+    //
+    // If blur is wanted in this session it has to come from a fork that
+    // carries scenefx; the Hyprland sessions are where the glass idiom lives.
 
     // Window rules
     window-rule {
@@ -229,9 +260,6 @@ in
       shadow {
         on
         color "#00000064"
-      }
-      background-effect {
-        blur true
       }
     }
 

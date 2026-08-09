@@ -36,9 +36,14 @@ in
     selection-foreground = ${pal.base07}
     selection-background = ${pal.base02}
 
-    # Glass: ghostty owns background alpha so text stays fully opaque;
-    # blur comes from the compositor (Hyprland decoration:blur / niri
-    # background-effect). ghostty's own background-blur stays false — it's
+    # Glass: ghostty owns background alpha so text stays fully opaque; blur
+    # comes from the compositor, which in practice means Hyprland's
+    # decoration:blur only. Mainline niri has no blur of any kind — this
+    # comment used to claim a `background-effect` node, and believing it is
+    # what left an unparseable node in the niri config that silently dropped
+    # that whole session to compiled-in defaults. Under niri this stays
+    # transparent over the wallpaper, unblurred. ghostty's own
+    # background-blur stays false regardless — it's
     # a no-op on both (KDE-only on Linux, ghostty#4626). If hyprwm#9705
     # bites (full transparency on tab close), pin via window rule override.
     # 0.68 = heavy glass; minimum-contrast below keeps glyphs legible over it.
