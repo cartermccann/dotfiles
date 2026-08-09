@@ -17,14 +17,14 @@ in
     spawn-at-startup "wlsunset" "-t" "3500" "-T" "6500" "-l" "40.76" "-L" "-111.89"
     spawn-at-startup "bash" "-c" "sleep 1 && swww img /home/${user}/wallpaper.png --transition-type fade --transition-duration 1"
     spawn-at-startup "xwayland-satellite"
-    // No easyeffects autostart. It inserts a virtual sink that becomes the
-    // default, putting two volume stages in series: the EE sink (pinned at
-    // 1.00) and the real hardware sink. Volume keys hit @DEFAULT_AUDIO_SINK@,
-    // so they moved the EE sink that was already maxed while actual loudness
-    // stayed with the hardware device nothing was touching. It was also
-    // autostarted only here, so whether the default sink was virtual or real
-    // depended on which session you happened to boot. Launch it by hand if you
-    // want the EQ; see modules/audio.nix for the default-sink pin.
+    // EasyEffects is gone entirely — its Arya correction now runs as a
+    // PipeWire filter-chain sink declared in modules/audio.nix. It used to be
+    // autostarted here and nowhere else, so whether the default sink was
+    // virtual or real depended on which session you happened to boot: the EE
+    // sink took the default, sat pinned at 1.00, and swallowed every volume
+    // key while actual loudness stayed with the hardware device nothing was
+    // touching. The replacement is ranked below both hardware sinks and so
+    // can never take the default on its own.
 
     // Outputs — Dell U2414H portrait on the left, HP 27mq landscape to its right.
     // Dell rotated 90° → occupies 1080x1920, so the HP starts at x=1080.

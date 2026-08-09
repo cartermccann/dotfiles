@@ -40,30 +40,40 @@ let
       --transition-fps 165 --transition-duration 0.7 --transition-bezier .05,.7,.1,1
   '';
 
-  # Audio output picker. Three outputs are in regular rotation (FIIO SA1 desk
-  # speakers, Schiit Gunnr for the Arya, Bluetooth headphones) and the only way
-  # to switch was a pavucontrol round-trip.
+  # Audio output picker. Four destinations are in regular rotation (FIIO SA1
+  # desk speakers, Schiit Gunnr, the Arya EQ chain that feeds it, and Bluetooth
+  # headphones) and the only way to switch was a pavucontrol round-trip.
   #
   # Switching the default is enough to move audio: every stream here runs with
   # target.object=auto, so they follow the default rather than pinning to a
   # device. Verified by flipping a live Zen stream between sinks.
   #
-  # The awk pass strips wpctl's tree glyphs and the "*" that marks the current
-  # default, leaving "<id>. <description>"; the id is recovered from the pick.
-  # Monitor sources and the EasyEffects virtual sink are filtered out — the
-  # former are not real outputs, and the latter is a processing stage, not a
-  # destination (picking it is what made volume keys feel broken).
+  # Enumerated via pw-dump rather than `wpctl status`, because wpctl files
+  # filter-chain sinks under a separate "Filters" heading — the Arya EQ sink is
+  # a perfectly valid Audio/Sink but never appeared in the "Sinks" section the
+  # old awk pass scraped, so it was unpickable. Matching on media.class finds
+  # every real destination regardless of how wpctl chooses to group it.
+  #
+  # Monitor sources are excluded (they are not outputs). The current default is
+  # marked ● so the menu doubles as a status readout.
   hyprAudioSink = pkgs.writeShellScriptBin "hypr-audio-sink" ''
-    LIST=$(${pkgs.wireplumber}/bin/wpctl status \
-      | ${pkgs.gawk}/bin/awk '/^ ├─ Sinks:/{s=1;next} /^ ├─ Sources:/{s=0} s' \
-      | ${pkgs.gnused}/bin/sed 's/^[^0-9*]*//; s/^\*[[:space:]]*/ /' \
-      | ${pkgs.gnugrep}/bin/grep -E '^[[:space:]]*[0-9]+\.' \
-      | ${pkgs.gnugrep}/bin/grep -viE 'easy effects|monitor' \
-      | ${pkgs.gnused}/bin/sed 's/^[[:space:]]*//; s/[[:space:]]*\[vol:.*$//')
+    DUMP=$(${pkgs.pipewire}/bin/pw-dump 2>/dev/null) || exit 1
+
+    CURRENT=$(printf '%s' "$DUMP" | ${pkgs.jq}/bin/jq -r '
+      .[] | select(.type == "PipeWire:Interface:Metadata")
+          | select(.props."metadata.name" == "default")
+          | .metadata[]? | select(.key == "default.audio.sink") | .value.name' \
+      | ${pkgs.coreutils}/bin/head -1)
+
+    LIST=$(printf '%s' "$DUMP" | ${pkgs.jq}/bin/jq -r --arg cur "$CURRENT" '
+      .[] | select(.info.props."media.class" == "Audio/Sink")
+          | select(.info.props."node.name" | test("monitor") | not)
+          | "\(.id). \(if .info.props."node.name" == $cur then "●" else "○" end) " +
+            (.info.props."node.description" // .info.props."node.name")')
 
     [ -n "$LIST" ] || exit 0
 
-    PICK=$(printf '%s' "$LIST" \
+    PICK=$(printf '%s\n' "$LIST" \
       | ${pkgs.fuzzel}/bin/fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini --prompt="󰓃  ")
     [ -n "$PICK" ] || exit 0
 
@@ -74,7 +84,7 @@ let
 
     ${pkgs.wireplumber}/bin/wpctl set-default "$ID" || exit 1
 
-    NAME=$(printf '%s' "$PICK" | ${pkgs.gnused}/bin/sed 's/^[0-9]*\.[[:space:]]*//')
+    NAME=$(printf '%s' "$PICK" | ${pkgs.gnused}/bin/sed 's/^[0-9]*\.[[:space:]]*[●○][[:space:]]*//')
     ${pkgs.libnotify}/bin/notify-send -a "audio" -i audio-speakers \
       -h string:x-canonical-private-synchronous:audio-sink \
       "Output" "$NAME"
