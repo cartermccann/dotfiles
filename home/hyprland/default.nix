@@ -15,6 +15,7 @@
 #   swaync.nix      notification daemon + stylesheet
 #   menus.nix       fuzzel + swayosd
 #   lock.nix        hyprlock + hypridle
+#   caelestia.nix   the Caelestia shell (second session tile)
 #   css.nix         shared hex -> "r, g, b" helper (not a module)
 #   palette-css.nix palette -> GTK @define-color block (not a module)
 #
@@ -34,6 +35,7 @@
     ./swaync.nix
     ./menus.nix
     ./lock.nix
+    ./caelestia.nix
   ];
 
   # The hypr-* scripts add themselves in scripts.nix; these are the plain

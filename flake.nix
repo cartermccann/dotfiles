@@ -49,6 +49,15 @@
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
     };
+    # Caelestia — the Quickshell-based shell behind the "Hyprland (Caelestia)"
+    # session tile. Deliberately NOT following our nixpkgs: it targets
+    # nixos-unstable and builds quickshell from a git checkout under
+    # clangStdenv, so pinning it back to 25.11 risks a Qt mismatch in a package
+    # that has no binary cache to fall back on. The duplicated nixpkgs costs
+    # eval time, not a second copy of the system closure.
+    caelestia = {
+      url = "github:caelestia-dots/shell";
+    };
     nerd-dictation = {
       url = "github:ideasman42/nerd-dictation";
       flake = false;

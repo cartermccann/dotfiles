@@ -76,6 +76,7 @@ let
                 inherit user pkgs-unstable;
                 inherit (inputs)
                   basic-memory
+                  caelestia
                   google-workspace-cli
                   fenix
                   herdr
