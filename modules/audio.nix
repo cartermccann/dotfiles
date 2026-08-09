@@ -132,7 +132,7 @@ in
   # Rank the outputs so the default sink lands on whatever is actually being
   # listened to, in the order they're actually used:
   #
-  #   Bluetooth headphones > FIIO SA1 (desk speakers) > Schiit Gunnr > Arya EQ > HDMI
+  #   Bluetooth headphones > Schiit Gunnr > FIIO SA1 (desk speakers) > Arya EQ > HDMI
   #
   # This matters because volume keys target @DEFAULT_AUDIO_SINK@. If the
   # default is a device nothing is playing on, the OSD moves and the sound
@@ -147,11 +147,11 @@ in
   services.pipewire.wireplumber.extraConfig."51-default-sink" = {
     "monitor.alsa.rules" = [
       {
-        matches = [ { "node.name" = fiioNode; } ];
+        matches = [ { "node.name" = schiitNode; } ];
         actions.update-props."priority.session" = 2000;
       }
       {
-        matches = [ { "node.name" = schiitNode; } ];
+        matches = [ { "node.name" = fiioNode; } ];
         actions.update-props."priority.session" = 1500;
       }
       {
@@ -162,8 +162,8 @@ in
     # Match the bluez *node*, not the device. `device.api = "bluez5"` matches
     # the device object, and priority.session is read off the node, so that
     # form silently does nothing: a connected WH-1000XM6 kept its stock 1010
-    # and lost to the FIIO at 2000. The "~" prefix is WirePlumber's regex
-    # match, covering every headset without hardcoding MAC addresses
+    # and lost to the top-ranked wired output at 2000. The "~" prefix is
+    # WirePlumber's regex match, covering every headset without hardcoding MACs
     # (bluez_output.80_99_E7_F8_6D_74.1 and friends).
     "monitor.bluez.rules" = [
       {
@@ -182,7 +182,7 @@ in
   # also inserted its virtual sink ahead of the hardware one and won the
   # default, which is how volume keys ended up moving a sink nothing played on.
   #
-  # priority.session = 1200 sits below both the FIIO (2000) and the Schiit
+  # priority.session = 1200 sits below both the Schiit (2000) and the FIIO
   # (1500), so this sink can never take the default on its own — it is only
   # ever reached by picking it deliberately (SUPER+CTRL+S). That makes the old
   # failure mode structurally impossible rather than merely unlikely.
