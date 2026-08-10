@@ -57,6 +57,7 @@ in
     import subprocess
     import sys
     import threading
+    import time
 
     import numpy as np
     import sherpa_onnx
@@ -92,12 +93,35 @@ in
     _typeq = queue.SimpleQueue()
 
 
+    # Counters behind the heartbeat below. Plain ints: only the reader touches
+    # audio_bytes/tokens and only the typist touches typed_chars/type_failures,
+    # so nothing here needs a lock.
+    STATS = {"audio_bytes": 0, "tokens": 0, "typed_chars": 0, "type_failures": 0}
+
+
+    def log(msg):
+        print(f"[{time.strftime('%H:%M:%S')}] {msg}", file=sys.stderr, flush=True)
+
+
     def _type(text):
         if YDOTOOL == "-":  # dry-run harness
             sys.stdout.write(text)
             sys.stdout.flush()
             return
-        subprocess.run([YDOTOOL, *TYPE_ARGS], input=text.encode(), check=False)
+        # check=False, but the return code is no longer thrown away. A failing
+        # ydotool is silent by nature — the text simply never appears — so an
+        # unreported non-zero exit here is indistinguishable from the recogniser
+        # having nothing to say.
+        proc = subprocess.run(
+            [YDOTOOL, *TYPE_ARGS], input=text.encode(), capture_output=True, check=False
+        )
+        if proc.returncode != 0:
+            STATS["type_failures"] += 1
+            if STATS["type_failures"] <= 5:  # enough to identify it, not a flood
+                err = proc.stderr.decode("utf-8", "replace").strip()
+                log(f"ydotool exit {proc.returncode}: {err or '(no stderr)'}")
+        else:
+            STATS["typed_chars"] += len(text)
 
 
     def _typist():
@@ -138,6 +162,7 @@ in
         text = "".join(tokens[typed:])
         if fresh_segment and text and not text[0].isspace():
             text = " " + text
+        STATS["tokens"] += len(tokens) - typed
         emit(text)
         return len(tokens), False
 
@@ -161,10 +186,33 @@ in
         typist = threading.Thread(target=_typist, name="typist")
         typist.start()
 
+        # Heartbeat. When this stops looking healthy it says WHICH stage died,
+        # which is the thing three rounds of guessing could not establish:
+        # audio frozen  -> pw-record or PipeWire stopped feeding us
+        # audio moving, tokens frozen -> the recogniser stopped recognising
+        # tokens moving, typed frozen -> ydotool/ydotoold stopped accepting
+        started = time.monotonic()
+        next_beat = started + 10.0
+        log("listening")
+
         while True:
             data = stdin.read(READ_BYTES)
             if not data:
+                log("stdin EOF — recorder closed the pipe")
                 break
+            STATS["audio_bytes"] += len(data)
+
+            now = time.monotonic()
+            if now >= next_beat:
+                next_beat = now + 10.0
+                log(
+                    f"+{now - started:5.0f}s  audio {STATS['audio_bytes'] / (SAMPLE_RATE * 2):6.1f}s"
+                    f"  tokens {STATS['tokens']:5d}"
+                    f"  typed {STATS['typed_chars']:6d}"
+                    f"  typefail {STATS['type_failures']:3d}"
+                    f"  queued {_typeq.qsize():3d}"
+                )
+
             if len(data) % 2:  # partial frame at EOF
                 data = data[:-1]
             pcm = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768
@@ -250,11 +298,16 @@ in
       export DICTATION_STREAM_MODEL="${streamModelDir}"
       export DICTATION_TYPE_CMD="${pkgs.ydotool}/bin/ydotool"
 
+      # pw-record's stderr is NOT discarded. It used to be, and that hid the
+      # only evidence that mattered: when the recorder dies mid-session the
+      # client just sees EOF and exits cleanly, so the failure looked like
+      # "dictation stopped" with an empty log and nothing in the journal.
       {
         ${pkgs.pipewire}/bin/pw-record --raw \
-          --rate 16000 --channels 1 --format s16 --latency 100ms - 2>/dev/null &
+          --rate 16000 --channels 1 --format s16 --latency 100ms - &
         echo $! > "$RECPID"
         wait $!
+        echo "[$(date +%H:%M:%S)] pw-record exited rc=$?" >&2
       } | ${pythonEnv}/bin/python3 "$HOME/.local/bin/dictation-stream.py"
 
       rm -f "$RECPID"
