@@ -7,6 +7,8 @@
 }:
 
 let
+  pal = import ../lib/palette.nix;
+
   hermesNrs = pkgs.writeShellScriptBin "hermes-nrs" ''
     set -euo pipefail
 
@@ -24,12 +26,114 @@ let
   '';
 in
 {
-  # Boot
-  boot.loader.systemd-boot.enable = true;
+  # Boot — Limine, replacing systemd-boot.
+  #
+  # systemd-boot is switched off but deliberately NOT cleaned up. Disabling the
+  # module only stops it being rewritten; its binary stays at
+  # /EFI/systemd/systemd-bootx64.efi, its "Linux Boot Manager" NVRAM entry
+  # stays, /EFI/BOOT/BOOTX64.EFI stays pointed at it, and /boot/loader/entries
+  # stays frozen at the last generation it wrote. Limine installs to
+  # /EFI/limine/ (efiInstallAsRemovable stays false, so it does not claim the
+  # removable path) and only ever ADDS its own NVRAM entry — it deletes
+  # nothing. So a Limine that fails to boot is recoverable from the firmware
+  # boot menu with no rescue media: pick Linux Boot Manager and you are on a
+  # known-good generation. Leave all of it alone until Limine has a real run
+  # of boots behind it.
+  boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 10;
-  boot.loader.systemd-boot.memtest86.enable = true; # RAM test from boot menu (hold Space at boot)
-  boot.loader.timeout = 0; # hold Space to show boot menu
+
+  # Stylix themes Limine too, and it would win the whole style block with
+  # catppuccin-macchiato (#24273a) — the same drift that made the Ly greeter
+  # the last Catppuccin surface on the machine. The boot menu is themed from
+  # lib/palette.nix below, so Stylix hands this target over. Same call as
+  # Caelestia taking gtk.css off Stylix in home/hyprland/caelestia.nix; the
+  # rest of Stylix's targets are untouched.
+  stylix.targets.limine.enable = false;
+
+  boot.loader.limine = {
+    enable = true;
+    efiSupport = true;
+    biosSupport = false;
+
+    # Replaces systemd-boot's configurationLimit. Limine keeps its own copies
+    # of every kernel and initrd it can boot under /boot/limine, and this ESP
+    # is 2 GB, so the bound matters more here than it did before.
+    maxGenerations = 10;
+
+    # The editor can boot any entry with an arbitrary cmdline, which hands
+    # anyone at the keyboard root via init=/bin/sh. Upstream recommends off.
+    enableEditor = false;
+
+    style = {
+      # Flat ground, no image. The module mkDefaults an image in
+      # (nixos-artwork's simple-dark-gray-bootloader) plus a "2F302F" backdrop,
+      # so both have to be answered explicitly or the menu comes up grey with a
+      # stock NixOS wallpaper behind it. backdrop is what fills the screen once
+      # there is no wallpaper to cover it.
+      wallpapers = [ ];
+      backdrop = pal.night.raw.base02;
+
+      interface = {
+        branding = "kronos"; # same title as the Ly greeter's box
+        # Kept visible on purpose, unlike Ly's hide_key_hints. This menu is the
+        # rollback path; the one time it matters is the one time you will not
+        # remember the keys.
+        helpHidden = false;
+      };
+
+      # Ouranos night, so firmware → Limine → Ly reads as one surface rather
+      # than three. base02 is the same ground Ly paints (modules/desktop-
+      # wayland.nix), not base00, which is why this is not quite the desktop
+      # background. Six hex digits is RRGGBB; the TT transparency byte the
+      # option mentions is optional and omitted, which Limine treats as opaque.
+      graphicalTerminal = {
+        background = pal.night.raw.base02;
+        foreground = pal.night.raw.base05;
+        brightBackground = pal.night.raw.base01;
+        brightForeground = pal.night.raw.base07;
+
+        # black; red; green; brown; blue; magenta; cyan; gray — Limine's order.
+        # "brown" is the slot modern palettes call yellow.
+        palette = lib.concatStringsSep ";" [
+          pal.night.raw.base00
+          pal.night.raw.base08
+          pal.night.raw.base0B
+          pal.night.raw.base0A
+          pal.night.raw.base0D
+          pal.night.raw.base0E
+          pal.night.raw.base0C
+          pal.night.raw.base05
+        ];
+        brightPalette = lib.concatStringsSep ";" [
+          pal.night.raw.base03
+          pal.night.raw.base08
+          pal.night.raw.base0B
+          pal.night.raw.base0A
+          pal.night.raw.base0D
+          pal.night.raw.base0E
+          pal.night.raw.base0C
+          pal.night.raw.base07
+        ];
+
+        margin = 24;
+      };
+    };
+
+    # brandingColor is typed as a 0-7 palette index, which is Limine's OLD
+    # format. 10.8 documents interface_branding_colour as RRGGBB (CONFIG.md)
+    # and would read a bare `4` as #000004 — an invisible title on a dark
+    # ground. So the typed option is left null and the real value goes through
+    # extraConfig, which is prepended to limine.conf.
+    extraConfig = ''
+      interface_branding_colour: ${pal.night.raw.base0D}
+    '';
+  };
+
+  # NOT systemd-boot's 0. Limine at `timeout: 0` boots the default entry
+  # instantly and there is no way into the menu — the press-any-key reveal
+  # applies only while a timeout is actually running (CONFIG.md, `quiet`).
+  # The menu is the rollback path, so it has to be reachable.
+  boot.loader.timeout = 2;
 
   # Plymouth — Catppuccin boot splash (override Stylix's default theme)
   boot.plymouth = {
