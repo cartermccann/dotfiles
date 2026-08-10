@@ -96,7 +96,18 @@ in
     # Counters behind the heartbeat below. Plain ints: only the reader touches
     # audio_bytes/tokens and only the typist touches typed_chars/type_failures,
     # so nothing here needs a lock.
-    STATS = {"audio_bytes": 0, "tokens": 0, "typed_chars": 0, "type_failures": 0}
+    STATS = {
+        "audio_bytes": 0,
+        "tokens": 0,
+        "typed_chars": 0,
+        "type_failures": 0,
+        # Peak amplitude seen since the last heartbeat, 0.0-1.0. This is the
+        # measurement that separates "the recogniser broke" from "the recogniser
+        # is being handed silence" — a capture node that gets muted, suspended or
+        # re-routed keeps pw-record emitting zeros indefinitely, so byte counts
+        # advance at exactly real time and nothing anywhere reports an error.
+        "peak": 0.0,
+    }
 
 
     def log(msg):
@@ -192,7 +203,7 @@ in
         # audio moving, tokens frozen -> the recogniser stopped recognising
         # tokens moving, typed frozen -> ydotool/ydotoold stopped accepting
         started = time.monotonic()
-        next_beat = started + 10.0
+        next_beat = started + 5.0
         log("listening")
 
         while True:
@@ -202,20 +213,26 @@ in
                 break
             STATS["audio_bytes"] += len(data)
 
+            if len(data) % 2:  # partial frame at EOF
+                data = data[:-1]
+            pcm = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768
+            if pcm.size:
+                STATS["peak"] = max(STATS["peak"], float(np.abs(pcm).max()))
+
             now = time.monotonic()
             if now >= next_beat:
-                next_beat = now + 10.0
+                next_beat = now + 5.0
+                peak = STATS["peak"]
+                db = "-inf" if peak <= 0 else f"{20 * np.log10(peak):5.1f}"
                 log(
                     f"+{now - started:5.0f}s  audio {STATS['audio_bytes'] / (SAMPLE_RATE * 2):6.1f}s"
+                    f"  peak {db} dBFS"
                     f"  tokens {STATS['tokens']:5d}"
                     f"  typed {STATS['typed_chars']:6d}"
                     f"  typefail {STATS['type_failures']:3d}"
                     f"  queued {_typeq.qsize():3d}"
                 )
-
-            if len(data) % 2:  # partial frame at EOF
-                data = data[:-1]
-            pcm = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768
+                STATS["peak"] = 0.0
             stream.accept_waveform(SAMPLE_RATE, pcm)
             while recognizer.is_ready(stream):
                 recognizer.decode_stream(stream)
