@@ -29,16 +29,19 @@ sudo nixos-rebuild switch --flake ~/dotfiles#kronos
 flake.nix          # inputs; outputs delegated to parts/
 parts/             # flake-parts modules: hosts (mkHost), templates
 hosts/             # per-machine configuration + hardware config
-modules/           # NixOS system modules (desktop, nvidia, ollama, oom-protection, ...)
+modules/           # NixOS system modules (desktop, nvidia, audio, ollama, oom-protection, ...)
 home/              # home-manager modules (shell, tools, neovim, tmux, niri, hyprland, ...)
-lib/               # overlays + the Ouranos palette (night/day)
-pkgs/              # custom package definitions
+lib/               # overlays, the Ouranos palette (night/day), llm-models.nix
+pkgs/              # custom package definitions (anarlog, codex, qmd, playwright-cli, ...)
 templates/         # dev-shell templates for `nix flake init -t ~/dotfiles#<lang>`
-config/nvim/       # Neovim config, symlinked out of the store so it stays live-editable
+skills/            # Claude skills owned by this repo; installed by the module that uses them
+config/            # generated blobs kept as real files: nvim, hyprland CSS, audio presets, hermes
 scripts/           # shell scripts referenced by modules
 docs/              # project specifications, architecture, and delivery plans
 wallpaper/
 ```
+
+`config/nvim/` is symlinked out of the store rather than copied into it, so it stays live-editable. The other `config/` subdirectories are inputs that are too large to keep inline in Nix strings.
 
 ## Project documentation
 
@@ -65,6 +68,12 @@ or near-white (`day`), named for the sky Atlas holds up and the father Kronos
 was born to. Both variants are always defined; `active` picks which one the
 session components get. Caelestia does its own theming (it derives a Material
 scheme) and is deliberately not wired to it.
+
+## Audio
+
+The EQ is a PipeWire filter-chain sink declared in `modules/audio.nix`, not EasyEffects — the presets it was ported from are kept in `config/audio/` as the record of the curve. Sinks are ranked by `priority.session` there, but `wpctl set-default`, pavucontrol, or `hypr-audio-sink` write a `default.configured.audio.sink` entry to `~/.local/state/wireplumber/default-nodes` that **overrides that ranking permanently**. If the default sink is wrong, check that file before touching priorities.
+
+The same module defines a **speech bus**: a virtual capture node carrying only applications whose output is human speech. anarlog records the mic on one channel and system audio on the other, and "system audio" would otherwise mean the default sink's monitor — post-mix, so whatever music is playing lands in every meeting transcript.
 
 ## Dictation
 
@@ -94,6 +103,22 @@ Model tags live in `lib/llm-models.nix`. `gemma4` is the only chat model (the
 minuet in nvim and is never used interactively.
 
 `heavy` / `heavy-stop` (fish functions) swap the GPU between Ollama and a llama.cpp server running Qwen3.6-35B MoE with expert offload (`modules/llama-heavy.nix`).
+
+## Agents and scheduled loops
+
+`home/hermes.nix` provides the runtime toolchain for the Hermes agent, deliberately not packaged as a derivation: Hermes git-clones into `~/.hermes/`, builds its own uv venv, and writes new skills and memory to itself at runtime, so the flake supplies the dependencies and stays out of the way. `home/hermes-events.nix` installs the event/notification scripts from `skills/hermes-ops/`.
+
+Maintenance loops run as systemd user timers. Each is a thin Nix wrapper — sandbox, credentials, schedule — around a Claude skill in `~/.claude/skills/` that holds the actual behavior. All of them are proposal-only or draft-PR-only; none merges anything.
+
+| Module | Schedule | What it does |
+|--------|----------|--------------|
+| `pr-babysit-loop.nix` | weekdays 05:30 | Reviews open PRs across the comcreate-io org, one marker-gated comment per PR, Telegram digest |
+| `self-improve-loop.nix` | every other day 07:07 | Mines Claude Code transcripts for durable feedback under an anti-slop constitution |
+| `codex-self-improve-loop.nix` | every other day 07:27 | Read-only Codex counterpart; writes inert proposal state only |
+| `ci-triage-loop.nix` | 08:00 and 15:00 | Diagnoses failed Actions runs; opens draft `ci-fix/*` PRs only past a reproduce-before/pass-after oracle |
+| `docs-gardener-loop.nix` | Sundays 09:30 | Audits project CLAUDE.md files against real repo state, files human-gated proposals |
+
+`home/whisperlivekit.nix` runs a local Deepgram-compatible STT server so anarlog can transcribe meetings without shipping audio to a cloud vendor. It is a uv-tool install, not a flake package — upgrade it with `uv tool upgrade whisperlivekit`.
 
 ## Dev shells
 
