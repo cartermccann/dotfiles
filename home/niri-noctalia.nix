@@ -356,8 +356,10 @@ in
       Mod+Ctrl+N { spawn "bash" "-c" "pkill wlsunset || wlsunset -t 3500 -T 6500 -l 40.76 -L -111.89"; }
 
       // Dictation
-      Mod+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
-      Mod+Shift+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation-batch.sh"; }
+      // Batch (offline Parakeet) on the plain chord; see the note in
+      // home/hyprland/compositor.nix. Streaming keeps SHIFT.
+      Mod+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation-batch.sh"; }
+      Mod+Shift+Alt+L { spawn "bash" "-c" "~/.local/bin/toggle-dictation.sh"; }
 
       // Control panels
       Mod+Ctrl+A { spawn "pavucontrol"; }

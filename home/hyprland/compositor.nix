@@ -432,8 +432,13 @@ let
       }
       hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
       hl.bind(mod .. " + CTRL + N",  hl.dsp.exec_cmd("hypr-night-toggle"))
-      hl.bind(mod .. " + ALT + L",   hl.dsp.exec_cmd("~/.local/bin/toggle-dictation.sh"))
-      hl.bind(mod .. " + ALT + SHIFT + L", hl.dsp.exec_cmd("~/.local/bin/toggle-dictation-batch.sh"))
+      -- Batch (offline Parakeet) is the primary binding. The streaming model
+      -- drops speech mid-sentence for 10-15s at a time on clean, loud input
+      -- and sometimes never recovers, which no amount of pipeline work fixes:
+      -- see home/dictation.nix. Offline is the accurate one on a finished
+      -- utterance, so it takes the plain chord and streaming keeps SHIFT.
+      hl.bind(mod .. " + ALT + L",   hl.dsp.exec_cmd("~/.local/bin/toggle-dictation-batch.sh"))
+      hl.bind(mod .. " + ALT + SHIFT + L", hl.dsp.exec_cmd("~/.local/bin/toggle-dictation.sh"))
 
       -- Session
       hl.bind(mod .. " + SHIFT + E", hl.dsp.exit())
