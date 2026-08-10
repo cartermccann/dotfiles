@@ -10,15 +10,67 @@ let
   overlayDir = "${homeDir}/projects/input-linux/codex-desktop-overlay";
   appId = "codex-desktop";
 
+  # The vendored Electron in the overlay is an upstream prebuilt binary, not a
+  # Nix build, so it needs a runtime library path handed to it. Keeping that
+  # path here — rather than baked as literal store paths inside the overlay's
+  # start.sh, which is how it used to work — makes these libraries real
+  # dependencies of the home-manager generation. They are therefore GC-rooted
+  # and follow nixpkgs bumps, instead of dangling on the next
+  # nix-collect-garbage and killing the app with a missing libnspr4.so.
+  # start.sh consumes this as CODEX_LINUX_NIX_LIBRARY_PATH; see the comment it
+  # carries around its `export LD_LIBRARY_PATH=` line.
+  nixLibraryPath = lib.makeLibraryPath (
+    with pkgs;
+    [
+      alsa-lib
+      at-spi2-core
+      cairo
+      cups
+      dbus
+      expat
+      gdk-pixbuf
+      glib
+      gtk3
+      libdrm
+      libgbm
+      libglvnd
+      libnotify
+      libusb1 # Codex Micro Linux HID runtime
+      libxcrypt
+      libxkbcommon
+      mesa
+      nspr
+      nss
+      pango
+      stdenv.cc.cc.lib
+      systemd
+      wayland
+      zlib
+      xorg.libX11
+      xorg.libXcomposite
+      xorg.libXcursor
+      xorg.libXdamage
+      xorg.libXext
+      xorg.libXfixes
+      xorg.libXi
+      xorg.libXrandr
+      xorg.libXScrnSaver
+      xorg.libXtst
+      xorg.libxcb
+    ]
+  );
+
   codexDesktopGuard = pkgs.writeShellApplication {
     name = "codex-desktop-guard";
     runtimeInputs = [
       pkgs.coreutils
+      pkgs.gnugrep
       pkgs.systemd
     ];
     text = ''
       overlay_dir=${lib.escapeShellArg overlayDir}
       app_id=${lib.escapeShellArg appId}
+      nix_library_path=${lib.escapeShellArg nixLibraryPath}
       memory_high="''${CODEX_LINUX_MEMORY_HIGH:-8G}"
       memory_max="''${CODEX_LINUX_MEMORY_MAX:-12G}"
       tasks_max="''${CODEX_LINUX_TASKS_MAX:-2500}"
@@ -149,6 +201,17 @@ let
         echo "Codex Desktop overlay is missing: $overlay_dir/start.sh" >&2
         exit 1
       }
+
+      export CODEX_LINUX_NIX_LIBRARY_PATH="$nix_library_path"
+      # An app update can replace start.sh with a build that re-bakes literal
+      # store paths and ignores the variable above. Keep the app launchable in
+      # that case by setting LD_LIBRARY_PATH ourselves — the launcher appends
+      # the inherited value, so the fresh paths still resolve — and say loudly
+      # that the launcher wants re-patching.
+      if ! grep -qF CODEX_LINUX_NIX_LIBRARY_PATH "$overlay_dir/start.sh" 2>/dev/null; then
+        echo "WARN: $overlay_dir/start.sh no longer reads CODEX_LINUX_NIX_LIBRARY_PATH; re-patch it (see home/codex-desktop.nix)" >&2
+        export LD_LIBRARY_PATH="$nix_library_path''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+      fi
 
       stop_stale_scopes
       if find_primary_scope >/dev/null 2>&1; then
