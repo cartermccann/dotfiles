@@ -44,6 +44,15 @@
   # So `video=DP-1:...,rotate=270` parses fine and then does nothing. Portrait
   # on the Dell is only available by rotating the HP too, which is a worse
   # trade. A greeter that gets both panels right has to be a Wayland one.
+  #
+  # Nor can the Dell simply be left dark at the greeter so only the HP shows
+  # it. The modes match, so drm_client_modeset clones one framebuffer to both
+  # connectors and Ly lands on each. Suppressing one means forcing that
+  # connector off (`video=DP-1:d`), and DRM_FORCE_OFF is not scoped to the
+  # console: drm_helper_probe_single_connector_modes short-circuits detect and
+  # pins connector->status to disconnected for every client, so Hyprland would
+  # stop seeing the Dell as well. Sideways at the greeter is the price of the
+  # panel being portrait in the session.
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
@@ -56,6 +65,27 @@
     modesetting.enable = true;
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
+
+    # Required for S3 to be survivable. The driver frees video memory across
+    # suspend unless told not to, so on resume the compositor's GL objects
+    # point at allocations that no longer exist. What that looked like here
+    # (journal, 2026-08-09 18:10, ~12 min suspend):
+    #
+    #   NVRM: Xid 13, name=.Hyprland-wrapp, Graphics Exception:
+    #         Shader Program Header 11 Error / ESR 0x405840=0xa2040800
+    #   [nvidia-drm] Failed to initialize semaphore for plane fence
+    #   [nvidia-drm] Failed to apply atomic modeset. Error code: -11
+    #   Hyprland has crashed :(   (SIGABRT in CHyprOpenGLImpl::begin)
+    #
+    # i.e. the session does not "come back wrong", it is already dead — which
+    # is why the leftover screen takes no input and only a reboot clears it.
+    #
+    # Enabling this adds NVreg_PreserveVideoMemoryAllocations=1 plus the
+    # nvidia-{suspend,resume,hibernate} units, which save VRAM to
+    # NVreg_TemporaryFilePath (default /tmp, disk-backed on this host — worth
+    # rechecking if /tmp is ever moved to tmpfs, since the dump is sized by
+    # what the GPU has allocated) and restore it before userspace resumes.
+    powerManagement.enable = true;
   };
 
   hardware.graphics = {
