@@ -16,7 +16,6 @@
     ./hyprland
     ./tmux.nix
     ./dictation.nix
-    ./whisperlivekit.nix
     ./tools.nix
     ./hermes.nix
     ./webctx-tunnel.nix

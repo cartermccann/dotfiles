@@ -19,7 +19,6 @@ let
   ];
 
   screamingFrog = pkgs.callPackage ../pkgs/screaming-frog-seo-spider { };
-  anarlog = pkgs.callPackage ../pkgs/anarlog { };
   grokCli = pkgs.callPackage ../pkgs/grok-cli { };
   codexCli = pkgs-unstable.callPackage ../pkgs/codex { };
 in
@@ -83,7 +82,6 @@ in
     # obs-studio lives in modules/media.nix (system-level) — it was declared in
     # both, so this copy was redundant.
     yt-dlp
-    anarlog # local-first AI meeting notes (ex-Hyprnote) — .deb repacked in ../pkgs/anarlog
 
     # SEO
     screamingFrog # proprietary crawler, bundled JDK

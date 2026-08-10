@@ -32,7 +32,7 @@ hosts/             # per-machine configuration + hardware config
 modules/           # NixOS system modules (desktop, nvidia, audio, ollama, oom-protection, ...)
 home/              # home-manager modules (shell, tools, neovim, tmux, niri, hyprland, ...)
 lib/               # overlays, the Ouranos palette (night/day), llm-models.nix
-pkgs/              # custom package definitions (anarlog, codex, qmd, playwright-cli, ...)
+pkgs/              # custom package definitions (codex, qmd, playwright-cli, ...)
 templates/         # dev-shell templates for `nix flake init -t ~/dotfiles#<lang>`
 skills/            # Claude skills owned by this repo; installed by the module that uses them
 config/            # generated blobs kept as real files: nvim, hyprland CSS, audio presets, hermes
@@ -73,8 +73,6 @@ scheme) and is deliberately not wired to it.
 
 The EQ is a PipeWire filter-chain sink declared in `modules/audio.nix`, not EasyEffects — the presets it was ported from are kept in `config/audio/` as the record of the curve. Sinks are ranked by `priority.session` there, but `wpctl set-default`, pavucontrol, or `hypr-audio-sink` write a `default.configured.audio.sink` entry to `~/.local/state/wireplumber/default-nodes` that **overrides that ranking permanently**. If the default sink is wrong, check that file before touching priorities.
 
-The same module defines a **speech bus**: a virtual capture node carrying only applications whose output is human speech. anarlog records the mic on one channel and system audio on the other, and "system audio" would otherwise mean the default sink's monitor — post-mix, so whatever music is playing lands in every meeting transcript.
-
 ## Dictation
 
 Local speech-to-text through sherpa-onnx Parakeet, typed into the focused window with ydotool. Scripts in `home/dictation.nix`; the `ydotoold` daemon (root, for `/dev/uinput`) in `modules/dictation.nix`.
@@ -99,7 +97,7 @@ Ollama runs in a podman container (`modules/ollama.nix`); models are preloaded p
 | **low** | smaller | llama3.2:3b |
 
 Model tags live in `lib/llm-models.nix`. `gemma4` is the only chat model (the
-`ai` alias, and anarlog's summaries); `qwen2.5-coder` is FIM tab-completion for
+`ai` alias); `qwen2.5-coder` is FIM tab-completion for
 minuet in nvim and is never used interactively.
 
 `heavy` / `heavy-stop` (fish functions) swap the GPU between Ollama and a llama.cpp server running Qwen3.6-35B MoE with expert offload (`modules/llama-heavy.nix`).
@@ -117,8 +115,6 @@ Maintenance loops run as systemd user timers. Each is a thin Nix wrapper — san
 | `codex-self-improve-loop.nix` | every other day 07:27 | Read-only Codex counterpart; writes inert proposal state only |
 | `ci-triage-loop.nix` | 08:00 and 15:00 | Diagnoses failed Actions runs; opens draft `ci-fix/*` PRs only past a reproduce-before/pass-after oracle |
 | `docs-gardener-loop.nix` | Sundays 09:30 | Audits project CLAUDE.md files against real repo state, files human-gated proposals |
-
-`home/whisperlivekit.nix` runs a local Deepgram-compatible STT server so anarlog can transcribe meetings without shipping audio to a cloud vendor. It is a uv-tool install, not a flake package — upgrade it with `uv tool upgrade whisperlivekit`.
 
 ## Dev shells
 
