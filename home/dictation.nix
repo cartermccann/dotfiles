@@ -64,6 +64,13 @@ in
 
     MODEL = os.environ["DICTATION_STREAM_MODEL"]
     YDOTOOL = os.environ.get("DICTATION_TYPE_CMD", "ydotool")
+    # Opt-in, off by default, and deliberately not a config option: this writes
+    # everything said during a session to disk, which for a dictation tool is
+    # the whole of whatever was being dictated. `touch` the flag for one
+    # session, `rm` it afterwards. It exists so a stall can be replayed through
+    # the offline model — if that transcribes a window the streaming model
+    # dropped, the model is at fault rather than the pipeline around it.
+    DEBUG_FLAG = os.environ.get("DICTATION_DEBUG_FLAG", "")
     SAMPLE_RATE = 16000
     # 0.2 s per read, well under the model's 1120 ms chunk, so the recogniser
     # never waits on us for input.
@@ -202,6 +209,19 @@ in
         # audio frozen  -> pw-record or PipeWire stopped feeding us
         # audio moving, tokens frozen -> the recogniser stopped recognising
         # tokens moving, typed frozen -> ydotool/ydotoold stopped accepting
+        dump = None
+        if DEBUG_FLAG and os.path.exists(DEBUG_FLAG):
+            import wave
+
+            path = os.path.join(
+                os.path.dirname(DEBUG_FLAG), time.strftime("debug-%Y%m%d-%H%M%S.wav")
+            )
+            dump = wave.open(path, "wb")
+            dump.setnchannels(1)
+            dump.setsampwidth(2)
+            dump.setframerate(SAMPLE_RATE)
+            log(f"DEBUG: recording this session's audio to {path}")
+
         started = time.monotonic()
         next_beat = started + 5.0
         log("listening")
@@ -212,6 +232,8 @@ in
                 log("stdin EOF — recorder closed the pipe")
                 break
             STATS["audio_bytes"] += len(data)
+            if dump:
+                dump.writeframes(data)
 
             if len(data) % 2:  # partial frame at EOF
                 data = data[:-1]
@@ -251,6 +273,9 @@ in
         while recognizer.is_ready(stream):
             recognizer.decode_stream(stream)
         flush(recognizer, stream, typed, fresh_segment)
+
+        if dump:
+            dump.close()
 
         # Toggling off closes the pipe, so this is the exit path for a normal
         # stop: hand the thread its sentinel and wait, or the tail of the last
@@ -314,6 +339,9 @@ in
       export YDOTOOL_SOCKET=/run/ydotoold/socket
       export DICTATION_STREAM_MODEL="${streamModelDir}"
       export DICTATION_TYPE_CMD="${pkgs.ydotool}/bin/ydotool"
+      # `touch` this to have a session write its audio next to the log; see the
+      # note on DICTATION_DEBUG_FLAG in dictation-stream.py. Absent = no capture.
+      export DICTATION_DEBUG_FLAG="$STATE_DIR/debug-record"
 
       # pw-record's stderr is NOT discarded. It used to be, and that hid the
       # only evidence that mattered: when the recorder dies mid-session the
