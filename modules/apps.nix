@@ -56,6 +56,9 @@ in
     blanket
     statix # nix linter
 
+    #Graphic editor
+    inkscape
+
     # Notes
     obsidian
 
