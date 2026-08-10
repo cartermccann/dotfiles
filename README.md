@@ -66,6 +66,19 @@ was born to. Both variants are always defined; `active` picks which one the
 session components get. Caelestia does its own theming (it derives a Material
 scheme) and is deliberately not wired to it.
 
+## Dictation
+
+Local speech-to-text through sherpa-onnx Parakeet, typed into the focused window with ydotool. Scripts in `home/dictation.nix`; the `ydotoold` daemon (root, for `/dev/uinput`) in `modules/dictation.nix`.
+
+| Binding | Mode | Model |
+|---------|------|-------|
+| `Super+Alt+L` | live — types words as you speak | Parakeet streaming 1120 ms, int8 |
+| `Super+Alt+Shift+L` | batch — types the whole utterance on stop | Parakeet TDT 0.6B v2 offline, int8 |
+
+Both models (~480 MB each) are fetched on first use into `~/.local/share/parakeet-dictation/`, or up front with `setup-dictation.sh`. The live pipeline logs to `~/.local/state/parakeet-dictation/live.log`.
+
+Typing runs at 10 ms/character rather than ydotool's 40 ms default, and on its own thread. Both matter: typing and decoding share one real-time budget, and at stock timing the live pipeline loses that race under load and falls permanently behind rather than catching up.
+
 ## Local LLMs
 
 Ollama runs in a podman container (`modules/ollama.nix`); models are preloaded per host tier via `local.ollamaTier`:

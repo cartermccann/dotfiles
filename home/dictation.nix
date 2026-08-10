@@ -53,8 +53,10 @@ in
     # decoder revises earlier tokens, so switching decoding_method away from
     # greedy_search would corrupt whatever window has focus.
     import os
+    import queue
     import subprocess
     import sys
+    import threading
 
     import numpy as np
     import sherpa_onnx
@@ -66,15 +68,67 @@ in
     # never waits on us for input.
     READ_BYTES = int(SAMPLE_RATE * 0.2) * 2
 
+    # ydotool's defaults are --key-delay 20 --key-hold 20, i.e. 40 ms of
+    # sleeping per character, or 25 characters/second. Speech runs about 15
+    # characters/second, so at stock settings typing alone eats ~60% of real
+    # time — and decoding takes another ~38% once the machine is busy. That
+    # sums to over 100%, which is the whole bug: see the threading note below.
+    # 10 ms/char leaves the hold well clear of event coalescing while giving
+    # ~7x headroom over speech.
+    TYPE_ARGS = ["type", "--key-delay", "2", "--key-hold", "8", "--file", "-"]
 
-    def emit(text):
-        if not text:
-            return
+    # Typing runs on its own thread so ydotool can never stall the reader.
+    #
+    # It used to be called inline from the read loop, which meant every
+    # millisecond spent typing was a millisecond not spent draining the pipe
+    # from pw-record. On an idle machine that just fit; under load it did not,
+    # and the deficit compounds: the pipe backs up, pw-record blocks on write,
+    # PipeWire drops the capture it cannot hand over, and the transcript falls
+    # permanently behind and then dries up. Measured on kronos with 14 busy
+    # cores and a looped 7.4 s clip, stock ydotool timing: 10 s behind after
+    # 2 minutes and still growing. With typing removed from the loop the same
+    # run held 0 s of lag. That is why this looked like a one-minute time
+    # limit — nothing was timing out, the pipeline was losing a race.
+    _typeq = queue.SimpleQueue()
+
+
+    def _type(text):
         if YDOTOOL == "-":  # dry-run harness
             sys.stdout.write(text)
             sys.stdout.flush()
             return
-        subprocess.run([YDOTOOL, "type", "--file", "-"], input=text.encode(), check=False)
+        subprocess.run([YDOTOOL, *TYPE_ARGS], input=text.encode(), check=False)
+
+
+    def _typist():
+        while True:
+            item = _typeq.get()
+            done = item is None
+            parts = [] if done else [item]
+            # Drain whatever else is already waiting into a single ydotool run:
+            # both the process spawn and the per-key timing amortise, and the
+            # deltas arriving here are often only a token or two wide.
+            while not done:
+                try:
+                    nxt = _typeq.get_nowait()
+                except queue.Empty:
+                    break
+                if nxt is None:
+                    done = True
+                else:
+                    parts.append(nxt)
+            if parts:
+                try:
+                    _type("".join(parts))
+                except Exception as exc:  # never take the thread down silently
+                    print(f"dictation: type failed: {exc}", file=sys.stderr, flush=True)
+            if done:
+                return
+
+
+    def emit(text):
+        if text:
+            _typeq.put(text)
 
 
     def flush(recognizer, stream, typed, fresh_segment):
@@ -104,6 +158,9 @@ in
         fresh_segment = False
         stdin = sys.stdin.buffer
 
+        typist = threading.Thread(target=_typist, name="typist")
+        typist.start()
+
         while True:
             data = stdin.read(READ_BYTES)
             if not data:
@@ -129,6 +186,12 @@ in
         while recognizer.is_ready(stream):
             recognizer.decode_stream(stream)
         flush(recognizer, stream, typed, fresh_segment)
+
+        # Toggling off closes the pipe, so this is the exit path for a normal
+        # stop: hand the thread its sentinel and wait, or the tail of the last
+        # sentence dies with the process.
+        _typeq.put(None)
+        typist.join()
 
 
     if __name__ == "__main__":
@@ -242,7 +305,12 @@ in
       # ~1.7 s of that is loading the model; deliberately not prewarmed, since a
       # resident daemon would hold ~600 MB all day for an occasional dictation.
       notify "Listening…"
-      setsid "$HOME/.local/bin/dictation-live.sh" >/dev/null 2>&1 </dev/null &
+      # Kept to a log rather than /dev/null: when the live pipeline misbehaves
+      # it does so mid-session with nothing attached to its stderr, and a
+      # silent >/dev/null is why the ydotool starvation above took a
+      # reproduction harness to find instead of a glance at a file.
+      setsid "$HOME/.local/bin/dictation-live.sh" \
+        >"$STATE_DIR/live.log" 2>&1 </dev/null &
     '';
   };
 
@@ -317,7 +385,10 @@ in
             ' || true)
 
         if [ -n "$TEXT" ]; then
-          printf '%s' "$TEXT" | ${pkgs.ydotool}/bin/ydotool type --file -
+          # Same timing argument as the live path: at stock 40 ms/char a long
+          # batch utterance takes longer to type out than it took to say.
+          printf '%s' "$TEXT" \
+            | ${pkgs.ydotool}/bin/ydotool type --key-delay 2 --key-hold 8 --file -
           notify "Done"
         else
           notify "No transcription"
