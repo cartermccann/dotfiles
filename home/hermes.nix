@@ -149,12 +149,14 @@ in
   # coreutils (`mkdir`, `cat`) plus Home Manager packages (`bat`, `rg`, `direnv`).
   # Keep Hermes self-managed, but declaratively override the service environment
   # so gateway-spawned tool calls see the same developer toolchain as a normal
-  # NixOS shell.
+  # NixOS shell. uv/pip-installed native Python wheels (for example PyAV used
+  # by faster-whisper) also need the C++ runtime exposed on non-FHS NixOS.
   xdg.configFile."systemd/user/hermes-gateway.service.d/10-nixos-path.conf" = {
     force = true;
     text = ''
       [Service]
       Environment="PATH=${config.home.homeDirectory}/.hermes/hermes-agent/venv/bin:${config.home.homeDirectory}/.hermes/hermes-agent/node_modules/.bin:${config.home.homeDirectory}/.vite-plus/bin:${config.home.homeDirectory}/.local/state/nix/profiles/home-manager/home-path/bin:${config.home.homeDirectory}/.local/bin:${config.home.homeDirectory}/.npm-global/bin:/run/wrappers/bin:/etc/profiles/per-user/${config.home.username}/bin:/run/current-system/sw/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      Environment="LD_LIBRARY_PATH=${lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ]}"
       Environment="PLAYWRIGHT_BROWSERS_PATH=${config.home.homeDirectory}/.cache/ms-playwright"
       Environment="PLAYWRIGHT_MCP_EXECUTABLE_PATH=/run/current-system/sw/bin/google-chrome-stable"
       Environment="PLAYWRIGHT_MCP_HEADLESS=true"

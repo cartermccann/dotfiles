@@ -58,7 +58,7 @@ in
 
     #Graphic editor
     inkscape
-
+    lsd
     # Notes
     obsidian
 
