@@ -71,9 +71,25 @@ let
       overlay_dir=${lib.escapeShellArg overlayDir}
       app_id=${lib.escapeShellArg appId}
       nix_library_path=${lib.escapeShellArg nixLibraryPath}
-      memory_high="''${CODEX_LINUX_MEMORY_HIGH:-8G}"
-      memory_max="''${CODEX_LINUX_MEMORY_MAX:-12G}"
-      tasks_max="''${CODEX_LINUX_TASKS_MAX:-2500}"
+      # These must stay in sync with the fallbacks in the overlay's start.sh,
+      # which applies the same limits to the same scope. Both paths racing with
+      # different values is nondeterministic: whichever set-property lands last
+      # wins. Exporting them makes start.sh reuse these instead of its own
+      # fallbacks, so the race becomes a no-op.
+      #
+      # Do not lower these without reading the rationale in start.sh: terminals
+      # launched from the app inherit this scope, so the budget covers real
+      # build workloads, not just Electron. An 8G MemoryHigh against a ~20G
+      # working set kept the cgroup in sustained reclaim, and systemd-oomd
+      # killed all 431 processes in the scope while the box still had 44G free.
+      # MemoryHigh is a throttle; MemoryMax is the wall. earlyoom/systemd-oomd
+      # are the runaway backstop, not these.
+      memory_high="''${CODEX_LINUX_MEMORY_HIGH:-28G}"
+      memory_max="''${CODEX_LINUX_MEMORY_MAX:-32G}"
+      tasks_max="''${CODEX_LINUX_TASKS_MAX:-8000}"
+      export CODEX_LINUX_MEMORY_HIGH="$memory_high"
+      export CODEX_LINUX_MEMORY_MAX="$memory_max"
+      export CODEX_LINUX_TASKS_MAX="$tasks_max"
       launcher_pid=""
       owned_scope=""
 
