@@ -110,7 +110,6 @@ Maintenance loops run as systemd user timers. Each is a thin Nix wrapper — san
 
 | Module | Schedule | What it does |
 |--------|----------|--------------|
-| `pr-babysit-loop.nix` | weekdays 05:30 | Reviews open PRs across the comcreate-io org, one marker-gated comment per PR, Telegram digest |
 | `self-improve-loop.nix` | every other day 07:07 | Mines Claude Code transcripts for durable feedback under an anti-slop constitution |
 | `codex-self-improve-loop.nix` | every other day 07:27 | Read-only Codex counterpart; writes inert proposal state only |
 | `ci-triage-loop.nix` | 08:00 and 15:00 | Diagnoses failed Actions runs; opens draft `ci-fix/*` PRs only past a reproduce-before/pass-after oracle |

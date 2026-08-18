@@ -23,7 +23,6 @@
     ./codex-self-improve-loop.nix
     ./codex-desktop.nix
     ./mcp-reaper.nix
-    ./pr-babysit-loop.nix
     ./ci-triage-loop.nix
     ./docs-gardener-loop.nix
     ./hermes-events.nix

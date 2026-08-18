@@ -7,7 +7,6 @@ if (($# == 0)); then
     codex-self-improve-loop.service \
     docs-gardener-loop.service \
     kt-warmer-gsc-push.service \
-    pr-babysit-loop.service \
     self-improve-loop.service
 fi
 
