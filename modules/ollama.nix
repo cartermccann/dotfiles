@@ -87,6 +87,25 @@ in
       extraOptions = lib.optionals hasGpu [ "--device=nvidia.com/gpu=all" ];
     };
 
+    # The container publish stays loopback-only; this bridges the API onto the
+    # tailnet IP so tailnet agents (mini's Agent Zero local-model lane) can call
+    # it. Restart=always rides out the tailscale0-IP-not-yet-assigned boot race.
+    systemd.services.ollama-tailnet-bridge = {
+      description = "Bridge Ollama API onto the tailnet for remote agents";
+      after = [
+        "tailscaled.service"
+        "podman-ollama.service"
+      ];
+      wants = [ "tailscaled.service" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        ExecStart = "${pkgs.socat}/bin/socat TCP-LISTEN:11434,bind=100.99.132.25,fork,reuseaddr TCP:127.0.0.1:11434";
+        Restart = "always";
+        RestartSec = 5;
+        DynamicUser = true;
+      };
+    };
+
     systemd.services.ollama-preload = {
       description = "Preload Ollama models for this machine's tier";
       after = [
