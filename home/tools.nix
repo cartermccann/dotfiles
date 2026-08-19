@@ -20,6 +20,7 @@ let
 
   screamingFrog = pkgs.callPackage ../pkgs/screaming-frog-seo-spider { };
   grokCli = pkgs.callPackage ../pkgs/grok-cli { };
+  grokBot = pkgs.callPackage ../pkgs/grok-bot { };
   codexCli = pkgs-unstable.callPackage ../pkgs/codex { };
 in
 
@@ -77,6 +78,7 @@ in
     codexCli
     pkgs-unstable.ollama # CLI client only (server is the podman container) — unstable to stay near the 0.30.x server API
     grokCli # official xAI Grok CLI (grok/agent) — prebuilt binary in ../pkgs/grok-cli
+    grokBot # Grok Bot desktop agent — third-party Linux port, see ../pkgs/grok-bot
 
     # Media & recording
     # obs-studio lives in modules/media.nix (system-level) — it was declared in
