@@ -22,6 +22,13 @@ let
   grokCli = pkgs.callPackage ../pkgs/grok-cli { };
   grokBot = pkgs.callPackage ../pkgs/grok-bot { };
   codexCli = pkgs-unstable.callPackage ../pkgs/codex { };
+
+  # electron_42 comes from unstable because Granola 7.488.3 ships Electron
+  # 42.7.0 and unstable's is 42.7.1; stable 25.11 is still on 42.4.0. Same
+  # major either way, so the ABI holds, but stay as close as the channel allows.
+  granola = pkgs.callPackage ../pkgs/granola {
+    electron = pkgs-unstable.electron_42-bin;
+  };
 in
 
 {
@@ -79,6 +86,9 @@ in
     pkgs-unstable.ollama # CLI client only (server is the podman container) — unstable to stay near the 0.30.x server API
     grokCli # official xAI Grok CLI (grok/agent) — prebuilt binary in ../pkgs/grok-cli
     grokBot # Grok Bot desktop agent — third-party Linux port, see ../pkgs/grok-bot
+
+    # Meetings & notes
+    granola # macOS build repacked onto nixpkgs Electron, see ../pkgs/granola
 
     # Media & recording
     # obs-studio lives in modules/media.nix (system-level) — it was declared in
