@@ -23,6 +23,11 @@ let
       "--oauth2-client-secret=OTJgUOQcT7lO7GsGZq2G4IlT"
     ];
   };
+  # 1Password ships its local MCP server inside the desktop app, but the module
+  # doesn't put it on PATH. MCP clients expect a plain `1password-mcp` command.
+  onePasswordMcp = pkgs.writeShellScriptBin "1password-mcp" ''
+    exec ${pkgs-unstable._1password-gui}/share/1password/1password-mcp "$@"
+  '';
 in
 {
   programs._1password = {
@@ -36,6 +41,8 @@ in
   };
 
   environment.systemPackages = with pkgs; [
+    onePasswordMcp
+
     # Browsers
     googleChromeWrapped
     zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
