@@ -62,6 +62,9 @@ in
     # Notes
     obsidian
 
+    #code editor
+    code-cursor
+    cursor-cli
     # AI
     claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs
   ];
