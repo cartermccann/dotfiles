@@ -36,7 +36,7 @@
 
   services.korgo-ssh-client = {
     enable = true;
-    package = korgo.packages.x86_64-linux.korgo-ssh-client;
+    package = korgo.packages.x86_64-linux.korgo-linux-mini-client;
     user = "cjm";
     group = "users";
     uid = 1000;
