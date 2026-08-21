@@ -947,17 +947,17 @@
         "uv2nix": "uv2nix_3"
       },
       "locked": {
-        "lastModified": 1787274455,
-        "narHash": "sha256-jo7MZNRh6Dzx7DiIPNq+9GtldaQQlx9JilPdlnvopnw=",
+        "lastModified": 1787275776,
+        "narHash": "sha256-w2RpfwSzxUs/hZkEfJQFl1QoAFvtvcCymuQSqyqwl/g=",
         "owner": "cartermccann",
         "repo": "korgo-bot",
-        "rev": "9518e85103a115fde20130170e7a15da3b63e6bc",
+        "rev": "c1cf8836143dbebee1fc0e03eacf38240a1ebc92",
         "type": "github"
       },
       "original": {
         "owner": "cartermccann",
         "repo": "korgo-bot",
-        "rev": "9518e85103a115fde20130170e7a15da3b63e6bc",
+        "rev": "c1cf8836143dbebee1fc0e03eacf38240a1ebc92",
         "type": "github"
       }
     },
