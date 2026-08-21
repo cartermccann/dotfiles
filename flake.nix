@@ -88,7 +88,7 @@
     # revision; do not follow this flake's nixpkgs because the package's fixed
     # Electron inputs were verified against its own lock file.
     korgo = {
-      url = "github:cartermccann/korgo-bot/04cc41e363ed702907a5802efae2b66f43a1ee36";
+      url = "github:cartermccann/korgo-bot/de05def69b2638cd7a310cfe6945e0dc420d0b26";
     };
   };
 
