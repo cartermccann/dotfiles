@@ -84,6 +84,12 @@
     hermes-agent = {
       url = "github:NousResearch/hermes-agent";
     };
+    # Hardened SSH-only Korgo client. Pin the independently verified source
+    # revision; do not follow this flake's nixpkgs because the package's fixed
+    # Electron inputs were verified against its own lock file.
+    korgo = {
+      url = "github:cartermccann/korgo-bot/93759be72fa92e77017dd56d7202f9e176b8e228";
+    };
   };
 
   outputs =

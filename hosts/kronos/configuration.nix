@@ -2,12 +2,14 @@
   config,
   lib,
   pkgs,
+  korgo,
   ...
 }:
 
 {
   imports = [
     ./hardware-configuration.nix
+    korgo.nixosModules.korgo-ssh-client
     ../../modules/common.nix
     ../../modules/desktop-wayland.nix
     ../../modules/desktop-niri-noctalia.nix

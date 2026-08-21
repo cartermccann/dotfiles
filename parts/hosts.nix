@@ -28,6 +28,7 @@ let
           helium
           hyprland
           claude-desktop
+          korgo
           ;
       };
       modules = [
