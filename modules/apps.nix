@@ -70,7 +70,11 @@ in
     obsidian
 
     #code editor
-    code-cursor
+    # pinned ahead of nixpkgs code-cursor; vscode-generic isn't a top-level
+    # attr, nixpkgs passes it as a path at each call site too
+    (callPackage ../pkgs/code-cursor {
+      vscode-generic = "${pkgs.path}/pkgs/applications/editors/vscode/generic.nix";
+    })
     cursor-cli
     # AI
     claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs

@@ -1,0 +1,10 @@
+{
+  "version": "3.17.8",
+  "vscodeVersion": "1.128.0",
+  "sources": {
+    "x86_64-linux": {
+      "url": "https://downloads.cursor.com/production/2fdd31c9f33f7fbe501f2d57772dc5bf64b63621/linux/x64/Cursor-3.17.8-x86_64.AppImage",
+      "hash": "sha256-OI0gaN8FfRseAGw7u1GQhatA7HguyKsg7CUN8IprdAI="
+    }
+  }
+}
