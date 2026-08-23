@@ -2,6 +2,7 @@
   config,
   pkgs,
   user,
+  comcreate-desktop-app,
   hermes-agent,
   ...
 }:
@@ -86,6 +87,18 @@
       "Development"
       "Utility"
     ];
+  };
+
+  # Comcreate Desktop (flake package ships the binary, but not a .desktop file)
+  xdg.desktopEntries.comcreate-desktop = {
+    name = "Comcreate Dashboard";
+    genericName = "Client Delivery Dashboard";
+    comment = "Comcreate client delivery dashboard, reports, and portal";
+    exec = "comcreate-desktop %U";
+    terminal = false;
+    icon = "${comcreate-desktop-app}/src-tauri/icons/icon.png";
+    categories = [ "Office" ];
+    mimeType = [ "x-scheme-handler/comcreate" ];
   };
 
   # Custom TUI launchers

@@ -10,37 +10,6 @@
   ...
 }:
 let
-  system = pkgs.stdenv.hostPlatform.system;
-
-  # Upstream still uses the removed wrapGAppsHook alias and omits cargoRoot for
-  # its nested Rust crate. Re-evaluate its outputs with those compatibility fixes.
-  comcreateDesktop =
-    let
-      upstream = import "${comcreate-desktop-app}/flake.nix";
-      patchedNixpkgs = comcreate-desktop-app.inputs.nixpkgs // {
-        legacyPackages = comcreate-desktop-app.inputs.nixpkgs.legacyPackages // {
-          ${system} = pkgs // {
-            wrapGAppsHook = pkgs.wrapGAppsHook3;
-            rustPlatform = pkgs.rustPlatform // {
-              buildRustPackage =
-                args:
-                pkgs.rustPlatform.buildRustPackage (
-                  args
-                  // {
-                    cargoRoot = args.buildAndTestSubdir;
-                  }
-                );
-            };
-          };
-        };
-      };
-    in
-    (upstream.outputs {
-      self = comcreate-desktop-app;
-      nixpkgs = patchedNixpkgs;
-      flake-utils = comcreate-desktop-app.inputs.flake-utils;
-    }).packages.${system}.default;
-
   rustToolchain = fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable.withComponents [
     "cargo"
     "clippy"
@@ -139,7 +108,7 @@ in
     figlet # required by scripts/comcreate-banner.sh (runs on every bash shell)
 
     # From flake inputs
-    comcreateDesktop
+    comcreate-desktop-app.packages.${pkgs.stdenv.hostPlatform.system}.default
     google-workspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.default # gws
     herdr.packages.${pkgs.stdenv.hostPlatform.system}.default # workspace manager for AI agents
     hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.desktop # Hermes Desktop (Electron)
