@@ -2,7 +2,6 @@
   config,
   pkgs,
   user,
-  comcreate-desktop-app,
   hermes-agent,
   ...
 }:
@@ -96,7 +95,7 @@
     comment = "Comcreate client delivery dashboard, reports, and portal";
     exec = "comcreate-desktop %U";
     terminal = false;
-    icon = "${comcreate-desktop-app}/src-tauri/icons/icon.png";
+    icon = ./icons/Comcreate.png;
     categories = [ "Office" ];
     mimeType = [ "x-scheme-handler/comcreate" ];
   };

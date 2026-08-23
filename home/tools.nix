@@ -24,6 +24,19 @@ let
   grokBot = pkgs.callPackage ../pkgs/grok-bot { };
   codexCli = pkgs-unstable.callPackage ../pkgs/codex { };
 
+  comcreateDesktopUpstream =
+    comcreate-desktop-app.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  comcreateDesktop = pkgs.symlinkJoin {
+    name = "comcreate-desktop";
+    paths = [ comcreateDesktopUpstream ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram "$out/bin/comcreate-desktop" \
+        --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath [ pkgs.libayatana-appindicator ]}" \
+        --set-default GDK_BACKEND x11
+    '';
+  };
+
   # electron_42 comes from unstable because Granola 7.488.3 ships Electron
   # 42.7.0 and unstable's is 42.7.1; stable 25.11 is still on 42.4.0. Same
   # major either way, so the ABI holds, but stay as close as the channel allows.
@@ -108,7 +121,7 @@ in
     figlet # required by scripts/comcreate-banner.sh (runs on every bash shell)
 
     # From flake inputs
-    comcreate-desktop-app.packages.${pkgs.stdenv.hostPlatform.system}.default
+    comcreateDesktop
     google-workspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.default # gws
     herdr.packages.${pkgs.stdenv.hostPlatform.system}.default # workspace manager for AI agents
     hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.desktop # Hermes Desktop (Electron)
