@@ -62,6 +62,11 @@
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    comcreate-desktop-app = {
+      url = "git+ssh://git@github.com/comcreate-io/comcreate-dashboard?dir=desktop";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     # Claude Desktop repackaged for Linux (no official Nix support; official
     # Linux beta is apt-only). FHS variant needed so MCP servers can run
     # npx/uvx/docker.

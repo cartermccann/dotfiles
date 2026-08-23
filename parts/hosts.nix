@@ -77,6 +77,7 @@ let
                 inherit (inputs)
                   basic-memory
                   caelestia
+                  comcreate-desktop-app
                   google-workspace-cli
                   fenix
                   herdr
