@@ -193,11 +193,11 @@
       },
       "locked": {
         "dir": "desktop",
-        "lastModified": 1787458916,
-        "narHash": "sha256-1sbTfUMhZDDqsAQo1SnvDV8AvJZmilr/njEP9gv752I=",
+        "lastModified": 1787501903,
+        "narHash": "sha256-ArVBp85m29nLm0jTGrEx5Ht9tRsWckNK3UDfbB+d3Ak=",
         "ref": "refs/heads/main",
-        "rev": "01fbdb14f056f26f9b277a9f1092837ab281cc09",
-        "revCount": 390,
+        "rev": "00ae4ea7aa25829ab0d402ce4e3a7934503001ae",
+        "revCount": 393,
         "type": "git",
         "url": "ssh://git@github.com/comcreate-io/comcreate-dashboard"
       },
