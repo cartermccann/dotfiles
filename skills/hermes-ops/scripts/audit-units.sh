@@ -3,11 +3,8 @@ set -euo pipefail
 
 if (($# == 0)); then
   set -- \
-    ci-triage-loop.service \
     codex-self-improve-loop.service \
-    docs-gardener-loop.service \
-    kt-warmer-gsc-push.service \
-    self-improve-loop.service
+    kt-warmer-gsc-push.service
 fi
 
 state_dir=${HERMES_OPS_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/hermes-ops}/unit-audit

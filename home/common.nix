@@ -19,12 +19,11 @@
     ./tools.nix
     ./hermes.nix
     ./webctx-tunnel.nix
-    ./self-improve-loop.nix
+    # Claude Code loops retired: subscription is gone. Keep the Nix files
+    # so they can be re-imported; do not schedule `claude`.
     ./codex-self-improve-loop.nix
     ./codex-desktop.nix
     ./mcp-reaper.nix
-    ./ci-triage-loop.nix
-    ./docs-gardener-loop.nix
     ./hermes-events.nix
     ./ghostty.nix
     ./spotify.nix

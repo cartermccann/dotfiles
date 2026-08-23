@@ -106,14 +106,7 @@ minuet in nvim and is never used interactively.
 
 `home/hermes.nix` provides the runtime toolchain for the Hermes agent, deliberately not packaged as a derivation: Hermes git-clones into `~/.hermes/`, builds its own uv venv, and writes new skills and memory to itself at runtime, so the flake supplies the dependencies and stays out of the way. `home/hermes-events.nix` installs the event/notification scripts from `skills/hermes-ops/`.
 
-Maintenance loops run as systemd user timers. Each is a thin Nix wrapper — sandbox, credentials, schedule — around a Claude skill in `~/.claude/skills/` that holds the actual behavior. All of them are proposal-only or draft-PR-only; none merges anything.
-
-| Module | Schedule | What it does |
-|--------|----------|--------------|
-| `self-improve-loop.nix` | every other day 07:07 | Mines Claude Code transcripts for durable feedback under an anti-slop constitution |
-| `codex-self-improve-loop.nix` | every other day 07:27 | Read-only Codex counterpart; writes inert proposal state only |
-| `ci-triage-loop.nix` | 08:00 and 15:00 | Diagnoses failed Actions runs; opens draft `ci-fix/*` PRs only past a reproduce-before/pass-after oracle |
-| `docs-gardener-loop.nix` | Sundays 09:30 | Audits project CLAUDE.md files against real repo state, files human-gated proposals |
+Maintenance loops run as systemd user timers. Codex self-improve is still scheduled. The Claude Code loops (`self-improve-loop`, `ci-triage-loop`, `docs-gardener-loop`) are unimported — the subscription is gone, so they only page on auth failure. Nix files stay in `home/` if that ever comes back.
 
 ## Dev shells
 
