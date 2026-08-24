@@ -54,8 +54,8 @@ let
   # old awk pass scraped, so it was unpickable. Matching on media.class finds
   # every real destination regardless of how wpctl chooses to group it.
   #
-  # Monitor sources are excluded (they are not outputs). The current default is
-  # marked ● so the menu doubles as a status readout.
+  # Monitor sources and the internal Granola meeting bus are excluded. The
+  # current default is marked ● so the menu doubles as a status readout.
   hyprAudioSink = pkgs.writeShellScriptBin "hypr-audio-sink" ''
     DUMP=$(${pkgs.pipewire}/bin/pw-dump 2>/dev/null) || exit 1
 
@@ -67,6 +67,7 @@ let
 
     LIST=$(printf '%s' "$DUMP" | ${pkgs.jq}/bin/jq -r --arg cur "$CURRENT" '
       .[] | select(.info.props."media.class" == "Audio/Sink")
+          | select(.info.props."node.name" != "granola_mt")
           | select(.info.props."node.name" | test("monitor") | not)
           | "\(.id). \(if .info.props."node.name" == $cur then "●" else "○" end) " +
             (.info.props."node.description" // .info.props."node.name")')

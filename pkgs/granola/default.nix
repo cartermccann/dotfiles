@@ -45,6 +45,11 @@
 #     on. Copying the whole dist rather than farming symlinks around a copied
 #     binary is the cheaper of the two: it drops electron out of the runtime
 #     closure instead of paying for both.
+#  4. Linux system-audio capture is narrowed from Chromium's special
+#     loopbackAllDevices source to the monitor of the meeting-only PipeWire sink
+#     declared in modules/audio.nix. Both identifiers are 18 bytes, preserving
+#     the asar offsets. The exact-one guard intentionally fails an upgrade if
+#     Granola changes this code path instead of silently recording every app.
 #
 # Unfree, and the .dmg is Granola's proprietary build fetched from their own
 # CDN. Bumping: set version + hash from
@@ -115,22 +120,38 @@ stdenv.mkDerivation (finalAttrs: {
   buildPhase = ''
     runHook preBuild
 
-    echo "patching the platform string in app.asar"
+    echo "patching the platform and Linux audio capture in app.asar"
     python3 - payload/app.asar <<'PYEOF'
     import pathlib, sys
 
     asar = pathlib.Path(sys.argv[1])
     data = asar.read_bytes()
-    patched = 0
+    platform_patched = 0
     # Same-length replacements: the asar header records file offsets.
     for pat in (b'?`Windows`:window.electron.platform', b'?`Windows`:process.platform'):
         rep = b'?`Windows`:`Windows`'.ljust(len(pat))
-        patched += data.count(pat)
+        platform_patched += data.count(pat)
         data = data.replace(pat, rep)
-    if patched == 0:
+    if platform_patched == 0:
         sys.exit("no platform fallback found; Granola's bundler output changed")
+
+    capture_pat = b'loopbackAllDevices'
+    capture_rep = b'granola_mt.monitor'
+    if len(capture_pat) != len(capture_rep):
+        sys.exit("Granola audio capture replacement changed length")
+    capture_matches = data.count(capture_pat)
+    if capture_matches != 1:
+        sys.exit(
+            "expected exactly one loopbackAllDevices marker; "
+            f"found {capture_matches}; Granola's audio capture path changed"
+        )
+    data = data.replace(capture_pat, capture_rep)
+
     asar.write_bytes(data)
-    print(f"  rewrote {patched} platform fallback(s)")
+    print(
+        f"  rewrote {platform_patched} platform fallback(s) and "
+        "pinned Linux audio capture to granola_mt.monitor"
+    )
     PYEOF
 
     echo "rebuilding better-sqlite3-multiple-ciphers for Electron ${electron.version}"

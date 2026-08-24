@@ -9,6 +9,8 @@ let
   fiioNode = "alsa_output.usb-BAB_FIIO_SA1_20240416905926-00.analog-stereo";
   schiitNode = "alsa_output.usb-Schiit_Audio_Schiit_Gunnr-00.analog-stereo";
   hdmiNode = "alsa_output.pci-0000_01_00.1.hdmi-stereo";
+  granolaMeetingSink = "granola_mt";
+  granolaMeetingOutput = "${granolaMeetingSink}.output";
 
   # ---------------------------------------------------------------------------
   # HiFiMan Arya Stealth correction — oratory1990, ported verbatim from
@@ -169,6 +171,137 @@ in
       {
         matches = [ { "node.name" = "~bluez_output.*"; } ];
         actions.update-props."priority.session" = 3000;
+      }
+    ];
+  };
+
+  # Granola's Linux capture is pinned to this sink's monitor in
+  # pkgs/granola/default.nix. Only verified meeting streams are routed here;
+  # everything else (including Spotify and TIDAL) stays on the normal default
+  # sink and is therefore structurally absent from Granola's system-audio
+  # input. Google Meet exposes one playback stream per tab, with the page title
+  # in media.name, so match that rather than all of Zen -- a blanket browser
+  # rule would also capture YouTube, notifications, and every other tab.
+  #
+  # `stream.rules` cannot perform target selection in WirePlumber 0.5; it is
+  # consumed by the stream-state script after link policy has inspected the
+  # session item. Select the target in the linking hook instead, before
+  # `linking/find-defined-target` and the default-target fallback run.
+  services.pipewire.wireplumber.extraScripts."granola/route-meeting-audio.lua" = ''
+    local lutils = require ("linking-utils")
+    local cutils = require ("common-utils")
+    local log = Log.open_topic ("s-granola-audio")
+
+    local function is_google_meet (media_name)
+      return media_name == "Meet"
+          or media_name == "Google Meet"
+          or string.sub (media_name, 1, 7) == "Meet - "
+          or string.sub (media_name, 1, 14) == "Google Meet - "
+    end
+
+    SimpleEventHook {
+      name = "linking/granola-meeting-target",
+      before = "linking/find-defined-target",
+      interests = {
+        EventInterest {
+          Constraint { "event.type", "=", "select-target" },
+        },
+      },
+      execute = function (event)
+        local _, om, si, si_props, _, target =
+            lutils:unwrap_select_target_event (event)
+
+        if target
+            or si_props ["media.class"] ~= "Stream/Output/Audio"
+            or si_props ["application.name"] ~= "Zen"
+            or not is_google_meet (si_props ["media.name"] or "") then
+          return
+        end
+
+        local target_direction = cutils.getTargetDirection (si_props)
+        for candidate in om:iterate {
+          type = "SiLinkable",
+          Constraint { "node.name", "=", "${granolaMeetingSink}" },
+          Constraint { "item.node.direction", "=", target_direction },
+        } do
+          if lutils.canLink (si_props, candidate) then
+            log:info (si, "routing Google Meet to ${granolaMeetingSink}")
+            event:set_data ("target", candidate)
+            return
+          end
+        end
+
+        log:warning (si, "${granolaMeetingSink} is unavailable; using normal link policy")
+      end,
+    }:register ()
+  '';
+
+  services.pipewire.wireplumber.extraConfig."52-granola-meeting-audio" = {
+    "wireplumber.components" = [
+      {
+        name = "granola/route-meeting-audio.lua";
+        type = "script/lua";
+        provides = "custom.granola-meeting-audio";
+      }
+    ];
+    "wireplumber.profiles".main."custom.granola-meeting-audio" = "required";
+
+    # These rules only disable WirePlumber's remembered-target behavior. The
+    # linking hook above owns the actual meeting target selection.
+    "stream.rules" = [
+      {
+        matches = [
+          {
+            "media.class" = "Stream/Output/Audio";
+            "application.name" = "Zen";
+            "media.name" = "~^(Google )?Meet( - .*)?$";
+          }
+        ];
+        actions.update-props = {
+          # A previous pavucontrol move must not override the isolation rule.
+          "state.restore-target" = false;
+        };
+      }
+      {
+        matches = [
+          {
+            "media.class" = "Stream/Output/Audio";
+            "node.name" = granolaMeetingOutput;
+          }
+        ];
+        actions.update-props."state.restore-target" = false;
+      }
+    ];
+  };
+
+  # Meeting-only bus. The capture side is an Audio/Sink, so PipeWire exports
+  # its monitor as `granola_mt.monitor`; the playback side follows the normal
+  # default sink, preserving the existing Arya/FIIO/Bluetooth output picker.
+  # node.passive keeps the real output asleep when no meeting is using the bus.
+  services.pipewire.extraConfig.pipewire."98-granola-meeting-audio" = {
+    "context.modules" = [
+      {
+        name = "libpipewire-module-loopback";
+        args = {
+          "node.description" = "Granola Meeting Audio";
+          "audio.channels" = 2;
+          "audio.position" = [
+            "FL"
+            "FR"
+          ];
+          "capture.props" = {
+            "node.name" = granolaMeetingSink;
+            "node.description" = "Granola Meeting Audio";
+            "media.class" = "Audio/Sink";
+            "priority.session" = 50;
+          };
+          "playback.props" = {
+            "node.name" = granolaMeetingOutput;
+            "node.description" = "Granola Meeting Audio output";
+            "node.passive" = true;
+            "state.restore-target" = false;
+          };
+        };
       }
     ];
   };
