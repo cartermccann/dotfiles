@@ -31,12 +31,15 @@ let
     paths = [ comcreateDesktopUpstream ];
     nativeBuildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
+      # Keep GTK native to the current session. On NVIDIA/Wayland, disabling
+      # explicit sync avoids WebKitGTK's protocol error without turning off
+      # the accelerated DMA-BUF backing store.
       wrapProgram "$out/bin/comcreate-desktop" \
         --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath [ pkgs.libayatana-appindicator ]}" \
         --prefix GIO_EXTRA_MODULES : "${pkgs.glib-networking}/lib/gio/modules" \
         --prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "${pkgs.gst_all_1.gst-plugins-base}/lib/gstreamer-1.0" \
-        --set-default GDK_BACKEND x11 \
-        --set-default WEBKIT_DISABLE_DMABUF_RENDERER 1
+        --set-default WEBKIT_DISABLE_DMABUF_RENDERER 0 \
+        --set-default __NV_DISABLE_EXPLICIT_SYNC 1
     '';
   };
 

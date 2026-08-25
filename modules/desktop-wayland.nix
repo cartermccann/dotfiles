@@ -6,8 +6,8 @@
 }:
 
 # Shared Wayland base for EVERY session on this host, not a niri-only module
-# (it was called desktop-niri.nix, which badly undersold it). Owns the Ly
-# display manager, XDG portals, polkit, gnome-keyring, and the terminal /
+# (it was called desktop-niri.nix, which badly undersold it). Owns the shared
+# display-manager selection, XDG portals, polkit, gnome-keyring, and the terminal /
 # launcher / screenshot / clipboard / wallpaper packages that the Hyprland
 # sessions depend on just as much as the niri one. desktop-hyprland.nix and
 # desktop-niri-noctalia.nix layer session-specific bits on top of this.
@@ -20,26 +20,26 @@ let
   # is the palette slot without its leading '#'.
   lyColor = raw: "0x00${raw}";
 
-  # Ly reads a flat directory of .desktop files. Start from the one NixOS
-  # generates from sessionPackages, then drop the plain "Niri" tile.
+  # Both Ly and SDDM can read a flat directory of .desktop files. Start from
+  # the one NixOS generates from sessionPackages, then drop unintentional tiles.
   #
   # Why filter here instead of at the source: programs.niri.enable hard-sets
   # `services.displayManager.sessionPackages = [ cfg.package ]` (niri-flake
   # flake.nix:496), and NixOS rejects a session package whose
   # passthru.providedSessions is empty, so the tile cannot be removed by
-  # overriding the package without also rebuilding niri from source. Ly's
-  # `settings` is documented as "merged in and overwriting defaults", so
-  # pointing waylandsessions at a filtered copy is the cheap, supported route.
+  # overriding the package without also rebuilding niri from source. Both
+  # display managers expose a supported session-directory setting, so point
+  # them at the same filtered copy.
   #
   # The plain tile runs `niri-session` against ~/.config/niri/config.kdl, a file
   # this config has never written — the standalone niri session was retired in
   # favour of Niri (Noctalia). Choosing it lands you in niri's compiled-in
   # defaults: no output layout, no keybinds, no shell.
-  lySessions = pkgs.runCommand "ly-wayland-sessions" { } ''
+  visibleWaylandSessions = pkgs.runCommand "visible-wayland-sessions" { } ''
     mkdir -p "$out"
     cp ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions/*.desktop "$out"/
     chmod u+w "$out"/*.desktop
-    rm -f "$out/niri.desktop"
+    rm -f "$out/niri.desktop" "$out/hyprland-uwsm.desktop"
   '';
 in
 {
@@ -47,8 +47,9 @@ in
   # fallback session (Niri (Noctalia)), so this stays enabled.
   programs.niri.enable = true;
 
-  # Ly TUI display manager
-  services.displayManager.ly = {
+  # Ly remains the default TUI display manager unless a host explicitly enables
+  # SDDM. This keeps atlas unchanged while kronos opts into the graphical login.
+  services.displayManager.ly = lib.mkIf (!config.services.displayManager.sddm.enable) {
     enable = true;
     # The greeter is ported from the atlas one (cartermccann/gentoo-dotfiles,
     # system/ly/config.ini) and retinted from lib/palette.nix, so it stops
@@ -62,7 +63,7 @@ in
     # atlas file set gameoflife_fg, which is dead weight when the chosen
     # animation is colormix, so it is dropped rather than carried over.
     settings = {
-      waylandsessions = "${lySessions}";
+      waylandsessions = "${visibleWaylandSessions}";
       full_color = true;
 
       bg = lyColor pal.raw.base02; # #171b23 — dark and blue-cast, not black
@@ -103,6 +104,12 @@ in
       numlock = false;
       save = true;
     };
+  };
+
+  # SDDM's package, Breeze theme and Wayland greeter are supplied by Plasma's
+  # NixOS module. Keep its chooser on the same curated session list as Ly.
+  services.displayManager.sddm = lib.mkIf config.services.displayManager.sddm.enable {
+    settings.Wayland.SessionDir = "${visibleWaylandSessions}";
   };
 
   # XDG portals for Wayland

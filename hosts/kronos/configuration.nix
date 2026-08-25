@@ -12,6 +12,7 @@
     ../../modules/desktop-wayland.nix
     ../../modules/desktop-niri-noctalia.nix
     ../../modules/desktop-hyprland.nix
+    ../../modules/desktop-plasma.nix
     ../../modules/nvidia.nix
     ../../modules/ollama.nix
     ../../modules/llama-heavy.nix
@@ -28,7 +29,7 @@
 
   networking.hostName = "kronos";
 
-  # Larger console font for Ly login manager on high-res display
+  # Larger console font for the high-resolution display and fallback TTYs.
   console = {
     font = "ter-v24n";
     packages = [ pkgs.terminus_font ];

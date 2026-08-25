@@ -25,8 +25,12 @@ let
   };
   # 1Password ships its local MCP server inside the desktop app, but the module
   # doesn't put it on PATH. MCP clients expect a plain `1password-mcp` command.
+  # Read the package back off the module rather than using the raw unstable
+  # attr: programs._1password-gui applies a polkitPolicyOwners override, so the
+  # raw attr is a *different* derivation and pulling it in would put a second
+  # full 1Password build in the closure.
   onePasswordMcp = pkgs.writeShellScriptBin "1password-mcp" ''
-    exec ${pkgs-unstable._1password-gui}/share/1password/1password-mcp "$@"
+    exec ${config.programs._1password-gui.package}/share/1password/1password-mcp "$@"
   '';
 in
 {
