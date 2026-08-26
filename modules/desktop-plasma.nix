@@ -10,9 +10,7 @@
   # an enabled target that cannot apply and warns on every evaluation.
   home-manager.users.${user}.stylix.targets.qt.enable = false;
 
-  # Use the graphical login manager on kronos while the shared module leaves
-  # atlas on Ly. Keep Carter's existing daily-driver session as the initial
-  # selection; SDDM can still remember a later per-user choice.
-  services.displayManager.sddm.enable = true;
-  services.displayManager.defaultSession = "hyprland";
+  # Plasma enables SDDM by default. Keep Ly as the single login manager and
+  # expose Plasma only as another session in Ly's chooser.
+  services.displayManager.sddm.enable = false;
 }
