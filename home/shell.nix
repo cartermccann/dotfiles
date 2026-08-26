@@ -86,10 +86,6 @@ in
     kronosBanner
   ];
 
-  # Neon-gradient fastfetch config. No longer runs at shell startup — kept so
-  # that running `fastfetch` on demand still looks like the rest of the setup.
-  xdg.configFile."fastfetch/config.jsonc".source = ./fastfetch/config.jsonc;
-
   programs.fish = {
     enable = true;
     inherit shellAliases;

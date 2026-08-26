@@ -9,6 +9,7 @@
 {
   imports = [
     ./shell.nix
+    ./fastfetch.nix
     ./git.nix
     ./neovim.nix
     ./niri.nix
