@@ -26,9 +26,13 @@
 #     not redistributable, so it cannot be packaged here and has to be vendored
 #     by hand. ConditionPathExists makes a missing kit a clean "condition
 #     failed" rather than a restart loop.
-#   - It does not coexist with Codex desktop or with micro-herdr. Only one
-#     process can hold the Micro's HID connection, and Codex desktop takes
-#     exclusive ownership of the hidraw node while it runs.
+#   - It should not run alongside micro-herdr. Note the reason, because the
+#     obvious one is wrong: hidraw allows MULTIPLE concurrent readers, so two
+#     daemons would not fight over the device, they would both act on every key
+#     and fire each action twice. Codex desktop is the same story, and is
+#     handled by the `passthrough` list in the daemon's profiles.json, which
+#     makes the bridge ignore every key while Codex has focus so Codex's own
+#     Micro integration owns the device. Closing Codex is not required.
 let
   homeDir = config.home.homeDirectory;
   checkout = "${homeDir}/projects/micro-herdr";
