@@ -30,9 +30,16 @@ let
   # them 100% inert and correctly spared the two live ones.
   #
   # Residual risk: a conversation left OPEN but idle for 6h looks identical to
-  # a closed one. Leave this false until the journal shows it only ever names
-  # fleets you recognise as finished.
-  armIdle = false;
+  # a closed one.
+  #
+  # ARMED 2026-09-01 on 6 days of dry-run evidence (Aug 25 22:54 -> Sep 1 09:19,
+  # ~2500 runs). Of 18709 DEAD FLEET decisions, 18677 scored 100% inert and 32
+  # scored 92% (one 12/13 fleet, re-flagged across consecutive runs). It never
+  # named a fleet below the 80% threshold, and immediately after a manual sweep
+  # it correctly reported 0 dead fleets against 121 live children -- i.e. it
+  # does not over-flag. Trigger for arming was a leak to 811 children / 37.8GB,
+  # which exhausted 60GB RAM and drove load to 33 with 48% iowait.
+  armIdle = true;
 
   mcpReaper = pkgs.writeShellApplication {
     name = "mcp-reaper";
