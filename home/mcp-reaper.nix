@@ -76,14 +76,23 @@ in
   systemd.user.timers.mcp-reaper = {
     Unit.Description = "Run the MCP reaper every 10 minutes";
     Timer = {
-      # This interval IS the worst-case burn time. A wedged SwiftShader browser
-      # pins ~11 of 32 cores, and observed wedges happen ~90s after the browser
-      # launches, so it is spinning for almost the whole gap between runs. At
-      # 10min that was ~11 minutes of burn per occurrence (seen 17:55-18:08 on
-      # 2026-08-13). A run costs ~4s, so 3min is cheap insurance.
+      # This interval IS the worst-case burn time for phase A. A wedged
+      # SwiftShader browser pins ~11 of 32 cores, and observed wedges happen
+      # ~90s after the browser launches, so it spins for almost the whole gap
+      # between runs. That cost ~11 minutes of burn per occurrence at 10min
+      # (seen 17:55-18:08 on 2026-08-13), which is why this was tightened to
+      # 3min.
+      #
+      # Relaxed back to 10min on 2026-09-01. Over the following 30 days phase A
+      # ran 4414 times and detected ZERO wedged browsers; all 12 non-empty runs
+      # were "gc: removed stale profile dir(s)", which is disk cleanup and is
+      # insensitive to cadence. The 3min insurance was buying nothing
+      # observable. If a wedge ever recurs the exposure returns to ~10min --
+      # tighten this again and note the date.
+      #
       # Phase B's thresholds are in hours and are unaffected by this.
       OnBootSec = "2min";
-      OnUnitActiveSec = "3min";
+      OnUnitActiveSec = "10min";
       Persistent = true;
       RandomizedDelaySec = "1min";
     };
