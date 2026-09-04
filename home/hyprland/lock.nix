@@ -66,8 +66,8 @@ in
     }
   '';
 
-  # hypridle: lock then display off, but never auto-suspend — Hermes/Telegram
-  # stays reachable while the screen is locked; manual suspend still works from
+  # hypridle: lock then display off, but never auto-suspend — the box stays
+  # reachable over the network while the screen is locked; manual suspend still works from
   # the power menu. hypridle/hyprlock keep their own hyprlang configs, but their
   # dpms calls go through hyprctl to Hyprland 0.55, which takes the Lua
   # dispatcher form: `hyprctl dispatch 'hl.dsp.dpms(...)'`.

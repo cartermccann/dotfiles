@@ -75,15 +75,13 @@ let
               extraSpecialArgs = {
                 inherit user pkgs-unstable;
                 inherit (inputs)
-                  basic-memory
                   caelestia
                   comcreate-desktop-app
+                  codex-desktop-linux
                   google-workspace-cli
                   fenix
                   herdr
-                  hermes-agent
                   hyprland
-                  playwright-cli
                   qmd
                   ;
               };

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Hermes Ops"
-  short_description: "Operate NixOS, services, projects, and deploys"
-  default_prompt: "Use $hermes-ops to inspect and operate this NixOS workstation or one of its projects."

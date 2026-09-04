@@ -32,10 +32,10 @@ hosts/             # per-machine configuration + hardware config
 modules/           # NixOS system modules (desktop, nvidia, audio, ollama, oom-protection, ...)
 home/              # home-manager modules (shell, tools, neovim, tmux, niri, hyprland, ...)
 lib/               # overlays, the Ouranos palette (night/day), llm-models.nix
-pkgs/              # custom package definitions (codex, qmd, playwright-cli, ...)
+pkgs/              # custom package definitions (codex, qmd, ...)
 templates/         # dev-shell templates for `nix flake init -t ~/dotfiles#<lang>`
 skills/            # Claude skills owned by this repo; installed by the module that uses them
-config/            # generated blobs kept as real files: nvim, hyprland CSS, audio presets, hermes
+config/            # generated blobs kept as real files: nvim, hyprland CSS, audio presets, qmd
 scripts/           # shell scripts referenced by modules
 docs/              # project specifications, architecture, and delivery plans
 wallpaper/
@@ -104,7 +104,7 @@ minuet in nvim and is never used interactively.
 
 ## Agents and scheduled loops
 
-`home/hermes.nix` provides the runtime toolchain for the Hermes agent, deliberately not packaged as a derivation: Hermes git-clones into `~/.hermes/`, builds its own uv venv, and writes new skills and memory to itself at runtime, so the flake supplies the dependencies and stays out of the way. `home/hermes-events.nix` installs the event/notification scripts from `skills/hermes-ops/`.
+`home/qmd.nix` provides QMD, local hybrid search over the Obsidian vault, `~/projects` and `~/Documents`; collections live in `config/qmd/index.yml` and two user timers keep the index fresh. Hermes Agent was removed from this config on 2026-09-02 (gateway service uninstalled, modules and flake inputs dropped); `~/.hermes` is left on disk for the imperative installer.
 
 Maintenance loops run as systemd user timers. Codex self-improve is still scheduled. The Claude Code loops (`self-improve-loop`, `ci-triage-loop`, `docs-gardener-loop`) are unimported — the subscription is gone, so they only page on auth failure. Nix files stay in `home/` if that ever comes back.
 

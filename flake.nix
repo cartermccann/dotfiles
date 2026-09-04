@@ -17,14 +17,6 @@
       url = "github:tobi/qmd";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
-    basic-memory = {
-      url = "github:basicmachines-co/basic-memory/v0.22.1";
-      flake = false;
-    };
-    playwright-cli = {
-      url = "github:microsoft/playwright-cli";
-      flake = false;
-    };
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     stylix = {
       url = "github:nix-community/stylix/release-25.11";
@@ -74,6 +66,9 @@
       url = "github:aaddrick/claude-desktop-debian";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Keep the upstream runtime closure intact; its ELF audit targets its own
+    # nixpkgs, so this input deliberately does not follow the host nixpkgs.
+    codex-desktop-linux.url = "github:ilysenko/codex-desktop-linux/23c55eb49ca724e8b7a1e698c1f3df075be42631";
     helium = {
       url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -85,9 +80,6 @@
     herdr = {
       url = "github:ogulcancelik/herdr/v0.8.0";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
     };
   };
 

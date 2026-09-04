@@ -1,0 +1,15 @@
+# Separate, observation-only project scope. Does not alter global Codex settings.
+[mcp_servers.hypruse]
+command = "/home/cjm/.local/state/hypruse-poc/package/bin/hypruse"
+startup_timeout_sec = 20
+tool_timeout_sec = 30
+enabled_tools = ["ui", "screenshot", "zoom", "desktop", "wait_for"]
+
+[mcp_servers.hypruse.env]
+HYPRUSE_READONLY = "1"
+HYPRUSE_SCREENSHOT_MODE = "image"
+HYPRUSE_MARK = "0"
+HYPRUSE_CLIPBOARD = "0"
+HYPRUSE_JOURNAL = "0"
+HYPRUSE_STRICT = "1"
+HYPRUSE_AUTH_GUARD = "strict"

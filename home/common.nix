@@ -2,7 +2,6 @@
   config,
   pkgs,
   user,
-  hermes-agent,
   ...
 }:
 
@@ -18,7 +17,7 @@
     ./tmux.nix
     ./dictation.nix
     ./tools.nix
-    ./hermes.nix
+    ./qmd.nix
     ./webctx-tunnel.nix
     ./micro-bridge.nix
     # Claude Code loops retired: subscription is gone. Keep the Nix files
@@ -26,7 +25,6 @@
     ./codex-self-improve-loop.nix
     ./codex-desktop.nix
     ./mcp-reaper.nix
-    ./hermes-events.nix
     ./ghostty.nix
     ./spotify.nix
   ];
@@ -70,22 +68,6 @@
     categories = [
       "Graphics"
       "Development"
-    ];
-  };
-
-  # Hermes Desktop (flake package ships the binary, but currently not a .desktop file)
-  xdg.desktopEntries.hermes-desktop = {
-    name = "Hermes";
-    genericName = "AI Agent Desktop";
-    comment = "Hermes Agent desktop app";
-    exec = "hermes-desktop %U";
-    terminal = false;
-    icon = "${
-      hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.desktop
-    }/share/hermes-desktop/dist/hermes.png";
-    categories = [
-      "Development"
-      "Utility"
     ];
   };
 

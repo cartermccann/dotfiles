@@ -9,21 +9,6 @@
 let
   pal = import ../lib/palette.nix;
 
-  hermesNrs = pkgs.writeShellScriptBin "hermes-nrs" ''
-    set -euo pipefail
-
-    export PATH=${
-      lib.makeBinPath [
-        pkgs.nh
-        pkgs.nix
-        pkgs.systemd
-        pkgs.git
-        pkgs.coreutils
-      ]
-    }:/run/current-system/sw/bin
-
-    exec ${pkgs.nh}/bin/nh os switch /home/cjm/dotfiles
-  '';
 in
 {
   # Boot — Limine, replacing systemd-boot.
@@ -185,8 +170,7 @@ in
   services.gnome.at-spi2-core.enable = true;
 
   # Runtime libs for prebuilt/dynamically-linked binaries run via nix-ld.
-  # Covers the locally-built `hermes desktop` Electron shell (Chromium),
-  # cua-driver, and uv-fetched / Playwright binaries.
+  # Covers cua-driver and uv-fetched / Playwright binaries.
   programs.nix-ld.libraries = with pkgs; [
     stdenv.cc.cc.lib
     zlib
@@ -262,21 +246,6 @@ in
     dates = [ "weekly" ];
   };
 
-  # Passwordless rebuilds for Hermes/Telegram.
-  # Scoped to this immutable wrapper instead of broad sudo access to nh/shells.
-  # This is still effectively root for anyone who can write to ~/dotfiles.
-  security.sudo.extraRules = [
-    {
-      users = [ user ];
-      commands = [
-        {
-          command = "${hermesNrs}/bin/hermes-nrs";
-          options = [ "NOPASSWD" ];
-        }
-      ];
-    }
-  ];
-
   # SSH — key-only auth
   services.openssh = {
     enable = true;
@@ -297,8 +266,9 @@ in
   ];
 
   # System packages
-  environment.systemPackages =
-    (with pkgs; [
+  environment.systemPackages = (
+    with pkgs;
+    [
       git
       gh
       wget
@@ -310,8 +280,8 @@ in
       killall
       pid-fan-controller
       croc
-    ])
-    ++ [ hermesNrs ];
+    ]
+  );
 
   # Fish (needed at system level for login shell)
   programs.fish.enable = true;

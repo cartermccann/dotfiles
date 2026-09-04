@@ -6,7 +6,6 @@
   google-workspace-cli,
   fenix,
   herdr,
-  hermes-agent,
   ...
 }:
 let
@@ -115,6 +114,9 @@ in
     # obs-studio lives in modules/media.nix (system-level) — it was declared in
     # both, so this copy was redundant.
     yt-dlp
+    ffmpeg # audio/video handling (yt-dlp post-processing, media skills)
+    pandoc # document format conversion
+    poppler-utils # pdftotext/pdfinfo
 
     # SEO
     screamingFrog # proprietary crawler, bundled JDK
@@ -130,6 +132,5 @@ in
     comcreateDesktop
     google-workspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.default # gws
     herdr.packages.${pkgs.stdenv.hostPlatform.system}.default # workspace manager for AI agents
-    hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.desktop # Hermes Desktop (Electron)
   ];
 }

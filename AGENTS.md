@@ -15,7 +15,7 @@ Flake-parts layout. This repo defines the entire system (kronos) + home-manager 
 
 1. Edit the relevant module (`home/` for user-level, `modules/` for system-level).
 2. Validate without sudo: `nh os build ~/dotfiles` (or `nix flake check ~/dotfiles`).
-3. Apply: user runs `nrs` (nh os switch). There is NO general passwordless sudo for rebuilds — the NOPASSWD rule in `modules/common.nix` covers only the immutable `hermes-nrs` wrapper (for Hermes/Telegram), and agents must not invoke it. After a successful `nh os build`, ask the user to apply (e.g. `! sudo nixos-rebuild switch --flake ~/dotfiles#kronos`).
+3. Apply: user runs `nrs` (nh os switch). There is NO passwordless sudo for rebuilds. After a successful `nh os build`, ask the user to apply (e.g. `! sudo nixos-rebuild switch --flake ~/dotfiles#kronos`).
 
 ## Conventions
 
@@ -33,4 +33,4 @@ Flake-parts layout. This repo defines the entire system (kronos) + home-manager 
 - Big generated blobs live as real files under `config/`, not inline strings: `config/hyprland/*.css` (waybar + swaync, with the palette emitted alongside as `_ouranos.css` and pulled in via `@import`) and `config/audio/` (the EasyEffects presets the EQ curve was ported from). `hyprland.lua` stays inline — it interpolates ~40 Nix values and templating it would relocate the complexity, not remove it.
 - First rebuild after adding a cachix substituter may prompt for trust — expected.
 - uv-tool installs are NOT in this flake; manage them with `uv tool upgrade <name>`.
-- The ChatGPT/Codex desktop app (`home/codex-desktop.nix`) wraps an unmanaged, untracked overlay at `~/projects/input-linux/codex-desktop-overlay/`. Its vendored Electron is an upstream prebuilt binary, so the module supplies its runtime libraries as `CODEX_LINUX_NIX_LIBRARY_PATH` and the overlay's `start.sh` reads that into `LD_LIBRARY_PATH`. Never bake literal `/nix/store` paths into `start.sh` — that was the old arrangement and it died on `nix-collect-garbage` with `libnspr4.so: cannot open shared object file`. An app update can restore the baked line: the guard detects that, warns on stderr, and sets `LD_LIBRARY_PATH` itself so the app still starts, but `start.sh` should then be re-patched. Note the launcher hides all output in `~/.cache/codex-desktop/launcher.log` (which grows unbounded), so a failed start is silent.
+- The ChatGPT/Codex desktop app (`home/codex-desktop.nix`) now uses the pinned `codex-desktop-linux` Nix input plus local preservation patches in `pkgs/codex-desktop/`. Keep Codex Micro, composer dictation, bounded watchers, the native Codex profile, and scope limits intact when updating. The old `~/projects/input-linux/codex-desktop-overlay/` remains as rollback material; do not overwrite it. See `docs/codex-desktop.md` for update verification, the Watchbound post-patchelf metadata repair, and the upstream wrapper diagnostic trap.
