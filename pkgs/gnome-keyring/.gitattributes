@@ -1,0 +1,2 @@
+# Unified diffs require space-prefixed context lines, including tabs and blanks.
+fix-client-race.patch -whitespace

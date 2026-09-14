@@ -9,4 +9,11 @@
     neovim-unwrapped =
       inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system}.neovim-unwrapped;
   })
+  # Backport GNOME Keyring !112: fresh Secret Service clients can otherwise
+  # crash the daemon and trigger repeated unlock prompts. See the local README.
+  (final: prev: {
+    gnome-keyring = prev.gnome-keyring.overrideAttrs (old: {
+      patches = (old.patches or [ ]) ++ [ ../pkgs/gnome-keyring/fix-client-race.patch ];
+    });
+  })
 ]
