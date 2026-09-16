@@ -30,13 +30,13 @@ flake.nix          # inputs; outputs delegated to parts/
 parts/             # flake-parts modules: hosts (mkHost), templates
 hosts/             # per-machine configuration + hardware config
 modules/           # NixOS system modules (desktop, nvidia, audio, ollama, oom-protection, ...)
-home/              # home-manager modules (shell, tools, neovim, tmux, niri, hyprland, ...)
+home/              # home-manager modules (shell, tools, neovim, tmux, niri, hyprland, crash-watch, ...)
 lib/               # overlays, the Ouranos palette (night/day), llm-models.nix
 pkgs/              # custom package definitions (codex, qmd, ...)
 templates/         # dev-shell templates for `nix flake init -t ~/dotfiles#<lang>`
-skills/            # Claude skills owned by this repo; installed by the module that uses them
 config/            # generated blobs kept as real files: nvim, hyprland CSS, audio presets, qmd
-scripts/           # shell scripts referenced by modules
+scripts/           # repo-root helpers referenced by modules (banners, Caelestia scheme)
+home/scripts/      # home-manager unit scripts (mcp-reaper, crash-watch)
 docs/              # project specifications, architecture, and delivery plans
 wallpaper/
 ```
@@ -105,6 +105,8 @@ minuet in nvim and is never used interactively.
 ## Agents and scheduled loops
 
 `home/qmd.nix` provides QMD, local hybrid search over the Obsidian vault, `~/projects` and `~/Documents`; collections live in `config/qmd/index.yml` and two user timers keep the index fresh. Hermes Agent was removed from this config on 2026-09-02 (gateway service uninstalled, modules and flake inputs dropped); `~/.hermes` is left on disk for the imperative installer.
+
+`home/crash-watch.nix` follows systemd-coredump on the system journal and toasts or silent-queues user-session crashes (`crash-mute` for sticky per-program mutes). Watch + mute + toast only — it never execs an agent. Jev is used when `TYPESAFE_API_KEY` is set; otherwise a deterministic fallback still announces. Tests: `python3 home/scripts/test_crash_watch.py`.
 
 Maintenance loops run as systemd user timers. Codex self-improve is still scheduled. The Claude Code loops (`self-improve-loop`, `ci-triage-loop`, `docs-gardener-loop`) are unimported — the subscription is gone, so they only page on auth failure. Nix files stay in `home/` if that ever comes back.
 

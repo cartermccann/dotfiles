@@ -364,6 +364,9 @@ def niri_focus() -> tuple[bool, str, str]:
     if not isinstance(data, dict):
         return False, "", ""
     layout = data.get("layout") or {}
+    # niri's focused-window JSON has no is_fullscreen today. Keep both keys so
+    # a compositor that grows them starts working without a watcher rewrite;
+    # until then, meeting interrupt on niri is granola_mt / title, not FS.
     fullscreen = bool(data.get("is_fullscreen") or layout.get("is_fullscreen"))
     klass = str(data.get("app_id") or "")
     title = str(data.get("title") or "")
@@ -623,10 +626,6 @@ def _score(answer: Mapping[str, Any] | None, default: float) -> float:
         return float(value)
     except (TypeError, ValueError):
         return default
-
-
-def jev_available() -> bool:
-    return bool(os.environ.get(TYPESAFE_API_KEY_ENV, "").strip())
 
 
 def ask_jev(state: Mapping[str, Any]) -> Judgment | None:

@@ -66,7 +66,7 @@ in
       TimeoutStartSec = "5min";
       Environment = [
         "MCP_REAPER_ARM_IDLE=${if armIdle then "1" else "0"}"
-        "PATH=/etc/profiles/per-user/cjm/bin:/run/current-system/sw/bin:/run/wrappers/bin"
+        "PATH=/etc/profiles/per-user/${config.home.username}/bin:/run/current-system/sw/bin:/run/wrappers/bin"
       ];
       WorkingDirectory = homeDir;
       ExecStart = "${mcpReaper}/bin/mcp-reaper";

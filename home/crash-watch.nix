@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  user,
   ...
 }:
 
@@ -22,18 +21,33 @@
 # shape as WirePlumber's default.configured.audio.sink. Global off is
 # ~/.local/state/crash-watch/off (also a systemd ConditionPathExists). CLI:
 # `crash-mute`, `crash-mute <name> [on|off|toggle]`, `crash-mute --capture off`.
+#
+# Script + tests live in home/scripts/ (same pattern as mcp-reaper.sh).
 let
   homeDir = config.home.homeDirectory;
+  # hyprctl / niri stay on the per-user profile PATH; they are session-specific
+  # and should not be pulled into this unit's closure.
+  watchBins = [
+    pkgs.python3
+    pkgs.systemd
+    pkgs.coreutils
+    pkgs.pipewire
+    pkgs.swaynotificationcenter
+  ];
+  muteBins = [
+    pkgs.python3
+    pkgs.systemd
+    pkgs.coreutils
+  ];
+  extraPath = lib.concatStringsSep ":" [
+    "/etc/profiles/per-user/${config.home.username}/bin"
+    "/run/current-system/sw/bin"
+    "/run/wrappers/bin"
+  ];
 
   crashWatch = pkgs.writeShellApplication {
     name = "crash-watch";
-    runtimeInputs = [
-      pkgs.python3
-      pkgs.systemd
-      pkgs.coreutils
-      pkgs.pipewire
-      pkgs.swaynotificationcenter
-    ];
+    runtimeInputs = watchBins;
     text = ''
       exec ${pkgs.python3}/bin/python3 ${./scripts/crash-watch.py} "$@"
     '';
@@ -41,11 +55,7 @@ let
 
   crashMute = pkgs.writeShellApplication {
     name = "crash-mute";
-    runtimeInputs = [
-      pkgs.python3
-      pkgs.systemd
-      pkgs.coreutils
-    ];
+    runtimeInputs = muteBins;
     text = ''
       exec ${pkgs.python3}/bin/python3 ${./scripts/crash-watch.py} mute "$@"
     '';
@@ -77,15 +87,7 @@ in
       # Optional; the leading '-' means a missing file is not an error.
       EnvironmentFile = [ "-%h/.config/typesafe/env" ];
       Environment = [
-        "PATH=${
-          lib.makeBinPath [
-            pkgs.python3
-            pkgs.systemd
-            pkgs.coreutils
-            pkgs.pipewire
-            pkgs.swaynotificationcenter
-          ]
-        }:/etc/profiles/per-user/${user}/bin:/run/current-system/sw/bin:/run/wrappers/bin"
+        "PATH=${lib.makeBinPath watchBins}:${extraPath}"
       ];
       ExecStart = "${crashWatch}/bin/crash-watch";
       Restart = "always";
