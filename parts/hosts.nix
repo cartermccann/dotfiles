@@ -57,6 +57,8 @@ let
                 "docker"
                 "networkmanager"
                 "input"
+                # crash-watch follows systemd-coredump on the system journal.
+                "systemd-journal"
               ];
               openssh.authorizedKeys.keys = [
                 # atlas (carter@) — Tailscale SSH access

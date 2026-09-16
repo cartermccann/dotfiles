@@ -14,6 +14,7 @@
     ./niri.nix
     ./niri-noctalia.nix
     ./hyprland
+    ./crash-watch.nix
     ./tmux.nix
     ./dictation.nix
     ./tools.nix
