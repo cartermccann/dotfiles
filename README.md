@@ -106,7 +106,7 @@ minuet in nvim and is never used interactively.
 
 `home/qmd.nix` provides QMD, local hybrid search over the Obsidian vault, `~/projects` and `~/Documents`; collections live in `config/qmd/index.yml` and two user timers keep the index fresh. Hermes Agent was removed from this config on 2026-09-02 (gateway service uninstalled, modules and flake inputs dropped); `~/.hermes` is left on disk for the imperative installer.
 
-Maintenance loops run as systemd user timers. Codex self-improve is still scheduled. The Claude Code loops (`self-improve-loop`, `ci-triage-loop`, `docs-gardener-loop`) are unimported — the subscription is gone, so they only page on auth failure. Nix files stay in `home/` if that ever comes back.
+Codex/Claude Code agent-timer loops (`codex-self-improve-loop`, `self-improve-loop`, `ci-triage-loop`, `docs-gardener-loop`) were removed — they were unused. Daily-driver tools (Hyprland, niri, Ollama, neovim, dictation, QMD) are unchanged.
 
 ## Dev shells
 

@@ -20,9 +20,6 @@
     ./qmd.nix
     ./webctx-tunnel.nix
     ./micro-bridge.nix
-    # Claude Code loops retired: subscription is gone. Keep the Nix files
-    # so they can be re-imported; do not schedule `claude`.
-    ./codex-self-improve-loop.nix
     ./codex-desktop.nix
     ./mcp-reaper.nix
     ./ghostty.nix
