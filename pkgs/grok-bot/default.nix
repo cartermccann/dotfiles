@@ -146,6 +146,13 @@ stdenv.mkDerivation (finalAttrs: {
       export CHROME_DEVEL_SANDBOX=/run/wrappers/bin/__chrome-sandbox
     fi
 
+    # Hyprland's class is the Wayland app_id. Electron ignores Chromium's
+    # --class flag and derives the id from productName ("Grok Bot") or a
+    # hyphenated slug. CHROME_DESKTOP is Chromium's desktop-file identity and
+    # is the one override that still has a chance of making the class
+    # grok-bot; micro-herdr also matches "Grok Bot" if it does not stick.
+    export CHROME_DESKTOP=grok-bot.desktop
+
     # Same gate nixpkgs' own Electron wrappers use, so an X11 session is
     # unaffected.
     ozone=
@@ -153,7 +160,7 @@ stdenv.mkDerivation (finalAttrs: {
       ozone="--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations,WebRTCPipeWireCapturer"
     fi
 
-    exec "$app/grok-bot" \$ozone "\$@"
+    exec "$app/grok-bot" --class=grok-bot \$ozone "\$@"
     EOF
     chmod +x $out/bin/grok-bot
 
@@ -171,7 +178,10 @@ stdenv.mkDerivation (finalAttrs: {
         "Development"
         "Utility"
       ];
-      startupWMClass = "Grok Bot";
+      # Must match the Wayland app_id / WM_CLASS the window actually emits.
+      # Official grokbot-linux-port .desktop files use grok-bot; Electron may
+      # still report "Grok Bot" (space) which micro-herdr aliases.
+      startupWMClass = "grok-bot";
     })
   ];
 

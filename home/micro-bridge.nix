@@ -61,6 +61,10 @@ in
       # a keypress belongs to, and injects keystrokes into that app.
       After = [ "graphical-session.target" ];
       PartOf = [ "graphical-session.target" ];
+      # hidraw allows two readers, so starting both this and the herdr/shell
+      # daemon would double-fire every key. Starting micro-bridge stops
+      # micro-herdr, and vice versa.
+      Conflicts = [ "micro-herdr.service" ];
       ConditionPathExists = [
         "${checkout}/micro-bridge.mjs"
         kit
@@ -93,5 +97,29 @@ in
     Install = {
       WantedBy = [ "graphical-session.target" ];
     };
+  };
+
+  # The Micro's mic / knob send F13 / F14 / F15 into Cursor. Those commands
+  # have no default bindings, so without this file the chords land and do
+  # nothing. JSONC is what Cursor's workbench reads. The Agents window ignores
+  # this file (falls back to Parakeet in profiles.json).
+  xdg.configFile."Cursor/User/keybindings.json" = {
+    force = true;
+    text = ''
+      [
+        {
+          "key": "f13",
+          "command": "composer.toggleVoiceDictation"
+        },
+        {
+          "key": "f14",
+          "command": "composer.cycleModelParameter"
+        },
+        {
+          "key": "f15",
+          "command": "composer.cycleModel"
+        }
+      ]
+    '';
   };
 }
