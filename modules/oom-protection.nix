@@ -40,4 +40,9 @@
     enableRootSlice = true;
     enableSystemSlice = false;
   };
+
+  # earlyoom / oomd kill with SIGKILL, which never dumps core. User-session
+  # crashes that *do* dump are followed by home/crash-watch.nix (journal
+  # MESSAGE_ID fc2e22bc6ee647b6b90729ab34a250b1) and never toasted as OOM.
+  systemd.coredump.enable = true;
 }
