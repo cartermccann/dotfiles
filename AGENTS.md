@@ -9,7 +9,7 @@ Flake-parts layout. This repo defines the entire system (kronos) + home-manager 
 - `modules/` — NixOS system modules (desktop, nvidia, ollama, oom-protection, ...)
 - `home/` — home-manager modules (tools, shell, neovim, tmux, niri, hyprland, ...)
 - `templates/` — `nix flake init -t ~/dotfiles#<lang>` dev-shell templates
-- `scripts/`, `config/`, `wallpaper/` — non-Nix assets referenced by modules
+- `scripts/`, `home/scripts/`, `config/`, `wallpaper/` — non-Nix assets referenced by modules
 
 ## Workflow
 

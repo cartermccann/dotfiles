@@ -76,7 +76,7 @@ in
     dust # backs the "Disk Usage" desktop entry in home/common.nix
     tree-sitter
     yazi
-    glow # markdown reader; referenced by home/hyprland.nix
+    glow # CLI markdown reader (not wired to a keybind)
     gum # shell prompts/confirm (gwr worktree fn, menu scripts)
     procs # modern ps; used by home/codex-desktop.nix
 
@@ -124,7 +124,7 @@ in
     # Rice — trimmed to the ones that are actually wired to something.
     # Dropped (zero invocations, nothing references them): pipes-rs, cbonsai,
     # asciiquarium, sl, lolcat, peaclock, tty-clock.
-    cava # rice-dashboard pane; bound to mod+CTRL+D in home/hyprland.nix
+    cava # rice-dashboard pane (home/niri.nix); Super+Ctrl+D in Hyprland
     cmatrix
     figlet # required by scripts/comcreate-banner.sh (runs on every bash shell)
 
