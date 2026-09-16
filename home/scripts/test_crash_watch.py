@@ -5,10 +5,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location("crash_watch", ROOT / "crash-watch.py")
@@ -160,6 +163,17 @@ class FallbackTests(unittest.TestCase):
         self.assertEqual(d.action, "silent-queue")
         self.assertGreaterEqual(j.do_not_interrupt, 0.5)
 
+    def test_true_fullscreen_queues_maximize_does_not(self):
+        crash = {"name": "zen", "exe": "/bin/zen", "signal": "SIGSEGV"}
+        fs = {**self.quiet, "fullscreen": True}
+        j = cw.fallback_judge(crash, fs, {"recent_same_name_count": 1}, {"exists": False})
+        d = cw.compose({**crash, "existing_mute": False}, j, False)
+        self.assertEqual(d.action, "silent-queue")
+        # Super+F maximize is fullscreen=1 → collect_session stores False.
+        j2 = cw.fallback_judge(crash, self.quiet, {"recent_same_name_count": 1}, {"exists": False})
+        d2 = cw.compose({**crash, "existing_mute": False}, j2, False)
+        self.assertEqual(d2.action, "banner")
+
     def test_repeat_mutes_native_not_python(self):
         crash = {"name": "zen", "exe": "/bin/zen", "signal": "SIGSEGV"}
         j = cw.fallback_judge(
@@ -208,6 +222,138 @@ class DecideCliTests(unittest.TestCase):
         self.assertEqual(out["action"], "banner")
         self.assertTrue(out["sticky"])
         self.assertEqual(out["source"], "fallback")
+
+
+def _pw_node(nid: int, name: str, media_class: str = "Audio/Sink") -> dict:
+    return {
+        "id": nid,
+        "type": "PipeWire:Interface:Node",
+        "info": {"props": {"node.name": name, "media.class": media_class}},
+    }
+
+
+def _pw_link(lid: int, out_n: int, in_n: int, *, canonical: bool = True, props: bool = False) -> dict:
+    info: dict = {"props": {}}
+    if canonical:
+        info["output-node-id"] = out_n
+        info["input-node-id"] = in_n
+    if props:
+        info["props"] = {"link.output.node": out_n, "link.input.node": in_n}
+    return {"id": lid, "type": "PipeWire:Interface:Link", "info": info}
+
+
+def granola_fixture(*, app_linked: bool, canonical: bool = True, props: bool = False) -> list:
+    """Idle loopback always links granola_mt -> granola_mt.output."""
+    nodes = [
+        _pw_node(54, "granola_mt", "Audio/Sink"),
+        _pw_node(55, "granola_mt.output", "Stream/Output/Audio"),
+        _pw_node(56, "granola_mt.monitor", "Audio/Source"),
+        _pw_node(90, "zen", "Stream/Output/Audio"),
+    ]
+    links = [_pw_link(200, 54, 55, canonical=canonical, props=props)]
+    if app_linked:
+        links.append(_pw_link(201, 90, 54, canonical=canonical, props=props))
+    return nodes + links
+
+
+class GranolaMtTests(unittest.TestCase):
+    def test_idle_loopback_is_not_a_meeting(self):
+        dump = granola_fixture(app_linked=False)
+        self.assertFalse(cw.granola_mt_linked(dump))
+
+    def test_app_stream_on_sink_is_a_meeting(self):
+        dump = granola_fixture(app_linked=True)
+        self.assertTrue(cw.granola_mt_linked(dump))
+
+    def test_canonical_ids_not_props(self):
+        dump = granola_fixture(app_linked=True, canonical=True, props=False)
+        self.assertTrue(cw.granola_mt_linked(dump))
+        idle = granola_fixture(app_linked=False, canonical=True, props=False)
+        self.assertFalse(cw.granola_mt_linked(idle))
+
+    def test_monitor_and_output_alone_do_not_count(self):
+        dump = [
+            _pw_node(54, "granola_mt"),
+            _pw_node(56, "granola_mt.monitor"),
+            _pw_link(202, 54, 56, canonical=True, props=False),
+        ]
+        self.assertFalse(cw.granola_mt_linked(dump))
+
+
+class HyprFullscreenTests(unittest.TestCase):
+    def test_maximize_is_not_interrupt(self):
+        self.assertFalse(cw.hypr_true_fullscreen({"fullscreen": 1, "fullscreenClient": 1}))
+        self.assertFalse(cw.hypr_true_fullscreen({"fullscreen": True}))
+        self.assertFalse(cw.hypr_true_fullscreen({"fullscreen": 0}))
+
+    def test_true_fullscreen_is_interrupt(self):
+        self.assertTrue(cw.hypr_true_fullscreen({"fullscreen": 2, "fullscreenClient": 2}))
+        self.assertTrue(cw.hypr_true_fullscreen({"fullscreen": 0, "fullscreenClient": 2}))
+
+
+class DndSendPathTests(unittest.TestCase):
+    dnd_only = {
+        "dnd": True,
+        "fullscreen": False,
+        "granola_mt_linked": False,
+        "focused_class": "ghostty",
+        "focused_title": "nvim",
+    }
+
+    def test_dnd_alone_banners_and_punches(self):
+        crash = {"name": "zen", "exe": "/bin/zen", "signal": "SIGSEGV"}
+        j = cw.fallback_judge(
+            crash, self.dnd_only, {"recent_same_name_count": 1}, {"exists": False}
+        )
+        d = cw.compose({**crash, "existing_mute": False}, j, False)
+        self.assertEqual(d.action, "banner")
+        self.assertTrue(d.sticky)
+        self.assertTrue(d.punch_through_dnd)
+        self.assertLess(j.do_not_interrupt, 0.5)
+
+    def test_meeting_still_cannot_banner(self):
+        crash = {"name": "zen", "exe": "/bin/zen", "signal": "SIGSEGV"}
+        j = cw.fallback_judge(
+            crash, FallbackTests.meet, {"recent_same_name_count": 1}, {"exists": False}
+        )
+        d = cw.compose({**crash, "existing_mute": False}, j, False)
+        self.assertEqual(d.action, "silent-queue")
+        self.assertFalse(d.punch_through_dnd)
+
+
+class AnnounceTests(unittest.TestCase):
+    def test_silent_queue_does_not_notify(self):
+        decision = cw.Decision(
+            action="silent-queue",
+            sticky=False,
+            punch_through_dnd=False,
+            write_mute=False,
+            lift_mute=False,
+            reason="judged",
+            source="fallback",
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            old = os.environ.get("XDG_STATE_HOME")
+            os.environ["XDG_STATE_HOME"] = tmp
+            try:
+                with patch.object(cw, "notify") as notify, patch.object(
+                    cw, "wait_for_notifications", return_value=True
+                ):
+                    ok = cw.announce(
+                        {"name": "zen", "signal": "SIGSEGV", "exe": "/bin/zen"},
+                        decision,
+                    )
+            finally:
+                if old is None:
+                    os.environ.pop("XDG_STATE_HOME", None)
+                else:
+                    os.environ["XDG_STATE_HOME"] = old
+            self.assertTrue(ok)
+            notify.assert_not_called()
+            queue = Path(tmp) / "crash-watch" / "queue.jsonl"
+            self.assertTrue(queue.is_file())
+            line = json.loads(queue.read_text(encoding="utf-8").splitlines()[0])
+            self.assertEqual(line["action"], "silent-queue")
 
 
 if __name__ == "__main__":

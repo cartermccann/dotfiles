@@ -247,36 +247,88 @@ def swaync_dnd() -> bool:
     return proc.stdout.strip().lower() in {"true", "yes", "1", "on"}
 
 
-def granola_mt_linked() -> bool:
-    try:
-        proc = _run(["pw-dump"], timeout=5)
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+GRANOLA_SINK = "granola_mt"
+GRANOLA_LOOPBACK_NAMES = frozenset({"granola_mt.output", "granola_mt.monitor"})
+# Hyprland 0.55: 0 none, 1 maximize (Super+F, bar stays), 2 true fullscreen.
+HYPR_FULLSCREEN = 2
+
+
+def _as_node_id(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+    return None
+
+
+def _link_endpoints(link: Mapping[str, Any]) -> tuple[int | None, int | None]:
+    """pw-dump always puts canonical ids on info, not necessarily in props."""
+    info = link.get("info") or {}
+    props = info.get("props") or {}
+    out_n = _as_node_id(info.get("output-node-id"))
+    in_n = _as_node_id(info.get("input-node-id"))
+    if out_n is None:
+        out_n = _as_node_id(props.get("link.output.node"))
+    if in_n is None:
+        in_n = _as_node_id(props.get("link.input.node"))
+    return out_n, in_n
+
+
+def granola_mt_linked(dump: list[Any] | None = None) -> bool:
+    """True when an app stream is linked to the granola_mt sink itself.
+
+    The loopback in modules/audio.nix always creates granola_mt.output and
+    granola_mt.monitor; those must not count as a meeting.
+    """
+    if dump is None:
+        try:
+            proc = _run(["pw-dump"], timeout=5)
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            return False
+        if proc.returncode != 0 or not proc.stdout:
+            return False
+        try:
+            dump = json.loads(proc.stdout)
+        except json.JSONDecodeError:
+            return False
+    if not isinstance(dump, list):
         return False
-    if proc.returncode != 0 or not proc.stdout:
-        return False
-    try:
-        dump = json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        return False
-    granola_ids: set[int] = set()
+    sink_ids: set[int] = set()
+    loopback_ids: set[int] = set()
     for node in dump:
         if node.get("type") != "PipeWire:Interface:Node":
             continue
+        nid = _as_node_id(node.get("id"))
+        if nid is None:
+            continue
         props = (node.get("info") or {}).get("props") or {}
         name = str(props.get("node.name") or "")
-        if name == "granola_mt" or name.startswith("granola_mt."):
-            nid = node.get("id")
-            if isinstance(nid, int):
-                granola_ids.add(nid)
-    if not granola_ids:
+        if name == GRANOLA_SINK:
+            sink_ids.add(nid)
+        elif name in GRANOLA_LOOPBACK_NAMES:
+            loopback_ids.add(nid)
+    if not sink_ids:
         return False
+    skip = sink_ids | loopback_ids
     for node in dump:
         if node.get("type") != "PipeWire:Interface:Link":
             continue
-        props = (node.get("info") or {}).get("props") or {}
-        out_n = props.get("link.output.node")
-        in_n = props.get("link.input.node")
-        if out_n in granola_ids or in_n in granola_ids:
+        out_n, in_n = _link_endpoints(node)
+        for a, b in ((out_n, in_n), (in_n, out_n)):
+            if a in sink_ids and b is not None and b not in skip:
+                return True
+    return False
+
+
+def hypr_true_fullscreen(data: Mapping[str, Any]) -> bool:
+    """True only for fullscreen == 2. Super+F maximize is 1 and keeps the bar."""
+    for key in ("fullscreen", "fullscreenClient"):
+        val = data.get(key)
+        if val == HYPR_FULLSCREEN:
+            return True
+        if isinstance(val, str) and val.strip() == str(HYPR_FULLSCREEN):
             return True
     return False
 
@@ -292,7 +344,7 @@ def hypr_focus() -> tuple[bool, str, str]:
         data = json.loads(proc.stdout)
     except json.JSONDecodeError:
         return False, "", ""
-    fullscreen = bool(data.get("fullscreen"))
+    fullscreen = hypr_true_fullscreen(data)
     klass = str(data.get("class") or data.get("initialClass") or "")
     title = str(data.get("title") or data.get("initialTitle") or "")
     return fullscreen, klass, title
@@ -360,13 +412,14 @@ QUESTIONS: dict[str, Any] = {
     "do_not_interrupt": {
         "type": "noul",
         "instructions": (
-            "Is the session in a meeting, fullscreen, DND, or other do-not-interrupt "
-            "context? Use `session.granola_mt_linked`, `session.fullscreen`, "
-            "`session.dnd`, and `session.focused_title`."
+            "Is the session in a meeting or true fullscreen (not window maximize, not "
+            "DND)? Use `session.granola_mt_linked`, `session.fullscreen` (true "
+            "fullscreen only), and `session.focused_title`. DND is a send-path "
+            "concern: a sticky crash banner may punch through it when this is no."
         ),
         "criteria": {
-            "true": "A banner would interrupt a meeting, fullscreen app, or DND.",
-            "false": "A banner would not interrupt focused real-time activity.",
+            "true": "A banner would interrupt a meeting or true fullscreen.",
+            "false": "A banner would not interrupt a meeting or true fullscreen. DND alone is not yes.",
         },
     },
     "action": {
@@ -377,7 +430,7 @@ QUESTIONS: dict[str, Any] = {
         ),
         "criteria": {
             "banner": "Show a desktop toast now.",
-            "silent-queue": "Record it for later; no banner (history / low-urgency only).",
+            "silent-queue": "Record it for later; no desktop Notify at all (queue.jsonl only).",
             "drop": "Do not notify and do not queue.",
             "unknown": "Not enough to choose; code will silent-queue.",
         },
@@ -387,7 +440,7 @@ QUESTIONS: dict[str, Any] = {
         "instructions": (
             "How strongly does this crash plus current activity warrant a sticky "
             "critical toast? Higher means a sticky toast is appropriate. Low if a "
-            "meeting, fullscreen, or DND is active."
+            "meeting or true fullscreen is active. DND alone should not lower this."
         ),
         "criteria": [
             "A sticky critical toast would be inappropriate given current activity.",
@@ -502,11 +555,9 @@ def fallback_judge(
     name = str(crash.get("name") or "")
     signal = str(crash.get("signal") or "")
     noisy = is_ignored(name) or signal_is_oom(signal)
-    interrupt = bool(
-        session.get("fullscreen")
-        or session.get("dnd")
-        or looks_like_meeting(session)
-    )
+    # DND is not interrupt: sticky banners may punch through it. Meeting and
+    # true fullscreen cannot pick banner.
+    interrupt = bool(session.get("fullscreen") or looks_like_meeting(session))
     count = int(history.get("recent_same_name_count") or 0)
     interpreter = is_interpreter(name)
 
@@ -800,16 +851,12 @@ def announce(crash: Mapping[str, Any], decision: Decision) -> bool:
         "source": decision.source,
     }
     enqueue(record)
+    if decision.action == "silent-queue":
+        # History vs nothing: never Notify. A 1ms/low toast still flashes
+        # when DND is off (usual Meet).
+        return True
     if not wait_for_notifications():
         return False
-    if decision.action == "silent-queue":
-        return notify(
-            summary,
-            body,
-            urgency="low",
-            expire_ms=1,
-            punch_through_dnd=False,
-        )
     expire = 0 if decision.sticky else 8000
     urgency = "critical" if decision.sticky else "normal"
     return notify(
