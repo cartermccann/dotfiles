@@ -111,6 +111,15 @@ class ComposeTests(unittest.TestCase):
         self.assertTrue(d.lift_mute)
         self.assertEqual(d.action, "banner")
 
+    def test_lift_does_not_rewrite_mute(self):
+        d = cw.compose(
+            {"name": "zen", "existing_mute": True},
+            judgment(mute_justified=0.1, should_mute=0.95, action="banner", action_confidence=0.9),
+            False,
+        )
+        self.assertTrue(d.lift_mute)
+        self.assertFalse(d.write_mute)
+
     def test_never_mute_interpreter(self):
         d = cw.compose({"name": "python3"}, judgment(should_mute=0.95), True)
         self.assertFalse(d.write_mute)

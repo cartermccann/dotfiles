@@ -630,13 +630,11 @@ def ask_jev(state: Mapping[str, Any]) -> Judgment | None:
 
 def compose(crash: Mapping[str, Any], judgment: Judgment, interpreter: bool) -> Decision:
     """Thresholds in code. Low Choice confidence → silent-queue. Never exec an agent."""
-    if judgment.mute_justified < NOUL_MUTE_KEEP:
-        lift = True
-    else:
-        lift = False
+    existing = bool(crash.get("existing_mute"))
+    lift = existing and judgment.mute_justified < NOUL_MUTE_KEEP
 
     # Existing mute still justified → drop this crash (flag outlives the situation).
-    if crash.get("existing_mute") and not lift:
+    if existing and not lift:
         return Decision(
             action="drop",
             sticky=False,
@@ -668,7 +666,8 @@ def compose(crash: Mapping[str, Any], judgment: Judgment, interpreter: bool) -> 
 
     sticky = action == "banner" and judgment.warrant >= SCORE_STICKY and not interrupt
     punch = sticky and not interrupt
-    write = (not interpreter) and judgment.should_mute >= NOUL_MUTE
+    # A lift is "this crash may announce"; do not rewrite the flag on the same event.
+    write = (not interpreter) and judgment.should_mute >= NOUL_MUTE and not lift
 
     return Decision(
         action=action,
