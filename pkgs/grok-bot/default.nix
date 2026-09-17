@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  asar,
   autoPatchelfHook,
   copyDesktopItems,
   makeDesktopItem,
@@ -39,13 +38,13 @@
 
 # Grok Bot desktop agent (xAI's Bot, built by Anysphere on the Cursor codebase).
 #
-# Upstream ships macOS and Windows only — https://docs.x.ai/grok-bot/get-started
-# says so outright — so the source here is Nichokas/grokbot-linux-port, a
-# third-party repack of the same Electron app for linux-x64. That is a real
-# supply-chain tradeoff: an unsigned prebuilt from a personal GitHub release,
-# pinned by hash below. Bump `version` and `hash` together to move it; the
-# release assets are listed at
+# Source is Nichokas/grokbot-linux-port: a verbatim tarball of xAI's official
+# Linux .deb (linux-x64). Still a supply-chain tradeoff — unsigned prebuilt
+# from a personal GitHub release, pinned by hash below. Bump `version` and
+# `hash` together to move it; assets are at
 # https://github.com/Nichokas/grokbot-linux-port/releases
+# The archive layout since 0.55.0 is `payload/` (Electron app) plus `hicolor/`
+# (icons). Older releases put both at the tarball root.
 #
 # The vendored Electron and the app's native .node modules are upstream
 # prebuilts, so autoPatchelf rewrites their interpreter and NEEDED libs, and the
@@ -96,26 +95,24 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "grok-bot";
-  version = "0.24.0";
+  version = "0.55.0";
 
   src = fetchurl {
     url = "https://github.com/Nichokas/grokbot-linux-port/releases/download/v${finalAttrs.version}/Grok_Bot_${finalAttrs.version}_linux_x64.tar.gz";
-    hash = "sha256-9rZJX5OYqdYHAqKCtASsUuKxwcNF07qBu70kLknqaq0=";
+    hash = "sha256-JtzSgvFh8Sxt44Ng46+jJS7ilz6Lw30pUfur6TBj6rc=";
   };
 
   sourceRoot = "Grok_Bot_${finalAttrs.version}_linux_x64";
 
   nativeBuildInputs = [
-    asar
     autoPatchelfHook
     copyDesktopItems
   ];
 
   buildInputs = runtimeLibs;
 
-  # The bundle carries a few Windows leftovers from the port (elevate.exe,
-  # sand-webauthn-signer.exe) and Chromium's own optional natives; neither
-  # should fail the patchelf pass.
+  # Chromium's optional natives (and any leftover helpers) should not fail
+  # the patchelf pass if a NEEDED lib is missing from buildInputs.
   autoPatchelfIgnoreMissingDeps = true;
 
   installPhase = ''
@@ -123,13 +120,10 @@ stdenv.mkDerivation (finalAttrs: {
 
     app=$out/libexec/grok-bot
     mkdir -p "$app"
-    cp -r . "$app/"
+    cp -r payload/. "$app/"
 
-    # The only icon upstream ships on Linux lives inside the asar; its filename
-    # carries a content hash, so glob it rather than pinning the current one.
-    icon=$(asar list "$app/resources/app.asar" | grep -m1 -E '/app-icon-[^/]*\.png$')
-    asar extract-file "$app/resources/app.asar" "''${icon#/}"
-    install -Dm644 "$(basename "$icon")" $out/share/icons/hicolor/256x256/apps/grok-bot.png
+    mkdir -p $out/share/icons
+    cp -r hicolor $out/share/icons/
 
     # Hand-written launcher instead of makeWrapper: two of the three things it
     # sets are conditional, and makeWrapper cannot add flags conditionally.
