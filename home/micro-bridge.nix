@@ -99,6 +99,21 @@ in
     };
   };
 
+  # `systemctl --user enable` writes a regular unit file plus a wants
+  # symlink that home-manager will not clobber, even with
+  # backupFileExtension. Drop those leftovers before checkLinkTargets so
+  # a hand-enabled unit cannot fail the next switch.
+  home.activation.unclobberMicroBridge = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+    unit="$HOME/.config/systemd/user/micro-bridge.service"
+    wants="$HOME/.config/systemd/user/graphical-session.target.wants/micro-bridge.service"
+    if [ -L "$wants" ] && [ "$(readlink -n "$wants")" = "$unit" ]; then
+      rm -f "$wants"
+    fi
+    if [ -f "$unit" ] && [ ! -L "$unit" ]; then
+      rm -f "$unit"
+    fi
+  '';
+
   # The Micro's mic / knob send F13 / F14 / F15 into Cursor. Those commands
   # have no default bindings, so without this file the chords land and do
   # nothing. JSONC is what Cursor's workbench reads. The Agents window ignores
