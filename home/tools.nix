@@ -92,6 +92,7 @@ in
     # Cloud & deploy
     flyctl
     google-cloud-sdk # GA4/GSC/BigQuery client work
+    awscli2 # SES/IAM for client infra (Silverado mail)
 
     # Nix tooling
     nh
