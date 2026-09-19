@@ -77,6 +77,7 @@ let
     tigervncCompat
   ]
   ++ (with pkgs; [
+    coreutils # seq/sleep in the desktop script below
     xdotool # synthesises clicks and keystrokes
     dbus # dbus-launch, the `dbus-x11` half of the apt line
     tigervnc # Xvnc
@@ -93,6 +94,8 @@ let
   # System path last so the worker finds the Chrome wrapper from
   # modules/apps.nix without pulling a second Chrome closure in here.
   workerPath = "${lib.makeBinPath workerPackages}:/run/current-system/sw/bin";
+  # xfwm4 reads its default theme out of share/, so this outlives the
+  # xfce4-session that originally motivated it.
   workerDataDirs = "${lib.makeSearchPath "share" workerPackages}:/run/current-system/sw/share";
 
   # Owns the agent's X server and window manager. Kept in one unit so the WM
@@ -102,14 +105,25 @@ let
     set -eu
     export PATH="${workerPath}"
     export XDG_DATA_DIRS="${workerDataDirs}"
-    unset DISPLAY WAYLAND_DISPLAY
+    unset DISPLAY WAYLAND_DISPLAY XDG_SESSION_TYPE
 
     xvnc_pid=""
     cleanup() { [ -n "$xvnc_pid" ] && kill "$xvnc_pid" 2>/dev/null || true; }
     trap cleanup EXIT INT TERM
 
+    # This Xvnc exists only to be an X server for computer use; Cursor creates
+    # its own separate server for --share-desktop, so nothing should ever dial
+    # in here. Left at its defaults Xvnc listens on TCP 5900+display with
+    # -SecurityTypes None, which is unauthenticated full mouse and keyboard on
+    # the agent desktop for anything that can reach loopback. TigerVNC refuses
+    # to start with no endpoint at all ("No path or port configured for
+    # incoming connections"), so give it a 0600 unix socket and no TCP, the
+    # same shape Cursor uses for its own shared desktop.
+    rfb_sock="''${XDG_RUNTIME_DIR:-/tmp}/cursor-agent-desktop-rfb.sock"
+    rm -f "$rfb_sock"
     Xvnc ${agentDisplay} -geometry ${agentGeometry} -depth 24 \
-      -SecurityTypes None -localhost -NeverShared &
+      -SecurityTypes None -localhost -NeverShared \
+      -rfbport -1 -rfbunixpath "$rfb_sock" -rfbunixmode 0600 &
     xvnc_pid=$!
 
     for _ in $(seq 1 60); do
@@ -121,7 +135,7 @@ let
       exit 1
     fi
 
-    export DISPLAY=${agentDisplay}
+    export DISPLAY="${agentDisplay}"
     xfwm4 --compositor=off &
     wm_pid=$!
     wait "$wm_pid"
@@ -133,7 +147,7 @@ let
   preflight = pkgs.writeShellScriptBin "cursor-worker-preflight" ''
     export PATH="${workerPath}"
     export XDG_DATA_DIRS="${workerDataDirs}"
-    export DISPLAY=${agentDisplay}
+    export DISPLAY="${agentDisplay}"
     exec ${cursorAgent} worker --worker-dir ${homeDir}/projects debug "$@"
   '';
 in
@@ -161,7 +175,10 @@ in
         "cursor-agent-desktop.service"
       ];
       Wants = [ "network-online.target" ];
-      Requires = [ "cursor-agent-desktop.service" ];
+      # BindsTo, not Requires: Requires only propagates an explicit stop, so a
+      # desktop that crashed and was rebuilt by its own Restart= would leave the
+      # worker running against a dead X connection.
+      BindsTo = [ "cursor-agent-desktop.service" ];
       ConditionPathExists = cursorAgent;
     };
 
@@ -190,6 +207,17 @@ in
         "PATH=${workerPath}"
         "XDG_DATA_DIRS=${workerDataDirs}"
         "DISPLAY=${agentDisplay}"
+      ];
+
+      # The graphical session pushes these into the systemd user manager. DISPLAY
+      # is overridden above, but WAYLAND_DISPLAY and XDG_SESSION_TYPE must be
+      # removed, not overridden: the Chrome wrapper in modules/apps.nix carries
+      # --ozone-platform-hint=auto, which resolves to Wayland whenever they are
+      # present. Agent-launched Chrome then opens on the real desktop, where
+      # x11grab and xdotool on the agent display cannot see it.
+      UnsetEnvironment = [
+        "WAYLAND_DISPLAY"
+        "XDG_SESSION_TYPE"
       ];
 
       Restart = "always";
