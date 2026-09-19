@@ -34,9 +34,23 @@ let
 
   # nixpkgs names TigerVNC's server Xvnc; Debian ships the same binary as
   # Xtigervnc, which is the name Cursor's preflight looks for.
-  tigervncCompat = pkgs.runCommand "tigervnc-xtigervnc-compat" { } ''
-    mkdir -p $out/bin
-    ln -s ${pkgs.tigervnc}/bin/Xvnc $out/bin/Xtigervnc
+  #
+  # This is a wrapper rather than a symlink because --share-desktop always
+  # spins up its own isolated desktop, independent of --display, and invokes
+  # us as `Xtigervnc -displayfd N ...`. Xvnc's -displayfd scan starts at :0,
+  # and it does take :0 even though Hyprland holds /tmp/.X0-lock with its own
+  # live pid: observed twice replacing the compositor's /tmp/.X11-unix/X0
+  # socket, which silently redirects every new X11 client on the machine into
+  # the agent's private desktop. Xvnc honours an explicit display *and* still
+  # writes it back on -displayfd (verified), so pick a high free one here.
+  tigervncCompat = pkgs.writeShellScriptBin "Xtigervnc" ''
+    for n in $(${pkgs.coreutils}/bin/seq 50 99); do
+      if [ ! -e "/tmp/.X$n-lock" ] && [ ! -e "/tmp/.X11-unix/X$n" ]; then
+        exec ${pkgs.tigervnc}/bin/Xvnc ":$n" "$@"
+      fi
+    done
+    echo "Xtigervnc wrapper: no free display in :50-:99" >&2
+    exit 1
   '';
 
   # Cursor waits for a window manager to claim _NET_SUPPORTING_WM_CHECK on the
