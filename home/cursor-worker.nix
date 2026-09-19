@@ -120,7 +120,7 @@ let
     export PATH="${workerPath}"
     export XDG_DATA_DIRS="${workerDataDirs}"
     export DISPLAY=${agentDisplay}
-    exec ${cursorAgent} worker debug "$@"
+    exec ${cursorAgent} worker --worker-dir ${homeDir}/projects debug "$@"
   '';
 in
 {
@@ -154,15 +154,20 @@ in
     Service = {
       Type = "simple";
 
-      # Worker flags go before `start`. --share-desktop without a mode means
-      # view_and_control; pass `view` for watch-only. --display pins the agent
-      # to the desktop above so the worker never invents one.
+      # Worker flags go before `start`. --share-desktop is watch-only: the
+      # flag without a mode would mean view_and_control, which lets a viewer
+      # take mouse and keyboard. --display pins the agent to the desktop above
+      # so the worker never invents one. --worker-dir is the workspace root
+      # exposed to agents; without it the worker defaults to its cwd, which
+      # under systemd is $HOME and leaves the preflight warning about no git
+      # origin for repo-based matching.
       ExecStart = lib.concatStringsSep " " [
         cursorAgent
         "worker"
         "--computer-use"
-        "--share-desktop"
+        "--share-desktop view"
         "--display ${agentDisplay}"
+        "--worker-dir ${homeDir}/projects"
         "--name kronos"
         "start"
       ];
