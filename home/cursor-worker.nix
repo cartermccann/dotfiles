@@ -7,116 +7,162 @@
 
 # Cursor self-hosted worker with computer use + desktop sharing.
 #
-# Cursor's docs give an Ubuntu apt line for this. The package names are
-# Debian-isms; what the worker actually probes for is a list of *binaries*
-# (`cursor-agent worker debug` prints it). This module supplies those binaries
-# and runs the worker as a user service.
+# Cursor documents this as an Ubuntu apt line. On NixOS three of those packages
+# are either named differently, built without the feature Cursor needs, or
+# actively broken against a VNC X server. What the worker really probes for is a
+# list of binaries, printed by `cursor-agent worker debug`.
 #
-# Display strategy: the worker resolves a display in three steps — an explicit
-# `--display`, then an inherited reachable `DISPLAY`, then a self-managed
-# TigerVNC + Xfce desktop. We deliberately take the third path. This machine is
-# a Wayland session (Hyprland/niri) whose `:0` is *rootless* Xwayland: it has no
-# root window content, so `ffmpeg x11grab` against it captures nothing and
-# xdotool cannot see Wayland-native windows. The agent instead gets its own
-# sandboxed X11 desktop, which is also the safer arrangement — it never touches
-# the real session.
-#
-# That is why UnsetEnvironment below matters: the graphical session pushes
-# DISPLAY into the systemd user manager, and if the worker inherits it, it takes
-# the broken second path instead of the managed one.
+# Display strategy: this machine runs a Wayland session whose :0 is *rootless*
+# Xwayland, which has no root window content, so x11grab against it captures
+# nothing and xdotool cannot see Wayland-native windows. We therefore give the
+# agent its own Xvnc desktop on a pinned display and point the worker at it with
+# --display. Pinning matters for more than tidiness: left to pick its own
+# display the worker grabbed :0, and on teardown deleted Hyprland's
+# /tmp/.X11-unix/X0 socket, taking X11 down for the whole live session.
 
 let
   homeDir = config.home.homeDirectory;
 
+  agentDisplay = ":20";
+  agentGeometry = "1920x1080";
+
   # The self-updating Cursor install, NOT the nixpkgs `cursor-cli` in
-  # home/tools.nix. As of 2026-09-18 the nixpkgs build (2026.07.23; unstable is
-  # at 2026-08-31) has no `--computer-use` / `--share-desktop` flags at all —
-  # verified with `worker --help` against both binaries. Only the upstream
-  # channel (2026.09.15 here) carries the feature. Revisit and move this back
-  # onto `pkgs.cursor-cli` once nixpkgs catches up; until then this is the one
-  # imperative dependency in the setup and it is load-bearing.
+  # home/tools.nix: that build (2026.07.23, unstable at 2026-08-31) has no
+  # --computer-use or --share-desktop flags at all, verified against both
+  # binaries. Move back to pkgs.cursor-cli once nixpkgs catches up.
   cursorAgent = "${homeDir}/.local/bin/cursor-agent";
 
-  # nixpkgs builds TigerVNC's upstream install target, which names the server
-  # `Xvnc`. Debian ships the same binary as `Xtigervnc`, and that is the name
-  # Cursor's preflight looks for. Bridge the two rather than patching tigervnc.
+  # nixpkgs names TigerVNC's server Xvnc; Debian ships the same binary as
+  # Xtigervnc, which is the name Cursor's preflight looks for.
   tigervncCompat = pkgs.runCommand "tigervnc-xtigervnc-compat" { } ''
     mkdir -p $out/bin
     ln -s ${pkgs.tigervnc}/bin/Xvnc $out/bin/Xtigervnc
   '';
 
-  # Enough of Xfce to bring up a session with a window manager. Deliberately
-  # minimal: no Thunar, no goodies. The agent needs a managed desktop, not a
-  # daily driver.
-  xfcePackages = with pkgs.xfce; [
-    xfce4-session
-    xfwm4
-    xfce4-panel
-    xfdesktop
-    xfce4-settings
-  ];
+  # Cursor waits for a window manager to claim _NET_SUPPORTING_WM_CHECK on the
+  # display, and gets there by running `startxfce4`. Do not use the real one.
+  # xfce4-session drags in xfconf, a session manager and a panel, and the whole
+  # stack dies within seconds on Xvnc: xfwm4's compositor needs
+  # GLX_EXT_texture_from_pixmap, which Xvnc does not provide, so it aborts with
+  # "No provider of glXBindTexImageEXT found" and takes the ICE session down
+  # with it. xfwm4 with compositing off is stable, needs neither D-Bus nor
+  # xfconf, and is all Cursor is actually waiting for.
+  startxfce4Shim = pkgs.writeShellScriptBin "startxfce4" ''
+    exec ${pkgs.xfce.xfwm4}/bin/xfwm4 --compositor=off
+  '';
 
-  workerPackages =
-    (with pkgs; [
-      xdotool # synthesises clicks and keystrokes
-      ffmpeg # screen capture
-      dbus # dbus-launch, the `dbus-x11` half of the apt line
-      tigervnc # Xvnc, vncconfig, vncpasswd
-      tigervncCompat # + the Xtigervnc alias Cursor probes for
-    ])
-    ++ (with pkgs.xorg; [
-      xdpyinfo # x11-utils
-      xprop # x11-utils
-      xrandr # x11-xserver-utils
-      xsetroot # x11-xserver-utils
-      xauth # Xvnc needs it for the MIT-MAGIC-COOKIE
-    ])
-    ++ xfcePackages;
+  # nixpkgs' default ffmpeg is built without xcb, so it has no x11grab muxer and
+  # every screenshot fails. The preflight only checks that an `ffmpeg` binary
+  # exists, so this failure is invisible until an agent tries to take a picture.
+  # ffmpeg-full carries "x11grab  X11 screen capture, using XCB".
+  ffmpegX11 = pkgs.ffmpeg-full;
 
-  # System path last, so the worker finds the Chrome wrapper from
-  # modules/apps.nix without pulling a second full Chrome closure in here.
-  # Its `--ozone-platform-hint=auto` resolves to X11 inside Xvnc, so the
-  # Wayland-oriented flags are harmless on the agent desktop.
+  workerPackages = [
+    startxfce4Shim # must precede anything else providing startxfce4
+    ffmpegX11
+    tigervncCompat
+  ]
+  ++ (with pkgs; [
+    xdotool # synthesises clicks and keystrokes
+    dbus # dbus-launch, the `dbus-x11` half of the apt line
+    tigervnc # Xvnc
+    xfce.xfwm4 # the window manager Cursor waits for
+  ])
+  ++ (with pkgs.xorg; [
+    xdpyinfo # x11-utils, also used below to wait for the display
+    xprop # x11-utils
+    xrandr # x11-xserver-utils
+    xsetroot # x11-xserver-utils
+    xauth # MIT-MAGIC-COOKIE handling
+  ]);
+
+  # System path last so the worker finds the Chrome wrapper from
+  # modules/apps.nix without pulling a second Chrome closure in here.
   workerPath = "${lib.makeBinPath workerPackages}:/run/current-system/sw/bin";
-
-  # xfce4-session reads autostart and session .desktop files out of
-  # XDG_DATA_DIRS. Without this it comes up as an empty root window with no
-  # panel and no window manager.
   workerDataDirs = "${lib.makeSearchPath "share" workerPackages}:/run/current-system/sw/share";
 
-  # `cursor-agent worker debug` run from an ordinary shell reports everything
-  # missing, because these packages are intentionally kept off the interactive
-  # PATH. This runs the same preflight with the service's environment, which is
-  # the environment that actually matters.
-  preflight = pkgs.writeShellScriptBin "cursor-worker-preflight" ''
-    export PATH="${workerPath}:$PATH"
+  # Owns the agent's X server and window manager. Kept in one unit so the WM
+  # dying takes the display down with it and systemd rebuilds both together,
+  # rather than leaving a headless Xvnc for the worker to attach to.
+  agentDesktop = pkgs.writeShellScript "cursor-agent-desktop" ''
+    set -eu
+    export PATH="${workerPath}"
     export XDG_DATA_DIRS="${workerDataDirs}"
     unset DISPLAY WAYLAND_DISPLAY
+
+    xvnc_pid=""
+    cleanup() { [ -n "$xvnc_pid" ] && kill "$xvnc_pid" 2>/dev/null || true; }
+    trap cleanup EXIT INT TERM
+
+    Xvnc ${agentDisplay} -geometry ${agentGeometry} -depth 24 \
+      -SecurityTypes None -localhost -NeverShared &
+    xvnc_pid=$!
+
+    for _ in $(seq 1 60); do
+      xdpyinfo -display ${agentDisplay} >/dev/null 2>&1 && break
+      sleep 0.25
+    done
+    if ! xdpyinfo -display ${agentDisplay} >/dev/null 2>&1; then
+      echo "Xvnc never came up on ${agentDisplay}" >&2
+      exit 1
+    fi
+
+    export DISPLAY=${agentDisplay}
+    xfwm4 --compositor=off &
+    wm_pid=$!
+    wait "$wm_pid"
+  '';
+
+  # `cursor-agent worker debug` from an ordinary shell reports everything
+  # missing, because these packages are deliberately kept off the interactive
+  # PATH. This runs the same preflight with the service's environment.
+  preflight = pkgs.writeShellScriptBin "cursor-worker-preflight" ''
+    export PATH="${workerPath}"
+    export XDG_DATA_DIRS="${workerDataDirs}"
+    export DISPLAY=${agentDisplay}
     exec ${cursorAgent} worker debug "$@"
   '';
 in
 {
   home.packages = [ preflight ];
 
+  systemd.user.services.cursor-agent-desktop = {
+    Unit = {
+      Description = "Xvnc + xfwm4 desktop for the Cursor agent (${agentDisplay})";
+      PartOf = [ "cursor-worker.service" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${agentDesktop}";
+      Restart = "always";
+      RestartSec = 5;
+    };
+  };
+
   systemd.user.services.cursor-worker = {
     Unit = {
       Description = "Cursor self-hosted worker (computer use + desktop sharing)";
-      After = [ "network-online.target" ];
+      After = [
+        "network-online.target"
+        "cursor-agent-desktop.service"
+      ];
       Wants = [ "network-online.target" ];
+      Requires = [ "cursor-agent-desktop.service" ];
       ConditionPathExists = cursorAgent;
     };
 
     Service = {
       Type = "simple";
 
-      # Worker flags go before `start`; `--share-desktop` with no argument means
-      # view_and_control. Narrow it to watch-only with `--share-desktop view`.
-      # No `--display` on purpose — see the header comment.
+      # Worker flags go before `start`. --share-desktop without a mode means
+      # view_and_control; pass `view` for watch-only. --display pins the agent
+      # to the desktop above so the worker never invents one.
       ExecStart = lib.concatStringsSep " " [
         cursorAgent
         "worker"
         "--computer-use"
         "--share-desktop"
+        "--display ${agentDisplay}"
         "--name kronos"
         "start"
       ];
@@ -124,14 +170,7 @@ in
       Environment = [
         "PATH=${workerPath}"
         "XDG_DATA_DIRS=${workerDataDirs}"
-      ];
-
-      # The graphical session imports DISPLAY/WAYLAND_DISPLAY into the user
-      # manager. Drop both so the worker cannot latch onto rootless Xwayland and
-      # must build its own desktop.
-      UnsetEnvironment = [
-        "DISPLAY"
-        "WAYLAND_DISPLAY"
+        "DISPLAY=${agentDisplay}"
       ];
 
       Restart = "always";
