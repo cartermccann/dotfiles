@@ -19,6 +19,7 @@
     ./dictation.nix
     ./tools.nix
     ./qmd.nix
+    ./brain.nix
     ./webctx-tunnel.nix
     ./micro-bridge.nix
     ./cursor-worker.nix

@@ -25,6 +25,8 @@ lib.mkIf (config.home.username == "cjm") {
   systemd.user.services = {
     qmd-index-update = {
       Unit.Description = "Refresh Carter's QMD document index";
+      # brain (home/brain.nix) tags new content hashes with Jev after each refresh.
+      Unit.OnSuccess = [ "brain-tag.service" ];
       Service = {
         Type = "oneshot";
         ExecStart = "${qmdPackage}/bin/qmd update";
