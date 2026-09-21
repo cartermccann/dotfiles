@@ -40,6 +40,10 @@ lib.mkIf (config.home.username == "cjm") {
         TimeoutStartSec = 14400;
         Nice = 10;
         IOSchedulingClass = "idle";
+        # 2026-09-21: a Persistent catch-up run took all 32 cores for 5 min
+        # (72 CPU-min). Eight cores, low weight: ~20 min, box stays usable.
+        CPUQuota = "800%";
+        CPUWeight = 20;
       };
     };
   };
