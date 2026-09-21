@@ -54,11 +54,11 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "screaming-frog-seo-spider";
-  version = "24.2";
+  version = "24.3";
 
   src = fetchurl {
     url = "https://download.screamingfrog.co.uk/products/seo-spider/screamingfrogseospider_${version}_amd64.deb";
-    hash = "sha256-XWx54uM8AsZhYb72nVub5bC6eOHAmAmZf14Nn3+kvI0=";
+    hash = "sha256-UXIM6H0Y3siw6T3oDIdJTwC95dj2FxxBEeYls4RYGkw=";
   };
 
   nativeBuildInputs = [

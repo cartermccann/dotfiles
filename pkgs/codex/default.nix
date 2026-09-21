@@ -22,15 +22,15 @@
 #
 # To update, bump version and both hashes from the matching GitHub release.
 let
-  version = "0.147.0";
+  version = "0.155.1";
   bundles = {
     x86_64-linux = {
       target = "x86_64-unknown-linux-musl";
-      hash = "sha256-SUNoEn4nq2JbKl51n4NEfh19ALauSaXiwX31/XxKrB0=";
+      hash = "sha256-gxLRctpmPk60uAlEfc8S4kjVF0rhjWjlS71MktN72K4=";
     };
     aarch64-linux = {
       target = "aarch64-unknown-linux-musl";
-      hash = "sha256-aS/1xdnrhndMBEjZMIleRmWe7mosEvRrlzmdpFjB6Lc=";
+      hash = "sha256-QjjLm+Pq5KtoPAh5B6iB7FK4SjnID6Q1iAOruF4shNs=";
     };
   };
   bundle =
