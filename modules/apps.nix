@@ -30,17 +30,20 @@ in
     package = pkgs-unstable._1password-cli;
   };
   # 1Password ships its local MCP server inside the desktop app. The app only
-  # accepts MCP connections from a peer whose effective GID is `onepassword`
-  # ("Rejecting MCP connection: Linux peer effective GID check failed"), the
-  # same setgid scheme the module already applies to 1Password-BrowserSupport.
+  # accepts MCP connections from a peer whose effective GID is the dedicated
+  # `onepassword-mcp` group ("Rejecting MCP connection: Linux peer effective
+  # GID check failed" / "no application groups existed on the system"). The
+  # upstream after-install.sh creates that group and makes the binary setgid
+  # to it; the NixOS module only does this for 1Password-BrowserSupport.
   # A setgid wrapper in /run/wrappers/bin also puts `1password-mcp` on PATH,
   # which is the command MCP clients (Cursor, Claude Code, Codex) expect.
   # Read the package back off the module: programs._1password-gui applies a
   # polkitPolicyOwners override, so the raw attr would be a second full build.
+  users.groups.onepassword-mcp = { };
   security.wrappers."1password-mcp" = {
     source = "${config.programs._1password-gui.package}/share/1password/1password-mcp";
     owner = "root";
-    group = "onepassword";
+    group = "onepassword-mcp";
     setuid = false;
     setgid = true;
   };
