@@ -39,7 +39,11 @@ in
   # which is the command MCP clients (Cursor, Claude Code, Codex) expect.
   # Read the package back off the module: programs._1password-gui applies a
   # polkitPolicyOwners override, so the raw attr would be a second full build.
-  users.groups.onepassword-mcp = { };
+  # Fixed, non-system gid: upstream creates this group with a plain `groupadd`
+  # (gid >= 1000). NixOS auto-allocated 987 and the app rejected that peer as
+  # "invalid group attempted to connect". Sits beside onepassword (31001)
+  # and onepassword-cli (31002) from nixos/modules/misc/ids.nix.
+  users.groups.onepassword-mcp.gid = 31003;
   security.wrappers."1password-mcp" = {
     source = "${config.programs._1password-gui.package}/share/1password/1password-mcp";
     owner = "root";
