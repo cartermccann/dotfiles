@@ -23,35 +23,37 @@ let
       "--oauth2-client-secret=OTJgUOQcT7lO7GsGZq2G4IlT"
     ];
   };
+  # `1password-mcp` on PATH for MCP clients (Cursor, Claude Code, Codex): exec
+  # the setgid copy under /opt so /proc/<pid>/exe is the file the app verifies.
+  onePasswordMcp = pkgs.writeShellScriptBin "1password-mcp" ''
+    exec /opt/1Password/1password-mcp "$@"
+  '';
 in
 {
   programs._1password = {
     enable = true;
     package = pkgs-unstable._1password-cli;
   };
-  # 1Password ships its local MCP server inside the desktop app. The app only
-  # accepts MCP connections from a peer whose effective GID is the dedicated
-  # `onepassword-mcp` group ("Rejecting MCP connection: Linux peer effective
-  # GID check failed" / "no application groups existed on the system"). The
-  # upstream after-install.sh creates that group and makes the binary setgid
-  # to it; the NixOS module only does this for 1Password-BrowserSupport.
-  # A setgid wrapper in /run/wrappers/bin also puts `1password-mcp` on PATH,
-  # which is the command MCP clients (Cursor, Claude Code, Codex) expect.
-  # Read the package back off the module: programs._1password-gui applies a
-  # polkitPolicyOwners override, so the raw attr would be a second full build.
-  # Fixed, non-system gid: upstream creates this group with a plain `groupadd`
-  # (gid >= 1000). NixOS auto-allocated 987 and the app rejected that peer as
-  # "invalid group attempted to connect". Sits beside onepassword (31001)
-  # and onepassword-cli (31002) from nixos/modules/misc/ids.nix.
+  # 1Password's MCP server lives inside the desktop app. Before accepting a
+  # connection the app checks (a) the peer's effective GID is `onepassword-mcp`
+  # and (b) the server BINARY FILE is group onepassword-mcp with the setgid bit
+  # ("parent process verification failed: BinaryPermissions"). A NixOS
+  # security wrapper satisfies (a) but not (b): it execs the immutable store
+  # file, which is root:root 0555. So mirror upstream's after-install.sh
+  # exactly: a real copy at /opt/1Password/1password-mcp, group
+  # onepassword-mcp, mode 2755, refreshed on every activation (C+). The group
+  # gid must be > 1000 or the app rejects it as "invalid group" (nixpkgs pins
+  # onepassword/onepassword-cli to 31001/31002 for the same reason).
+  # 2026-09-21, kronos.
   users.groups.onepassword-mcp.gid = 31003;
-  security.wrappers."1password-mcp" = {
-    source = "${config.programs._1password-gui.package}/share/1password/1password-mcp";
-    owner = "root";
-    group = "onepassword-mcp";
-    setuid = false;
-    setgid = true;
-  };
-
+  systemd.tmpfiles.rules = [
+    "d  /opt/1Password 0755 root root -"
+    "C+ /opt/1Password/1password-mcp 2755 root onepassword-mcp - ${config.programs._1password-gui.package}/share/1password/1password-mcp"
+    "z  /opt/1Password/1password-mcp 2755 root onepassword-mcp -"
+    # The MCP binary also hardcodes /opt/1Password/1password as the app it
+    # would launch when the desktop app is not running.
+    "L+ /opt/1Password/1password - - - - ${config.programs._1password-gui.package}/bin/1password"
+  ];
   programs._1password-gui = {
     enable = true;
     package = pkgs-unstable._1password-gui;
@@ -59,6 +61,8 @@ in
   };
 
   environment.systemPackages = with pkgs; [
+    onePasswordMcp
+
     # Browsers
     googleChromeWrapped
     zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
