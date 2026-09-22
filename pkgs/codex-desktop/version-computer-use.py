@@ -1,6 +1,7 @@
 """Invalidate both bundled-plugin caches when the local Linux backend changes."""
 import hashlib
 import json
+import re
 from pathlib import Path
 import sys
 
@@ -8,7 +9,11 @@ import sys
 def version_plugin(root: Path, report_path: Path):
     manifest_path = root / ".codex-plugin/plugin.json"
     manifest = json.loads(manifest_path.read_text())
-    if manifest.get("name") != "computer-use" or manifest.get("version") != "0.1.2-linux-alpha2":
+    # Since 26.915 the Linux backend lives in unified-computer-use, whose
+    # version tracks the app build; still hash the helpers so local rebuilds
+    # of the same app version also invalidate the caches.
+    if manifest.get("name") != "unified-computer-use" or not re.fullmatch(
+            r"\d+\.\d+\.\d+-linux-native\.\d+", str(manifest.get("version"))):
         raise ValueError("Unknown Computer Use manifest; review cache versioning before updating")
     digest = hashlib.sha256()
     for relative in (".mcp.json", "bin/codex-computer-use-linux", "bin/codex-computer-use-cosmic"):

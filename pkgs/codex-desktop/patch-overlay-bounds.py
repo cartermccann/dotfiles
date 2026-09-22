@@ -9,21 +9,25 @@ This affects only the shared pet/voice overlay geometry, not voice availability.
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import struct
 import sys
 
 MARKER = b"/*cjmLinuxOverlayBounds*/"
-START = b"function noe({anchor:e,constrainNativeDrawWindowToDisplay:t=!1,"
-END = b"function Jp(e,t)"
+# Minified top-level names (the layout function and its helpers) change on
+# every upstream build, so anchor on parameter names and structure instead.
+ID = rb"[A-Za-z_$][\w$]*"
+START = re.compile(rb"function " + ID + rb"\(\{anchor:e,constrainNativeDrawWindowToDisplay:t=!1,")
+END = b"windowBounds:j};function N(e){"
 OLD = b"if(_){let e=o??w;"
 NEW = b"if(_&&process.platform!==`linux`" + MARKER + b"){let e=o??w;"
-CONTRACTS = (
-    b"nativeDrawDisplayHeightPx:c=n.height",
-    b"j=roe({anchor:e,displayBounds:n,nativeDrawDisplayHeightPx:c,viewportWidth:g.width})",
-    b"let e=soe({anchor:w,displayBounds:n,mode:i,placement:E,bottomReserve:y,viewport:O})",
-    b"mascot:$p(w,j)", b"tray:A==null?null:$p(A,j)", b"windowBounds:j",
-)
+CONTRACTS = tuple(re.compile(c) for c in (
+    rb"nativeDrawDisplayHeightPx:c=n\.height",
+    rb"j=" + ID + rb"\(\{anchor:e,displayBounds:n,nativeDrawDisplayHeightPx:c,viewportWidth:g\.width\}\)",
+    rb"let e=" + ID + rb"\(\{anchor:w,displayBounds:n,mode:i,placement:E,bottomReserve:y,viewport:O\}\)",
+    rb"mascot:" + ID + rb"\(w,j\)", rb"tray:A==null\?null:" + ID + rb"\(A,j\)", rb"windowBounds:j",
+))
 
 
 def entries(node, prefix=""):
@@ -52,14 +56,16 @@ def read_archive(raw):
 def patch_source(content):
     if MARKER in content:
         raise ValueError("Linux overlay patch already present")
-    if content.count(START) != 1:
+    starts = list(START.finditer(content))
+    if len(starts) != 1:
         raise ValueError("Expected exactly one overlay layout function")
-    start = content.index(START)
+    start = starts[0].start()
     end = content.find(END, start)
     if end < 0:
         raise ValueError("Overlay function boundary changed")
+    end += len(END)
     function = content[start:end]
-    if function.count(OLD) != 1 or any(function.count(c) != 1 for c in CONTRACTS):
+    if function.count(OLD) != 1 or any(len(c.findall(function)) != 1 for c in CONTRACTS):
         raise ValueError("Overlay geometry contract changed")
     return content[:start] + function.replace(OLD, NEW) + content[end:]
 
@@ -82,7 +88,7 @@ def patch(archive, report):
         content = raw[base + off:base + off + entry["size"]]
         if MARKER in content:
             raise ValueError("Linux overlay patch already present")
-        if START in content:
+        if START.search(content):
             found.append((name, entry, content, off))
     if len(found) != 1:
         raise ValueError(f"Expected one main overlay asset, found {len(found)}")

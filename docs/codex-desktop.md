@@ -5,9 +5,11 @@ The desktop entry is configured in `home/codex-desktop.nix`. It uses the
 The input retains its own nixpkgs because its native runtime needs that exact
 library set. All application libraries are now dependencies of the Nix package.
 
-The September 4, 2026 update uses official Linux app **26.901.31953**, verified
-against OpenAI's signed stable APT metadata, through community source revision
-`23c55eb49ca724e8b7a1e698c1f3df075be42631`.
+The September 22, 2026 update uses official Linux app **26.915.31945** through
+community source revision `49d5bc1c38aba9d25c1c798c1fffad8918390ae1`. From this
+release the Linux Computer Use backend ships in the `unified-computer-use`
+plugin (`computer-use` is a manifest-only stub), so the cache-version hash is
+applied there.
 
 ## Preserved behavior
 

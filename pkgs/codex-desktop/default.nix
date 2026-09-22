@@ -27,7 +27,7 @@
       # Upstream reused its plugin version across backend changes. Both app
       # staging and installed-plugin caches compare versions, not binary bytes.
       ${pkgs.python3}/bin/python3 ${./version-computer-use.py} \
-        "$out/opt/codex-desktop/resources/plugins/openai-bundled/plugins/computer-use" \
+        "$out/opt/codex-desktop/resources/plugins/openai-bundled/plugins/unified-computer-use" \
         "$out/opt/codex-desktop/.codex-linux/local-mods.json"
     '';
   })
