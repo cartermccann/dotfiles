@@ -23,6 +23,40 @@ let
   grokBot = pkgs.callPackage ../pkgs/grok-bot { };
   codexCli = pkgs-unstable.callPackage ../pkgs/codex { };
 
+  # OpenCode v2 owns its binary in ~/.opencode/bin so its built-in updater can
+  # replace it in place: a /nix/store copy is read-only, and nixpkgs `opencode`
+  # is still the 1.x line. This launcher is the declarative half. It bootstraps
+  # that install on first run with upstream's installer (the same script the
+  # updater runs), then execs it from that exact path, because the updater only
+  # recognises the install when process.execPath is ~/.opencode/bin/opencode.
+  # The binary is glibc-linked and runs through nix-ld (modules/common.nix).
+  # Updates install automatically only with `"update": "auto"` in
+  # ~/.config/opencode/opencode.json; v2's default is "notify".
+  #
+  # The installer probes `opencode --version`, which lands back here; the
+  # bootstrap flag makes that probe fail instead of recursing into the installer.
+  opencodeLauncher = pkgs.writeShellApplication {
+    name = "opencode";
+    runtimeInputs = with pkgs; [
+      curl
+      gnutar
+      gzip
+    ];
+    text = ''
+      bin="$HOME/.opencode/bin/opencode"
+      if [ ! -x "$bin" ]; then
+        [ -z "''${OPENCODE_LAUNCHER_BOOTSTRAP:-}" ] || exit 1
+        installer=$(mktemp)
+        trap 'rm -f "$installer"' EXIT
+        curl -fsSL -o "$installer" https://opencode.ai/v2/install
+        OPENCODE_LAUNCHER_BOOTSTRAP=1 bash "$installer" --no-modify-path >&2
+        rm -f "$installer"
+        trap - EXIT
+      fi
+      exec "$bin" "$@"
+    '';
+  };
+
   comcreateDesktopUpstream =
     comcreate-desktop-app.packages.${pkgs.stdenv.hostPlatform.system}.default;
   comcreateDesktop = pkgs.symlinkJoin {
