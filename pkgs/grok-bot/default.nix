@@ -95,11 +95,11 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "grok-bot";
-  version = "0.57.1";
+  version = "0.58.0";
 
   src = fetchurl {
     url = "https://github.com/Nichokas/grokbot-linux-port/releases/download/v${finalAttrs.version}/Grok_Bot_${finalAttrs.version}_linux_x64.tar.gz";
-    hash = "sha256-9nAOou+OWa0k6wws46ngL0bPLt8tbUc09NHrlz+KgQM=";
+    hash = "sha256-dnzwGXFuQPNd+vAnWtHR3WO7R06rbT1gcx4roPX47vo=";
   };
 
   sourceRoot = "Grok_Bot_${finalAttrs.version}_linux_x64";
