@@ -78,8 +78,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     herdr = {
-      url = "github:ogulcancelik/herdr/v0.8.0";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:ogulcancelik/herdr/v0.9.1";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
   };
 
