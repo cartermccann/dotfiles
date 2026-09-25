@@ -134,7 +134,7 @@ in
     nix-output-monitor
 
     # AI / LLM
-    pkgs-unstable.opencode # agent CLIs move too fast for stable
+    opencodeLauncher # OpenCode v2, self-updating in ~/.opencode/bin (see the let binding)
     pkgs-unstable.bubblewrap # PATH bwrap preferred by Codex over its bundled fallback
     codexCli
     pkgs-unstable.ollama # CLI client only (server is the podman container) — unstable to stay near the 0.30.x server API
