@@ -15,6 +15,7 @@
     ../../modules/desktop-plasma.nix
     ../../modules/nvidia.nix
     ../../modules/ollama.nix
+    ../../modules/opencode-companion.nix
     ../../modules/llama-heavy.nix
     ../../modules/audio.nix
     ../../modules/bluetooth.nix
