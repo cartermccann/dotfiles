@@ -68,7 +68,7 @@
     };
     # Keep the upstream runtime closure intact; its ELF audit targets its own
     # nixpkgs, so this input deliberately does not follow the host nixpkgs.
-    codex-desktop-linux.url = "github:ilysenko/codex-desktop-linux/49d5bc1c38aba9d25c1c798c1fffad8918390ae1";
+    codex-desktop-linux.url = "github:ilysenko/codex-desktop-linux/1545938db09233638a32bbb7635d22eecafec386";
     helium = {
       url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
