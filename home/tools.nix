@@ -22,6 +22,19 @@ let
   grokCli = pkgs.callPackage ../pkgs/grok-cli { };
   grokBot = pkgs.callPackage ../pkgs/grok-bot { };
   codexCli = pkgs-unstable.callPackage ../pkgs/codex { };
+  codexUpdater = pkgs.writeShellApplication {
+    name = "codex-update";
+    runtimeInputs = with pkgs; [
+      python3
+      curl
+      nix
+      git
+      nh
+    ];
+    text = ''
+      exec python3 ${../scripts/codex-update.py} --repo ${pkgs.lib.escapeShellArg "${config.home.homeDirectory}/dotfiles"} "$@"
+    '';
+  };
 
   # OpenCode v2 owns its binary in ~/.opencode/bin so its built-in updater can
   # replace it in place: a /nix/store copy is read-only, and nixpkgs `opencode`
@@ -137,6 +150,7 @@ in
     opencodeLauncher # OpenCode v2, self-updating in ~/.opencode/bin (see the let binding)
     pkgs-unstable.bubblewrap # PATH bwrap preferred by Codex over its bundled fallback
     codexCli
+    codexUpdater
     pkgs-unstable.ollama # CLI client only (server is the podman container) — unstable to stay near the 0.30.x server API
     grokCli # official xAI Grok CLI (grok/agent) — prebuilt binary in ../pkgs/grok-cli
     grokBot # Grok Bot desktop agent — third-party Linux port, see ../pkgs/grok-bot

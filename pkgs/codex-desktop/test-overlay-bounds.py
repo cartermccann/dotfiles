@@ -26,7 +26,15 @@ def fixture(content):
     return struct.pack("<IIII", 4, 8 + len(data) + pad, 4 + len(data) + pad, len(data)) + data + b"\0" * pad + b"before" + content + b"after"
 
 
-SOURCE = patcher.START + b"xxx){" + patcher.OLD + b"}" + b";".join(patcher.CONTRACTS) + b"}" + patcher.END + b"{}"
+CONTRACT_FIXTURES = (
+    b"nativeDrawDisplayHeightPx:c=n.height",
+    b"j=draw({anchor:e,displayBounds:n,nativeDrawDisplayHeightPx:c,viewportWidth:g.width})",
+    b"let e=compact({anchor:w,displayBounds:n,mode:i,placement:E,bottomReserve:y,viewport:O})",
+    b"mascot:offset(w,j)", b"tray:A==null?null:offset(A,j)",
+)
+SOURCE = (b"function layout({anchor:e,constrainNativeDrawWindowToDisplay:t=!1,xxx){"
+          + patcher.OLD + b"}" + b";".join(CONTRACT_FIXTURES)
+          + b";" + patcher.END + b"{}")
 
 
 class ArchiveTests(unittest.TestCase):
@@ -74,7 +82,7 @@ class ArchiveTests(unittest.TestCase):
     def test_rejects_source_drift(self):
         for content in (b"missing", SOURCE + SOURCE,
                         SOURCE.replace(patcher.OLD, b"if(changed){"),
-                        SOURCE.replace(patcher.CONTRACTS[0], b"changed")):
+                        SOURCE.replace(CONTRACT_FIXTURES[0], b"changed")):
             with self.assertRaises(ValueError):
                 patcher.patch_source(content)
 
@@ -98,7 +106,7 @@ class ActualGeometryTests(unittest.TestCase):
             if name.startswith(".vite/build/main-") and name.endswith(".js"):
                 off = base + int(entry["offset"])
                 s = raw[off:off + entry["size"]]
-                if patcher.START in s:
+                if patcher.START.search(s):
                     contents.append(s)
         self.assertEqual(len(contents), 1)
         source = contents[0]

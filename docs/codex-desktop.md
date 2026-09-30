@@ -5,8 +5,8 @@ The desktop entry is configured in `home/codex-desktop.nix`. It uses the
 The input retains its own nixpkgs because its native runtime needs that exact
 library set. All application libraries are now dependencies of the Nix package.
 
-The September 22, 2026 update uses official Linux app **26.915.31945** through
-community source revision `49d5bc1c38aba9d25c1c798c1fffad8918390ae1`. From this
+The current pin uses official Linux app **26.924.51851** through community
+source revision `1545938db09233638a32bbb7635d22eecafec386`. From this
 release the Linux Computer Use backend ships in the `unified-computer-use`
 plugin (`computer-use` is a manifest-only stub), so the cache-version hash is
 applied there.
@@ -76,12 +76,41 @@ live interaction results.
 
 ## Updating and checking
 
-Update the explicit community revision in `flake.nix`, refresh only that flake
-input, and verify its pinned Linux package still matches signed stable metadata
-using the upstream `scripts/ci/update-nix-hashes.sh check` command. The upstream
-README currently names an older, missing script for this operation.
+Use the declaratively installed updater from any directory:
 
-Run local patch tests, then `nh os build ~/dotfiles`. Apply with `nrs` from a
+```bash
+codex-update --check        # Read-only comparison with upstream
+codex-update                # Update CLI and desktop pins, test, and build
+codex-update --cli-only     # Update only the CLI, then test and build
+codex-update --desktop-only # Update only the desktop, then test and build
+```
+
+The command defaults to `~/dotfiles`; `--repo /path/to/dotfiles` selects another
+checkout. Before the first system switch, run the source directly with
+`python3 ~/dotfiles/scripts/codex-update.py --check` or omit `--check` to update.
+
+The CLI version and architecture-specific hashes live in `pkgs/codex/sources.json`.
+The updater resolves OpenAI's latest stable GitHub release, requires both Linux
+musl package assets and their SHA-256 digests, and verifies changed downloads
+using Nix before writing either hash. Alpha releases and downgrades are rejected.
+
+The desktop updater resolves the community repository's current `main` revision,
+which pins hashed official Linux packages. It retains an explicit revision in
+`flake.nix` and prepares a targeted lock update in a temporary directory. Changes
+to another root input's dependency graph are rejected. Only the CLI manifest,
+desktop input line, and desktop lock closure are updated; local patches and
+launcher settings are retained. The normal build applies those patches to the
+actual payload and rejects unknown bundle shapes.
+
+Every update runs all three local desktop patch test suites and `nh os build`.
+Failed or interrupted builds restore the command's pin edits to their prior
+contents, including pre-existing local edits. Concurrent edits are preserved and
+reported for inspection. A per-checkout lock prevents simultaneous updater runs.
+`--check` fetches metadata only and does not download packages, write files, or
+build. This is an on-demand command; no scheduled updater or privileged switch
+is installed.
+
+Apply the successfully built result with `nrs` from a
 normal terminal; a privileged switch requires Carter's sudo password. Quit the
 existing app and reopen the desktop entry after activation. Actual dictation
 and hardware key actions should be checked in the newly opened app.

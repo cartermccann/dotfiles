@@ -20,19 +20,10 @@
 # publishing redundant Linux bundle archives", #36342) and the layout gained a
 # bin/ prefix, so a naive version bump silently 404s.
 #
-# To update, bump version and both hashes from the matching GitHub release.
+# Run codex-update to refresh sources.json and validate the system build.
 let
-  version = "0.155.1";
-  bundles = {
-    x86_64-linux = {
-      target = "x86_64-unknown-linux-musl";
-      hash = "sha256-gxLRctpmPk60uAlEfc8S4kjVF0rhjWjlS71MktN72K4=";
-    };
-    aarch64-linux = {
-      target = "aarch64-unknown-linux-musl";
-      hash = "sha256-QjjLm+Pq5KtoPAh5B6iB7FK4SjnID6Q1iAOruF4shNs=";
-    };
-  };
+  sources = builtins.fromJSON (builtins.readFile ./sources.json);
+  inherit (sources) version bundles;
   bundle =
     bundles.${stdenvNoCC.hostPlatform.system}
       or (throw "codex: unsupported system ${stdenvNoCC.hostPlatform.system}");
