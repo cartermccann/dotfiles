@@ -19,6 +19,11 @@
       ${pkgs.python3}/bin/python3 ${./patch-overlay-bounds.py} \
         "$out/opt/codex-desktop/resources/app.asar" \
         "$out/opt/codex-desktop/.codex-linux/local-mods.json"
+      # The cloud/durable app-server does not currently expose lifecycle hook
+      # RPCs. Keep local/connected-host routing and show explicit UI capability.
+      ${pkgs.python3}/bin/python3 ${./patch-hooks-capability.py} \
+        "$out/opt/codex-desktop/resources/app.asar" \
+        "$out/opt/codex-desktop/.codex-linux/local-mods.json"
       # Upstream packs before patchelf. Refresh the native entry's size/digest
       # and Watchbound's manifest so its existing integrity checks remain valid.
       ${pkgs.python3}/bin/python3 ${./patch-watchbound-metadata.py} \

@@ -74,6 +74,22 @@ should work, and other apps should remain usable. Check pet appearance and
 expanded tray/captions as well. A successful build does not establish these
 live interaction results.
 
+### Hooks host capability
+
+The durable/cloud app-server currently rejects `hooks/list`. A local compatibility
+patch prevents that RPC in the shared settings/composer query and shows an
+explicit unsupported message in Hooks settings, including while project roots
+are missing. Refresh is disabled and cannot report a false success. Local and
+connected hosts retain their original scoped RPCs, errors, and hook trust rules;
+remote operations are never redirected to the local configuration.
+
+The patch checks archive bounds globally and changed JavaScript digests strictly,
+preserving unrelated payloads and metadata. Unknown source shapes fail the build.
+This workaround is version-specific and should be rechecked when upstream adds
+cloud hook support. After switching and restarting, verify the cloud message and
+a successful local/connected Hooks settings load. Bundle tests do not establish
+those live UI results.
+
 ## Updating and checking
 
 Use the declaratively installed updater from any directory:
@@ -102,7 +118,7 @@ desktop input line, and desktop lock closure are updated; local patches and
 launcher settings are retained. The normal build applies those patches to the
 actual payload and rejects unknown bundle shapes.
 
-Every update runs all three local desktop patch test suites and `nh os build`.
+Every update runs all four local desktop patch test suites and `nh os build`.
 Failed or interrupted builds restore the command's pin edits to their prior
 contents, including pre-existing local edits. Concurrent edits are preserved and
 reported for inspection. A per-checkout lock prevents simultaneous updater runs.

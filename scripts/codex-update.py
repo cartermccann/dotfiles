@@ -126,7 +126,7 @@ def check_lock_scope(before, after):
 
 
 def validate(repo):
-    for name in ("test-dictation-patch.py", "test-overlay-bounds.py", "test-watchbound-metadata.py"):
+    for name in ("test-dictation-patch.py", "test-overlay-bounds.py", "test-hooks-capability.py", "test-watchbound-metadata.py"):
         run(sys.executable, str(repo / "pkgs/codex-desktop" / name), cwd=repo)
     run("nh", "os", "build", str(repo), "--no-nom", cwd=repo)
 
