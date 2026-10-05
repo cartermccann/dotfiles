@@ -91,14 +91,18 @@ let
       "Output" "$NAME"
   '';
 
-  # Night-light toggle via hyprsunset's hyprctl IPC (replaces the wlsunset pkill dance)
+  # Night-light toggle via hyprsunset's hyprctl IPC (replaces the wlsunset pkill dance).
+  # Reads the live temperature rather than a state file: the 20:30 profile in
+  # hyprsunset.conf warms the screen on its own, and a state file never saw
+  # that, so the first press after dusk went the wrong way.
   hyprNightToggle = pkgs.writeShellScriptBin "hypr-night-toggle" ''
-    STATE="''${XDG_RUNTIME_DIR:-/tmp}/.hypr-night-on"
-    if [ -f "$STATE" ]; then
-      ${hyprctl} hyprsunset identity && rm -f "$STATE"
+    T=$(${hyprctl} hyprsunset temperature 2>/dev/null | tr -dc 0-9)
+    if [ -n "$T" ] && [ "$T" -lt 6000 ]; then
+      ${hyprctl} hyprsunset identity
     else
-      ${hyprctl} hyprsunset temperature 3500 && touch "$STATE"
+      ${hyprctl} hyprsunset temperature 3500
     fi
+    pkill -RTMIN+8 -x waybar || true
   '';
 
   # These scripts are shell-agnostic and shipped to both session tiles: they

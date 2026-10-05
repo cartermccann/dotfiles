@@ -1,8 +1,10 @@
 /* Waybar stylesheet for the Hyprland session.
  *
- * Colours come from _ouranos.css, generated next to this file from
- * lib/palette.nix by home/hyprland/palette-css.nix. Use @slot for solids and
- * alpha(@slot, a) for translucency. */
+ * Colours and the Ouranos glass tokens come from _ouranos.css, generated next
+ * to this file from lib/palette.nix + lib/ouranos.nix by
+ * home/hyprland/palette-css.nix. Use @slot for solids, alpha(@slot, a) for
+ * one-off translucency, and the @frost_* / @lens_* tokens for glass. Radii are
+ * literal (GTK cannot parametrise lengths): 14 surface, 10 row, 9 chip. */
 @import url("_ouranos.css");
 
 * {
@@ -16,26 +18,35 @@ window#waybar {
   background: transparent;
   color: @base05;
 }
+/* Tooltips are summoned surfaces: lens tier. */
 tooltip {
-  background: alpha(@base01, 0.95);
-  border: 1px solid alpha(@base05, 0.08);
+  background: @lens_bg;
+  border: 1px solid @lens_hairline;
   border-radius: 10px;
+  box-shadow: inset 0 1px 0 @lens_rim, inset 0 0 12px @lens_glow;
 }
 tooltip label {
   color: @base05;
 }
-/* Floating frosted-glass module groups (Hyprland layer blur does the frosting).
-   Site language: borders are NEUTRAL hairlines; accent only where focus lives.
-   The inset top highlight is a PillNav-style "liquid sheen". */
+/* Floating module groups, frost tier: Hyprland's layer blur does the frosting,
+   the tint floor keeps labels legible over any wallpaper, and the light lives
+   on the edges only: a specular rim on top, a caustic shade underneath.
+   Site language: borders are NEUTRAL hairlines; accent only where focus lives. */
 .modules-left,
 .modules-center,
 .modules-right {
-  background: alpha(@base01, 0.45);
-  border: 1px solid alpha(@base05, 0.07);
-  box-shadow: inset 0 1px 0 alpha(@base05, 0.06);
+  background: @frost_bg;
+  border: 1px solid @frost_hairline;
+  box-shadow: inset 0 1px 0 @frost_rim, inset 0 -1px 0 @frost_caustic;
   border-radius: 14px;
   padding: 1px 10px;
   margin: 0 4px;
+}
+/* One motion curve everywhere: cubic-bezier(.2,.8,.2,1), 180ms on hover. */
+button,
+label {
+  transition: background-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 #workspaces button {
   color: @base04;
@@ -47,6 +58,7 @@ tooltip label {
 #workspaces button.active {
   color: @base07;
   background: alpha(@base0D, 0.18);
+  box-shadow: inset 0 1px 0 alpha(white, 0.10);
 }
 #workspaces button.urgent {
   color: @base08;
@@ -66,6 +78,43 @@ tooltip label {
   padding: 0 10px;
   font-size: 12px;
 }
+
+/* Modes. Active ones sit in #active and light up; the live ones (mic,
+   screen) are red because they record. Inactive ones wait in the #modes
+   drawer behind the leader glyph, dimmed. No pulsing: state is colour. */
+#custom-modes {
+  color: @base03;
+  padding: 0 6px;
+}
+#modes:hover #custom-modes {
+  color: @base04;
+}
+#active label,
+#modes label.peek {
+  padding: 0 8px;
+  border-radius: 9px;
+}
+#active label.on {
+  color: @base0D;
+}
+#active label.live {
+  color: @base08;
+}
+#modes label.peek {
+  color: @base03;
+}
+#modes label.peek:hover,
+#active label:hover {
+  background: alpha(@base05, 0.06);
+  color: @base05;
+}
+#custom-updates {
+  color: @base0D;
+  padding: 0 9px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
 #mpris {
   color: @base06;
   padding: 0 9px;
@@ -74,18 +123,12 @@ tooltip label {
 #mpris.paused {
   color: @base04;
 }
-#idle_inhibitor {
-  color: @base04;
-  padding: 0 8px;
-}
-#idle_inhibitor.activated {
-  color: @base0D;
-}
 /* HUD micro-labels: uppercase comes from the module format strings (GTK CSS
    has no text-transform); tracking lives here. mpris exempt — titles keep case. */
 #custom-gpu,
 #cpu,
 #memory,
+#custom-tailscale,
 #network,
 #bluetooth,
 #pulseaudio {
@@ -95,9 +138,14 @@ tooltip label {
   letter-spacing: 0.08em;
 }
 #pulseaudio.muted,
+#pulseaudio.mic.source-muted,
+#custom-tailscale.off,
 #bluetooth.disabled,
 #network.disconnected {
   color: @base03;
+}
+#custom-tailscale.exit {
+  color: @base0D;
 }
 #custom-notifications {
   color: @base06;

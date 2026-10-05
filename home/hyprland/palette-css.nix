@@ -13,12 +13,11 @@
 # exactly the rgba() form it replaces — verified against every translucent
 # colour in both stylesheets via GTK's computed style.
 #
-# ./css.nix (the hex -> "r, g, b" helper) is still used by lock.nix and
-# menus.nix, whose stylesheets are small enough to stay inline; it is no longer
-# needed by waybar or swaync.
-#
 # Every hex-valued attribute is exported, so the semantic aliases (@accent,
 # @surface, @border, @text, ...) are available alongside the base16 slots.
+#
+# The Ouranos glass tiers (lib/ouranos.nix) follow the palette as derived
+# @define-color tokens: @frost_bg, @frost_rim, @lens_glow, @lens_fringe_l, ...
 #
 # Usage:  ouranosCss = import ./palette-css.nix lib pal;
 lib: pal:
@@ -27,3 +26,4 @@ let
   colors = lib.filterAttrs (_: isHex) pal;
 in
 lib.concatStrings (lib.mapAttrsToList (name: hex: "@define-color ${name} ${hex};\n") colors)
++ (import ../../lib/ouranos.nix).gtkColors

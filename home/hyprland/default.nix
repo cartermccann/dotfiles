@@ -10,26 +10,28 @@
 # files for six programs.
 #
 #   scripts.nix     the hypr-* helper scripts
+#   bar-scripts.nix waybar's live modules: modes, recording, Tailscale, updates
 #   compositor.nix  hyprland.lua + hyprsunset.conf
 #   waybar.nix      waybar config + stylesheet
 #   swaync.nix      notification daemon + stylesheet
 #   menus.nix       fuzzel + swayosd
 #   lock.nix        hyprlock + hypridle
 #   caelestia.nix   the Caelestia shell (second session tile)
-#   css.nix         shared hex -> "r, g, b" helper (not a module)
-#   palette-css.nix palette -> GTK @define-color block (not a module)
+#   palette-css.nix palette + glass tokens -> GTK @define-color block (not a module)
 #
 # Colours come from lib/palette.nix; each module imports it directly rather
 # than threading it through, so any one of them can be read on its own.
 #
-# The two large stylesheets (waybar, swaync) are plain .css files under
-# config/hyprland/ with no interpolation; palette-css.nix emits the palette
-# next to each as _ouranos.css, which they pull in with @import. The small
-# ones (fuzzel, swayosd, hyprlock, hypridle) stay inline — extracting a
-# 19-line blob costs more indirection than it saves.
+# Colours come from lib/palette.nix; glass, shape and blur from
+# lib/ouranos.nix. The two large stylesheets (waybar, swaync) are plain .css
+# files under config/hyprland/ with no interpolation; palette-css.nix emits
+# the palette and glass tokens next to each (and next to swayosd's inline
+# one) as _ouranos.css, which they pull in with @import. fuzzel, hyprlock and
+# hypridle stay inline.
 {
   imports = [
     ./scripts.nix
+    ./bar-scripts.nix
     ./compositor.nix
     ./waybar.nix
     ./swaync.nix

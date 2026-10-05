@@ -10,6 +10,7 @@
 # swaync.nix, menus.nix, lock.nix.
 let
   pal = import ../../lib/palette.nix;
+  ouranos = import ../../lib/ouranos.nix;
   cfgHome = config.xdg.configHome;
   hyprctl = "${hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland}/bin/hyprctl";
 
@@ -89,8 +90,8 @@ let
         },
         -- Glassy blur + rounding + soft shadows + glow
         decoration = {
-          rounding = 14,
-          rounding_power = 2.5, -- subtle squircle — smoother corner flow than pure circle
+          rounding = ${toString ouranos.radius.surface},
+          rounding_power = ${toString ouranos.radius.squirclePower}, -- subtle squircle — smoother corner flow than pure circle
           -- Opacity strategy: globals stay 1.0; translucency is granted per-app via
           -- window rules below (the terminal is the only glass pane by default).
           active_opacity = 1.0,
@@ -112,19 +113,23 @@ let
             --   radius is what makes a surface read as glass rather than grey
             --   paint. At 26 the desktop looked solid; 14 keeps enough shape
             --   to see through.
-            size = 14,
-            passes = 4,
+            --
+            -- Now driven by lib/ouranos.nix (blur.*): one extra pass at a
+            -- slightly smaller size is the Ouranos frost: heavier diffusion
+            -- with the same shape, and the tint floor keeps text legible.
+            size = ${toString ouranos.blur.size},
+            passes = ${toString ouranos.blur.passes},
             new_optimizations = true,
             xray = true, -- biggest NVIDIA perf lever: blur samples the wallpaper, not stacked windows
             ignore_opacity = true,
-            noise = 0.055, -- coarser grain = the diffusion through the frost
-            contrast = 0.94,
-            brightness = 1.12,
+            noise = ${toString ouranos.blur.noise}, -- coarser grain = the diffusion through the frost
+            contrast = ${toString ouranos.blur.contrast},
+            brightness = ${toString ouranos.blur.brightness},
             -- The one value without a 1:1 mapping: scenefx takes a saturation
             -- multiplier (1.7 there), Hyprland takes a 0–1 vibrancy. 0.5 is
             -- the eyeball equivalent, not a conversion — tune it first if the
             -- backdrop reads too grey or too lurid.
-            vibrancy = 0.5,
+            vibrancy = ${toString ouranos.blur.vibrancy},
             vibrancy_darkness = 0.0,
             popups = true, -- blurred right-click menus
             popups_ignorealpha = 0.2,
@@ -424,6 +429,8 @@ let
           # Waybar handles SIGUSR2 as an in-process reload, avoiding a layer-shell
           # teardown/recreate flash. Start it only when no process is running.
           ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill -USR2 -x waybar || ${waybarCmd}"))''
+          # SIGUSR1 is waybar's show/hide toggle: the screen back, panels and binds intact.
+          ''hl.bind(mod .. " + B", hl.dsp.exec_cmd("pkill -USR1 -x waybar"))''
         ]
         [
           # Caelestia has no reload signal; -k then -d is the supported restart.
@@ -432,6 +439,7 @@ let
       }
       hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
       hl.bind(mod .. " + CTRL + N",  hl.dsp.exec_cmd("hypr-night-toggle"))
+      hl.bind(mod .. " + ALT + R",   hl.dsp.exec_cmd("hypr-record")) -- focused monitor → ~/Videos/Recordings
       -- Batch (offline Parakeet) is the primary binding. The streaming model
       -- drops speech mid-sentence for 10-15s at a time on clean, loud input
       -- and sometimes never recovers, which no amount of pipeline work fixes:

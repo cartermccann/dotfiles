@@ -6,8 +6,16 @@
 # fuzzel (launcher + every dmenu script) and swayosd (volume/brightness OSD).
 let
   pal = import ../../lib/palette.nix;
-  cssRgb = import ./css.nix lib;
+  ouranos = import ../../lib/ouranos.nix;
+  lens = ouranos.glass.lens;
   cfgHome = config.xdg.configHome;
+  # 0.5 -> "80": fuzzel takes RRGGBBAA, so glass alphas become a hex byte.
+  alphaHex =
+    a:
+    let
+      h = lib.toLower (lib.toHexString (builtins.floor (a * 255 + 0.5)));
+    in
+    if builtins.stringLength h == 1 then "0${h}" else h;
 in
 {
   xdg.configFile."fuzzel/hypr.ini".text = ''
@@ -22,42 +30,56 @@ in
     inner-pad=10
     layer=overlay
 
+    # Lens tier (lib/ouranos.nix): Hyprland's layer blur behind a 50% tint,
+    # a neutral hairline rather than a cobalt frame, and cobalt only on the
+    # selected row. fuzzel draws no inner shadows, so the edge light that
+    # waybar/swaync get is carried here by the hairline alone.
     [colors]
-    background=${pal.raw.base00}cc
+    background=${pal.raw.base01}${alphaHex lens.tint}
     text=${pal.raw.base05}ff
     prompt=${pal.raw.base04}ff
     placeholder=${pal.raw.base03}ff
     input=${pal.raw.base05}ff
     match=${pal.raw.base0D}ff
-    selection=${pal.raw.base02}dd
+    selection=${pal.raw.base0D}33
     selection-text=${pal.raw.base07}ff
     selection-match=${pal.raw.base0C}ff
-    border=${pal.raw.base0D}66
+    border=${pal.raw.base05}${alphaHex lens.hairline}
 
     [border]
-    width=2
-    radius=14
+    width=1
+    radius=${toString ouranos.radius.surface}
+    selection-radius=${toString ouranos.radius.row}
   '';
 
-  # swayosd: glass OSD (server launched with --style above)
+  # swayosd: lens tier. GTK4 resolves the @import next to this file, so the
+  # OSD reads the same generated tokens as waybar and swaync.
+  xdg.configFile."swayosd/_ouranos.css".text = import ./palette-css.nix lib pal;
   xdg.configFile."swayosd/style.css".text = ''
+    @import url("_ouranos.css");
     window {
-      background: rgba(${cssRgb pal.base01}, 0.55);
-      border: 1px solid rgba(${cssRgb pal.base05}, 0.08);
-      border-radius: 14px;
+      background: @lens_bg;
+      border: 1px solid @lens_hairline;
+      border-radius: ${toString ouranos.radius.surface}px;
+      box-shadow: inset 0 1px 0 @lens_rim, inset 1px 0 0 @lens_fringe_l,
+        inset -1px 0 0 @lens_fringe_r, inset 0 -1px 0 @lens_caustic,
+        inset 0 0 18px @lens_glow;
     }
     label {
-      color: ${pal.base05};
-      font-family: "JetBrainsMono Nerd Font", monospace;
+      color: @base05;
+      font-family: "${ouranos.font.mono}", monospace;
     }
     progressbar trough {
-      background: rgba(${cssRgb pal.base03}, 0.4);
+      background: alpha(@base05, 0.08);
+      border-radius: 4px;
     }
     progressbar progress {
-      background: ${pal.base0D};
+      background: @base0D;
+      border-radius: 4px;
+      box-shadow: inset 0 1px 0 alpha(white, 0.3), 0 0 12px alpha(@base0D, 0.45);
     }
     image {
-      color: ${pal.base06};
+      color: @base06;
     }
   '';
 

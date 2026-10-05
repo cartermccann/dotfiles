@@ -4,13 +4,44 @@
   ...
 }:
 # Waybar: the bar config and its stylesheet.
+#
+# Two bars from one module set. The HP (2560) carries everything; the Dell
+# (1920, landscape) carries the workspaces, clock, modes, media, Tailscale and
+# audio, leaving system stats to the HP. The live modules (modes, Tailscale,
+# updates) are scripts from bar-scripts.nix; they share signal 8 so any toggle
+# refreshes them all at once.
 let
   pal = import ../../lib/palette.nix;
+
+  # Mode indicators. Each mode is two custom modules from one script: the
+  # `mode-*` one shows only while the mode is on (bar stays quiet otherwise),
+  # the `peek-*` one only while it is off, inside a hover drawer. So an active
+  # mode is always visible and an inactive one is one hover + click away.
+  modes = [
+    "dictation"
+    "record"
+    "night"
+    "caffeine"
+    "dnd"
+    "heavy"
+  ];
+  modeModule = view: name: {
+    name = "custom/${if view == "on" then "mode" else "peek"}-${name}";
+    value = {
+      exec = "ouranos-mode status ${name} ${view}";
+      return-type = "json";
+      interval = 5;
+      signal = 8;
+      on-click = "ouranos-mode toggle ${name}";
+      escape = true;
+    };
+  };
+  modeModules = builtins.listToAttrs (map (modeModule "on") modes ++ map (modeModule "peek") modes);
 in
 {
   xdg.configFile."waybar/config".text =
     let
-      barBase = {
+      barBase = modeModules // {
         layer = "top";
         position = "top";
         height = 34;
@@ -30,10 +61,48 @@ in
           format = "{}";
           tooltip = false;
         };
+
+        "group/active" = {
+          orientation = "horizontal";
+          modules = map (m: "custom/mode-${m}") modes;
+        };
+        # The leader glyph is the only always-visible piece; hovering it slides
+        # the inactive modes out to its left.
+        "group/modes" = {
+          orientation = "horizontal";
+          drawer = {
+            transition-duration = 260;
+            transition-left-to-right = false;
+            children-class = "peek";
+          };
+          modules = [ "custom/modes" ] ++ map (m: "custom/peek-${m}") modes;
+        };
+        "custom/modes" = {
+          format = "󰇘";
+          tooltip-format = "modes · hover to show the inactive ones";
+        };
+
+        # Left-click flips to the ISO/week format (waybar's format-alt), middle
+        # steps through the timezones, hover shows the month.
         clock = {
           format = "{:%H:%M  ·  %a %b %d}";
+          format-alt = "{:%Y-%m-%d  ·  week %V}";
+          timezones = [
+            ""
+            "Etc/UTC"
+          ];
           tooltip-format = "<tt>{calendar}</tt>";
+          actions.on-click-middle = "tz_up";
         };
+        "custom/updates" = {
+          exec = "ouranos-updates status";
+          return-type = "json";
+          interval = 300;
+          signal = 8;
+          on-click = "ouranos-updates menu";
+          escape = true;
+        };
+
         mpris = {
           format = "{status_icon} {dynamic}";
           dynamic-order = [
@@ -48,15 +117,9 @@ in
           };
           tooltip-format = "{player}: {title} — {artist}";
           # click = play/pause, right-click = next are mpris module defaults
-        };
-        idle_inhibitor = {
-          format = "{icon}";
-          format-icons = {
-            activated = "󰅶";
-            deactivated = "󰾪";
-          };
-          tooltip-format-activated = "caffeine: screen stays on";
-          tooltip-format-deactivated = "idle: lock at 5 min";
+          on-click-middle = "playerctl next";
+          on-scroll-up = "playerctl next";
+          on-scroll-down = "playerctl previous";
         };
         "custom/gpu" = {
           exec = "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits";
@@ -77,6 +140,15 @@ in
           "min-length" = 8;
           on-click = "ghostty --class=TUI.float -e btop";
         };
+        "custom/tailscale" = {
+          exec = "ouranos-tailscale status";
+          return-type = "json";
+          interval = 15;
+          signal = 8;
+          on-click = "ouranos-tailscale menu";
+          on-click-right = "ouranos-tailscale toggle";
+          escape = true;
+        };
         network = {
           format-wifi = "WIFI {signalStrength}%";
           format-ethernet = "ETH";
@@ -95,6 +167,18 @@ in
           tooltip-format-connected = "{device_enumerate}";
           tooltip-format-enumerate-connected = "{device_alias}";
           on-click = "ghostty --class=TUI.float -e bluetui";
+        };
+        # The microphone as its own module: click mutes, scroll sets input
+        # gain, middle opens pavucontrol on its Input Devices tab.
+        "pulseaudio#mic" = {
+          format = "{format_source}";
+          format-source = "MIC {volume}%";
+          format-source-muted = "MIC OFF";
+          on-click = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
+          on-click-middle = "pavucontrol -t 4";
+          on-scroll-up = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SOURCE@ 3%+";
+          on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 3%-";
+          tooltip = false;
         };
         # Left-click is the output picker rather than pavucontrol: switching
         # between the desk speakers, the Schiit and Bluetooth headphones is
@@ -136,6 +220,11 @@ in
           tooltip = false;
         };
       };
+      center = [
+        "group/modes"
+        "group/active"
+        "clock"
+      ];
     in
     builtins.toJSON [
       (
@@ -146,15 +235,16 @@ in
             "hyprland/workspaces"
             "hyprland/submap"
           ];
-          modules-center = [ "clock" ];
+          modules-center = center ++ [ "custom/updates" ];
           modules-right = [
             "mpris"
-            "idle_inhibitor"
             "custom/gpu"
             "cpu"
             "memory"
+            "custom/tailscale"
             "network"
             "bluetooth"
+            "pulseaudio#mic"
             "pulseaudio"
             "custom/notifications"
             "tray"
@@ -170,8 +260,11 @@ in
             "hyprland/workspaces"
             "hyprland/submap"
           ];
-          modules-center = [ "clock" ];
+          modules-center = center;
           modules-right = [
+            "mpris"
+            "custom/tailscale"
+            "pulseaudio#mic"
             "pulseaudio"
             "custom/notifications"
           ];
@@ -180,9 +273,9 @@ in
     ];
 
   # The stylesheet lives in config/hyprland/waybar.css as real CSS. It carries
-  # no Nix interpolation at all: the palette is emitted alongside it as
-  # _ouranos.css and pulled in with @import, so the two travel together and the
-  # stylesheet stays editable with normal CSS tooling.
+  # no Nix interpolation at all: the palette and the Ouranos glass tokens are
+  # emitted alongside it as _ouranos.css and pulled in with @import, so the two
+  # travel together and the stylesheet stays editable with normal CSS tooling.
   xdg.configFile."waybar/style.css".source = ../../config/hyprland/waybar.css;
   xdg.configFile."waybar/_ouranos.css".text = import ./palette-css.nix lib pal;
 

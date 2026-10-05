@@ -30,6 +30,11 @@
     ];
   };
 
+  # The Ouranos base16 slots for colors/palette.lua, generated from
+  # lib/palette.nix so the editor can't drift from the desktop. Lives outside
+  # nvim/ because that directory is the out-of-store symlink below.
+  xdg.configFile."ouranos/palette.lua".text = (import ../lib/ouranos.nix).luaPalette;
+
   # Live-editable nvim config via symlink to dotfiles
   xdg.configFile."nvim".source =
     config.lib.file.mkOutOfStoreSymlink "/home/${user}/dotfiles/config/nvim";

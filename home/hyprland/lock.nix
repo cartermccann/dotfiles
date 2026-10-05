@@ -8,7 +8,7 @@
 # hyprlock (lock screen) and hypridle (idle -> lock -> dpms chain).
 let
   pal = import ../../lib/palette.nix;
-  cssRgb = import ./css.nix lib;
+  ouranos = import ../../lib/ouranos.nix;
   hyprctl = "${hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland}/bin/hyprctl";
 in
 {
@@ -16,8 +16,8 @@ in
     background {
       monitor =
       path = ${config.home.homeDirectory}/wallpaper.png
-      blur_passes = 4
-      blur_size = 10
+      blur_passes = ${toString ouranos.blur.passes}
+      blur_size = ${toString ouranos.blur.size}
       noise = 0.035
       contrast = 0.9
       brightness = 0.7
@@ -36,7 +36,7 @@ in
       check_color = rgba(${pal.raw.base0C}ee)
       fail_color = rgba(${pal.raw.base08}ee)
       placeholder_text = <span foreground="##${pal.raw.base04}">password</span>
-      rounding = 14
+      rounding = ${toString ouranos.radius.surface}
       fade_on_empty = false
       position = 0, -40
       halign = center

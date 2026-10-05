@@ -1,8 +1,9 @@
 /* swaync stylesheet for the Hyprland session.
  *
- * Colours come from _ouranos.css, generated next to this file from
- * lib/palette.nix by home/hyprland/palette-css.nix. Use @slot for solids and
- * alpha(@slot, a) for translucency. */
+ * Colours and the Ouranos glass tokens come from _ouranos.css, generated next
+ * to this file from lib/palette.nix + lib/ouranos.nix by
+ * home/hyprland/palette-css.nix. The control centre is a summoned surface
+ * (lens tier); notification cards stay up on their own (frost tier). */
 @import url("_ouranos.css");
 
 /* Explicit type scale — swaync otherwise inherits the (oversized) GTK default. */
@@ -11,17 +12,21 @@
   font-size: 12px;
 }
 .control-center {
-  background: alpha(@base00, 0.60);
+  background: @lens_bg;
   color: @base05;
-  border: 1px solid alpha(@base05, 0.08);
-  border-radius: 16px;
+  border: 1px solid @lens_hairline;
+  box-shadow: inset 0 1px 0 @lens_rim, inset 1px 0 0 @lens_fringe_l,
+    inset -1px 0 0 @lens_fringe_r, inset 0 -1px 0 @lens_caustic,
+    inset 0 0 18px @lens_glow;
+  border-radius: 14px;
   margin: 8px;
   padding: 12px;
 }
 .notification-row .notification-background .notification {
-  background: alpha(@base01, 0.65);
+  background: @frost_bg;
   color: @base05;
-  border: 1px solid alpha(@base05, 0.08);
+  border: 1px solid @frost_hairline;
+  box-shadow: inset 0 1px 0 @frost_rim, inset 0 -1px 0 @frost_caustic;
   border-radius: 14px;
   margin: 6px 4px;
   padding: 4px;
@@ -53,7 +58,8 @@
   padding: 4px 8px;
 }
 .widget-title > button {
-  background: alpha(@base0D, 0.14);
+  background: @select_bg;
+  box-shadow: inset 0 1px 0 alpha(white, 0.10);
   color: @base05;
   font-size: 12px;
   border-radius: 10px;
@@ -65,7 +71,8 @@
   padding: 4px 8px;
 }
 .notification-action {
-  background: alpha(@base01, 0.6);
+  background: alpha(@base05, 0.05);
+  box-shadow: inset 0 1px 0 alpha(white, 0.06);
   color: @base05;
   font-size: 12px;
   border-radius: 10px;

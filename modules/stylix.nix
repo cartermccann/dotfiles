@@ -5,8 +5,10 @@
     enable = true;
     polarity = "dark";
     image = ../wallpaper/fam.jpg;
-    # List available themes: ls $(nix eval --raw nixpkgs#base16-schemes)/share/themes/
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
+    # Ouranos, the house palette (lib/palette.nix via lib/ouranos.nix), so GTK,
+    # Qt, btop, bat, fzf, tmux, yazi, lazygit, Zen and the rest match the
+    # Hyprland session instead of running catppuccin-macchiato beside it.
+    base16Scheme = (import ../lib/ouranos.nix).base16;
 
     fonts = {
       monospace = {

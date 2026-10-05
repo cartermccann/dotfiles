@@ -7,9 +7,10 @@
 # already expect.
 #
 # Consumed by the Hyprland session components (hyprland.lua and its waybar,
-# fuzzel, swaync, hyprlock) and by home/ghostty.nix. The rest of the system
-# keeps its global Stylix palette. config/nvim/colors/palette.lua mirrors these
-# values by hand — update it alongside this file.
+# fuzzel, swaync, swayosd, hyprlock), by home/ghostty.nix, and through
+# lib/ouranos.nix by Stylix (every other themed app) and by nvim's
+# colors/palette.lua (generated ~/.config/ouranos/palette.lua). Change a slot
+# here and one rebuild carries it everywhere.
 #
 # Caelestia consumes base0D only, and indirectly: it is Material 3 end to end,
 # so home/hyprland/caelestia.nix feeds the cobalt in as the seed of a generated

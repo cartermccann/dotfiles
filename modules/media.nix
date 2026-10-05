@@ -7,6 +7,10 @@
 }:
 
 {
+  # The module (not the bare package) installs the setcap gsr-kms-server
+  # wrapper that monitor capture needs on Wayland; hypr-record relies on it.
+  programs.gpu-screen-recorder.enable = true;
+
   environment.systemPackages = with pkgs; [
     # Media players
     mpv
@@ -17,7 +21,6 @@
     # Video production
     obs-studio
     kdePackages.kdenlive
-    gpu-screen-recorder
     davinci-resolve
 
     # Image tools

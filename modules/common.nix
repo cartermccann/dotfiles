@@ -27,12 +27,11 @@ in
   boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Stylix themes Limine too, and it would win the whole style block with
-  # catppuccin-macchiato (#24273a) — the same drift that made the Ly greeter
-  # the last Catppuccin surface on the machine. The boot menu is themed from
-  # lib/palette.nix below, so Stylix hands this target over. Same call as
-  # Caelestia taking gtk.css off Stylix in home/hyprland/caelestia.nix; the
-  # rest of Stylix's targets are untouched.
+  # Stylix themes Limine too and would win the whole style block. Stylix now
+  # runs Ouranos (modules/stylix.nix), but the boot menu below is hand-tuned
+  # from lib/palette.nix beyond what a base16 mapping gives, so Stylix still
+  # hands this target over. Same call as Caelestia taking gtk.css off Stylix
+  # in home/hyprland/caelestia.nix.
   stylix.targets.limine.enable = false;
 
   boot.loader.limine = {

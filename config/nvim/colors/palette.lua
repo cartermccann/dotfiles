@@ -2,11 +2,11 @@
 -- Ouranos night: cobalt on near-black. Mirrors the Hyprland session so the
 -- editor matches the desktop.
 --
--- Palette source of truth: ~/dotfiles/lib/palette.nix (Base16). This file
--- mirrors those values BY HAND — nix cannot reach into a Lua colorscheme, so
--- when lib/palette.nix changes, the `c` table below has to change with it.
--- A few shades are derived tints (string-green, bg washes, selection, indent
--- guides) kept restrained for reading a full file — noted inline.
+-- Palette source of truth: ~/dotfiles/lib/palette.nix (Base16). The 16 slots
+-- are read from ~/.config/ouranos/palette.lua, which home/neovim.nix generates
+-- from it, so a palette change reaches the editor on the next rebuild. The
+-- derived tints below (string-green, bg washes, selection, indent guides) are
+-- design calls tuned for reading a full file, so they stay hand-written here.
 --
 -- Transparency: defaults ON so the ground comes from the terminal/compositor
 -- blur (matches square.lua + the catppuccin/transparent roster). Set
@@ -21,25 +21,27 @@ vim.g.colors_name = "palette"
 
 local transparent = vim.g.palette_transparent ~= false
 
+local b = dofile(vim.fn.expand("~/.config/ouranos/palette.lua"))
+
 local c = {
-  -- ── Base16 slots — Ouranos night (lib/palette.nix) ──
-  bg = "#0a0c11", -- base00 near-black ground
-  surface = "#0f1218", -- base01 panels / status
-  raised = "#171b23", -- base02 selection / raised
-  muted = "#3a4152", -- base03 comments / disabled
-  taupe = "#8b93a4", -- base04 dark fg (subtext)
-  fg = "#e7ebf2", -- base05 default fg
-  fg_light = "#c7cdd8", -- base06 light fg
-  white = "#f4f7fc", -- base07 lightest
-  red = "#f87171", -- base08
-  orange = "#fb923c", -- base09
-  yellow = "#fbbf24", -- base0A
-  green = "#34d399", -- base0B
-  cyan = "#22d3ee", -- base0C
-  azure = "#3b6bff", -- base0D PRIMARY accent — cobalt (focus/active)
-  periwinkle = "#a78bfa", -- base0E magenta
-  green_deep = "#2a4bbd", -- base0F deep cobalt
-  dim = "#8b93a4", -- textDim
+  -- ── Base16 slots — Ouranos night (generated from lib/palette.nix) ──
+  bg = b.base00, -- near-black ground
+  surface = b.base01, -- panels / status
+  raised = b.base02, -- selection / raised
+  muted = b.base03, -- comments / disabled
+  taupe = b.base04, -- dark fg (subtext)
+  fg = b.base05, -- default fg
+  fg_light = b.base06, -- light fg
+  white = b.base07, -- lightest
+  red = b.base08,
+  orange = b.base09,
+  yellow = b.base0A,
+  green = b.base0B,
+  cyan = b.base0C,
+  azure = b.base0D, -- PRIMARY accent — cobalt (focus/active)
+  periwinkle = b.base0E, -- magenta
+  green_deep = b.base0F, -- deep cobalt
+  dim = b.base04, -- textDim
 
   -- ── Derived tints (kept restrained for full-file readability) ──
   -- Comments do NOT use base03. Base16 nominates base03 for "comments /
