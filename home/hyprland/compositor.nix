@@ -111,7 +111,7 @@ let
             --   was most of why the glass could not be seen. Above 1.0 lifts.
             --
             --   radius is what makes a surface read as glass rather than grey
-            --   paint. At 26 the desktop looked solid; 14 keeps enough shape
+            --   paint. At 26 the desktop looked solid; 14 kept enough shape
             --   to see through.
             --
             -- Now driven by lib/ouranos.nix (blur.*): one extra pass at a
@@ -126,9 +126,9 @@ let
             contrast = ${toString ouranos.blur.contrast},
             brightness = ${toString ouranos.blur.brightness},
             -- The one value without a 1:1 mapping: scenefx takes a saturation
-            -- multiplier (1.7 there), Hyprland takes a 0–1 vibrancy. 0.5 is
-            -- the eyeball equivalent, not a conversion — tune it first if the
-            -- backdrop reads too grey or too lurid.
+            -- multiplier (1.7 there), Hyprland takes a 0–1 vibrancy. 0.5 was
+            -- the eyeball equivalent; Ouranos runs it at 0.7 for the heavier
+            -- frost. Tune it first if the backdrop reads too grey or too lurid.
             vibrancy = ${toString ouranos.blur.vibrancy},
             vibrancy_darkness = 0.0,
             popups = true, -- blurred right-click menus
@@ -227,15 +227,17 @@ let
       hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 
       -- Layer rules: frost the bar / launcher / notifications / OSD
-      -- ignore_alpha sits just below each surface's CSS alpha so fully-transparent
-      -- gaps (between waybar pills, around fuzzel) don't haze.
+      -- ignore_alpha must sit below each surface's tint or Hyprland skips the blur
+      -- entirely (a 0.42 frost card under a 0.5 threshold renders as flat
+      -- tint), and above zero so transparent gaps don't haze. Glass surfaces
+      -- take ouranos.glass.blurThreshold, which sits under the tint floor.
       ${shell
         [
           ''hl.layer_rule({ match = { namespace = "waybar" },                     blur = true, ignore_alpha = 0.2 })''
-          ''hl.layer_rule({ match = { namespace = "launcher" },                   blur = true, ignore_alpha = 0.5, dim_around = true }) -- fuzzel: spotlight dim''
-          ''hl.layer_rule({ match = { namespace = "swaync-control-center" },      blur = true, ignore_alpha = 0.5 })''
-          ''hl.layer_rule({ match = { namespace = "swaync-notification-window" }, blur = true, ignore_alpha = 0.5 })''
-          ''hl.layer_rule({ match = { namespace = "swayosd" },                    blur = true, ignore_alpha = 0.4 })''
+          ''hl.layer_rule({ match = { namespace = "launcher" },                   blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold}, dim_around = true }) -- fuzzel: spotlight dim''
+          ''hl.layer_rule({ match = { namespace = "swaync-control-center" },      blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold} })''
+          ''hl.layer_rule({ match = { namespace = "swaync-notification-window" }, blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold} })''
+          ''hl.layer_rule({ match = { namespace = "swayosd" },                    blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold} })''
         ]
         [
           # Every Caelestia surface is namespaced caelestia-<name>
@@ -428,9 +430,11 @@ let
         [
           # Waybar handles SIGUSR2 as an in-process reload, avoiding a layer-shell
           # teardown/recreate flash. Start it only when no process is running.
-          ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill -USR2 -x waybar || ${waybarCmd}"))''
+          # The pattern matches .waybar-wrapped, the name nixpkgs' wrapper runs
+          # it under; `-x waybar` never matched, so this always started a second bar.
+          ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill -USR2 '^\\.?waybar(-wrapped)?$' || ${waybarCmd}"))''
           # SIGUSR1 is waybar's show/hide toggle: the screen back, panels and binds intact.
-          ''hl.bind(mod .. " + B", hl.dsp.exec_cmd("pkill -USR1 -x waybar"))''
+          ''hl.bind(mod .. " + B", hl.dsp.exec_cmd("pkill -USR1 '^\\.?waybar(-wrapped)?$'"))''
         ]
         [
           # Caelestia has no reload signal; -k then -d is the supported restart.
@@ -575,7 +579,4 @@ in
   # Waybar: this module owns ~/.config/waybar/{config,style.css}; disable the Stylix
   # waybar target so the two never fight over style.css.
   stylix.targets.waybar.enable = false;
-
-  # Two bars: the full bar on the HP (2560 wide) and a slim bar on the
-  # smaller Dell (sized for when it ran portrait at 1080 wide).
 }

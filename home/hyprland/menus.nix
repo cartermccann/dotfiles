@@ -20,7 +20,7 @@ in
 {
   xdg.configFile."fuzzel/hypr.ini".text = ''
     [main]
-    font=JetBrainsMono Nerd Font:size=12
+    font=${ouranos.font.mono}:size=12
     prompt=>
     icon-theme=Papirus-Dark
     lines=10
@@ -58,7 +58,8 @@ in
   xdg.configFile."swayosd/style.css".text = ''
     @import url("_ouranos.css");
     window {
-      background: @lens_bg;
+      background-color: @lens_bg;
+      background-image: linear-gradient(to bottom, @lens_sheen, transparent 40%);
       border: 1px solid @lens_hairline;
       border-radius: ${toString ouranos.radius.surface}px;
       box-shadow: inset 0 1px 0 @lens_rim, inset 1px 0 0 @lens_fringe_l,

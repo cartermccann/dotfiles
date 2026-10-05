@@ -1,7 +1,7 @@
 # Cursor pinned ahead of nixpkgs (nixpkgs code-cursor lags upstream releases).
 # Vendored from nixpkgs pkgs/by-name/co/code-cursor (26.05, buildVscode), Linux-only.
 # To bump: get the new URL from
-#   curl -s "https://cursor.com/api/download?platform=linux-x64&releaseTrack=latest"
+#   curl -s "https://cursor.com/api/download?platform=linux-x64&releaseTrack=stable"
 # then `nix store prefetch-file <url>` and update sources.json.
 {
   lib,

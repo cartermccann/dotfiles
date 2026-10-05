@@ -12,7 +12,8 @@
   font-size: 12px;
 }
 .control-center {
-  background: @lens_bg;
+  background-color: @lens_bg;
+  background-image: linear-gradient(to bottom, @lens_sheen, transparent 40%);
   color: @base05;
   border: 1px solid @lens_hairline;
   box-shadow: inset 0 1px 0 @lens_rim, inset 1px 0 0 @lens_fringe_l,

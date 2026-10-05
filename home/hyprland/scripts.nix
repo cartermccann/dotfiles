@@ -102,7 +102,7 @@ let
     else
       ${hyprctl} hyprsunset temperature 3500
     fi
-    pkill -RTMIN+8 -x waybar || true
+    ${pkgs.procps}/bin/pkill -RTMIN+8 '^\.?waybar(-wrapped)?$' || true
   '';
 
   # These scripts are shell-agnostic and shipped to both session tiles: they

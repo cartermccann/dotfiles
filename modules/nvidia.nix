@@ -34,25 +34,14 @@
   # The cost is slightly soft console text on the HP; the alternative is the
   # bars.
   #
-  # And no, the vertical Dell cannot be un-rotated here. fbcon has a single
-  # rotation for the whole framebuffer and "cannot handle separate rotation
-  # settings per output" (drm_fb_helper.c:1826) — mixed requests fall back to
-  # unrotated. Pushing it into hardware instead does not work either:
-  # drm_client_rotation() refuses anything that is not 0 or 180 degrees
-  # outright, before it ever looks at what the driver supports
-  # (drm_client_modeset.c, "TODO: support 90 / 270 degree hardware rotation").
-  # So `video=DP-1:...,rotate=270` parses fine and then does nothing. Portrait
-  # on the Dell is only available by rotating the HP too, which is a worse
-  # trade. A greeter that gets both panels right has to be a Wayland one.
-  #
-  # Nor can the Dell simply be left dark at the greeter so only the HP shows
-  # it. The modes match, so drm_client_modeset clones one framebuffer to both
-  # connectors and Ly lands on each. Suppressing one means forcing that
-  # connector off (`video=DP-1:d`), and DRM_FORCE_OFF is not scoped to the
-  # console: drm_helper_probe_single_connector_modes short-circuits detect and
-  # pins connector->status to disconnected for every client, so Hyprland would
-  # stop seeing the Dell as well. Sideways at the greeter is the price of the
-  # panel being portrait in the session.
+  # The Dell runs landscape in both sessions (it was portrait until
+  # 2026-10-05), so the unrotated console matches it. If it goes portrait
+  # again, the greeter will be sideways and can't be fixed here: fbcon has one
+  # rotation for the whole framebuffer (drm_fb_helper.c:1826), and
+  # drm_client_rotation() refuses 90/270 outright, so `video=DP-1:...,
+  # rotate=270` parses and does nothing. Forcing the Dell off at the greeter
+  # (`video=DP-1:d`) doesn't scope to the console either: it hides the Dell
+  # from Hyprland too. Only a Wayland greeter gets mixed rotation right.
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"

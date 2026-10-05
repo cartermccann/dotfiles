@@ -17,7 +17,8 @@ let
   jq = "${pkgs.jq}/bin/jq";
   fuzzel = "${pkgs.fuzzel}/bin/fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini";
   notify = "${pkgs.libnotify}/bin/notify-send";
-  refresh = "${pkgs.procps}/bin/pkill -RTMIN+8 -x waybar";
+  # waybar runs as .waybar-wrapped (nixpkgs wrapper), so -x waybar never matches.
+  refresh = "${pkgs.procps}/bin/pkill -RTMIN+8 '^\\.?waybar(-wrapped)?$'";
   dictationState = "${home}/.local/state/parakeet-dictation";
 
   # Screen recording of the focused monitor, toggled. gpu-screen-recorder
@@ -26,7 +27,7 @@ let
   hyprRecord = pkgs.writeShellScriptBin "hypr-record" ''
     if ${pkgs.procps}/bin/pgrep -f "(^|/)gpu-screen-recorder( |$)" >/dev/null; then
       ${pkgs.procps}/bin/pkill -INT -f "(^|/)gpu-screen-recorder( |$)"
-      ${notify} -a hypr-record "Recording saved" "~/Videos/Recordings"
+      ${notify} -a hypr-record "Recording saved" "$HOME/Videos/Recordings"
     else
       mkdir -p ~/Videos/Recordings
       MON=$(${hyprctl} monitors -j | ${jq} -r '.[] | select(.focused) | .name')
@@ -131,10 +132,12 @@ let
           | ([$p[] | select(.ExitNode) | .HostName][0]) as $exit
           | ([$p[] | select(.Online) | "● \(.HostName)"] | sort) as $on
           | ([$p[] | select(.Online | not)] | length) as $off
+          | (if any($p[]; .HostName == "atlas" and .Online) then "atlas: online" else "atlas: offline" end) as $atlas
           | { text: (if $exit then "TS EXIT" else "TS ON" end),
               class: (if $exit then "exit" else "on" end),
+              # atlas is the other machine this flake builds; name it outright.
               tooltip: ((if $exit then ["exit node: \($exit)"] else [] end)
-                        + $on + ["\($off) offline"] | join("\n")) }'
+                        + [$atlas, ""] + $on + ["\($off) offline"] | join("\n")) }'
         ;;
       toggle)
         if [ "$($TS status --json 2>/dev/null | ${jq} -r .BackendState)" = Running ]; then $TS down; else $TS up; fi
@@ -192,16 +195,21 @@ let
           "$(${pkgs.curl}/bin/curl -sI --max-time 20 https://api.granola.ai/v1/download-latest | grep -i '^location' | grep -oP '/\K[0-9]+\.[0-9]+\.[0-9]+(?=/)')"
         add "grok-cli" "$(grep -oP 'version = "\K[0-9.]+' $REPO/pkgs/grok-cli/default.nix | head -1)" \
           "$($CURL https://storage.googleapis.com/grok-build-public-artifacts/cli/stable | tr -d '[:space:]')"
-        AGE=$(( ( $(date +%s) - $(${jq} -r '.nodes[.nodes.root.inputs.nixpkgs].locked.lastModified' $REPO/flake.lock) ) / 86400 ))
-        [ "$AGE" -ge 14 ] && echo "Flake inputs  nixpkgs locked $AGE days ago" >> "$OUT"
+        # Staleness is when the lock was last refreshed, not how old each
+        # input's commit is: an input already at upstream HEAD can still carry
+        # a months-old commit date. Two weeks without `nix flake update` counts.
+        LOCKED=$(${pkgs.git}/bin/git -C $REPO log -1 --format=%ct -- flake.lock 2>/dev/null)
+        if [ -n "$LOCKED" ]; then
+          AGE=$(( ( $(date +%s) - LOCKED ) / 86400 ))
+          [ "$AGE" -ge 14 ] && echo "Flake inputs  lock last updated $AGE days ago" >> "$OUT"
+        fi
         mv "$OUT" "$CACHE"
         ${refresh}
         ;;
       status)
         N=$(grep -c . "$CACHE" 2>/dev/null); N=''${N:-0}
         if [ "$N" -gt 0 ]; then
-          TIP=$(sed ':a;N;$!ba;s/\n/\\n/g' "$CACHE" | sed 's/"/\\"/g')
-          printf '{"text":"󰁝 UPD %s","tooltip":"%s","class":"pending"}\n' "$N" "$TIP"
+          ${jq} -cRs --arg n "$N" '{text: "󰁝 UPD \($n)", tooltip: rtrimstr("\n"), class: "pending"}' "$CACHE"
         else
           echo '{"text":""}'
         fi

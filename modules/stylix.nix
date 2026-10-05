@@ -6,8 +6,10 @@
     polarity = "dark";
     image = ../wallpaper/fam.jpg;
     # Ouranos, the house palette (lib/palette.nix via lib/ouranos.nix), so GTK,
-    # Qt, btop, bat, fzf, tmux, yazi, lazygit, Zen and the rest match the
-    # Hyprland session instead of running catppuccin-macchiato beside it.
+    # btop, bat, fzf, tmux, yazi, lazygit and the rest match the Hyprland
+    # session instead of running catppuccin-macchiato beside it. Not covered:
+    # Qt (desktop-plasma.nix hands it to Plasma/Breeze) and Zen (installed as a
+    # system package; the Stylix target needs an HM-managed Zen profile).
     base16Scheme = (import ../lib/ouranos.nix).base16;
 
     fonts = {

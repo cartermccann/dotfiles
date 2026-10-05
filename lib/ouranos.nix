@@ -64,6 +64,8 @@ rec {
   };
 
   # cubic-bezier(.2,.8,.2,1): fast in, long soft settle. No bounce anywhere.
+  # The GTK stylesheets carry these as literals (no interpolation there);
+  # waybar's drawer reads openMs.
   motion = {
     curve = "0.2, 0.8, 0.2, 1";
     hoverMs = 180;
@@ -72,6 +74,11 @@ rec {
 
   glass = {
     tintFloor = 0.42;
+    # Hyprland's layer-rule ignore_alpha for glass surfaces: below the tint
+    # floor so every tinted pixel blurs, above zero so empty gaps don't haze.
+    blurThreshold = 0.3;
+    # Advisory for windows: their opacity stays per-app in compositor.nix
+    # (ghostty is the deliberate glass terminal at 0.68).
     pane = {
       tint = 0.92;
       hairline = 0.06;

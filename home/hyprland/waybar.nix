@@ -12,6 +12,7 @@
 # refreshes them all at once.
 let
   pal = import ../../lib/palette.nix;
+  ouranos = import ../../lib/ouranos.nix;
 
   # Mode indicators. Each mode is two custom modules from one script: the
   # `mode-*` one shows only while the mode is on (bar stays quiet otherwise),
@@ -71,7 +72,7 @@ in
         "group/modes" = {
           orientation = "horizontal";
           drawer = {
-            transition-duration = 260;
+            transition-duration = ouranos.motion.openMs;
             transition-left-to-right = false;
             children-class = "peek";
           };

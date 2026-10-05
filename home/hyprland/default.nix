@@ -19,11 +19,9 @@
 #   caelestia.nix   the Caelestia shell (second session tile)
 #   palette-css.nix palette + glass tokens -> GTK @define-color block (not a module)
 #
-# Colours come from lib/palette.nix; each module imports it directly rather
-# than threading it through, so any one of them can be read on its own.
-#
 # Colours come from lib/palette.nix; glass, shape and blur from
-# lib/ouranos.nix. The two large stylesheets (waybar, swaync) are plain .css
+# lib/ouranos.nix. Each module imports them directly rather than threading
+# them through, so any one of them can be read on its own. The two large stylesheets (waybar, swaync) are plain .css
 # files under config/hyprland/ with no interpolation; palette-css.nix emits
 # the palette and glass tokens next to each (and next to swayosd's inline
 # one) as _ouranos.css, which they pull in with @import. fuzzel, hyprlock and

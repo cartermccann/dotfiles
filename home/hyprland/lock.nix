@@ -47,7 +47,7 @@ in
       monitor =
       text = $TIME
       font_size = 64
-      font_family = JetBrainsMono Nerd Font
+      font_family = ${ouranos.font.mono}
       color = rgba(${pal.raw.base05}ff)
       position = 0, 120
       halign = center
@@ -58,7 +58,7 @@ in
       monitor =
       text = cmd[update:60000] date +"%A, %B %d"
       font_size = 18
-      font_family = JetBrainsMono Nerd Font
+      font_family = ${ouranos.font.mono}
       color = rgba(${pal.raw.base06}cc)
       position = 0, 60
       halign = center
