@@ -89,11 +89,11 @@ let
     '';
   };
 
-  # electron_42 comes from unstable because Granola 7.488.3 ships Electron
-  # 42.7.0 and unstable's is 42.7.1; stable 25.11 is still on 42.4.0. Same
-  # major either way, so the ABI holds, but stay as close as the channel allows.
+  # electron_44 comes from unstable because Granola 7.626.1 ships Electron
+  # 44.4.2 and unstable's is 44.5.1. Same major, so the ABI holds, but stay as
+  # close as the channel allows.
   granola = pkgs.callPackage ../pkgs/granola {
-    electron = pkgs-unstable.electron_42-bin;
+    electron = pkgs-unstable.electron_44-bin;
   };
 in
 
@@ -107,7 +107,7 @@ in
     bun
     pnpm
     deno
-    nodePackages.typescript
+    typescript
     biome
     rustToolchain
 
@@ -143,7 +143,7 @@ in
 
     # Nix tooling
     nh
-    nixfmt-rfc-style
+    nixfmt
     nix-output-monitor
 
     # AI / LLM

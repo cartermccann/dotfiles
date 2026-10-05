@@ -39,7 +39,7 @@ in
   # PAM service so hyprlock can authenticate.
   security.pam.services.hyprlock = { };
 
-  # Session-specific packages (waybar / fuzzel / swww / grim / slurp / satty / cliphist /
+  # Session-specific packages (waybar / fuzzel / awww / grim / slurp / satty / cliphist /
   # wl-clipboard / brightnessctl / playerctl / wlsunset are already pulled in by desktop-wayland.nix).
   environment.systemPackages = with pkgs; [
     hyprlock

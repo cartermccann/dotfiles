@@ -66,7 +66,7 @@ let
   # with it. xfwm4 with compositing off is stable, needs neither D-Bus nor
   # xfconf, and is all Cursor is actually waiting for.
   startxfce4Shim = pkgs.writeShellScriptBin "startxfce4" ''
-    exec ${pkgs.xfce.xfwm4}/bin/xfwm4 --compositor=off
+    exec ${pkgs.xfwm4}/bin/xfwm4 --compositor=off
   '';
 
   # nixpkgs' default ffmpeg is built without xcb, so it has no x11grab muxer and
@@ -86,9 +86,9 @@ let
     xdotool # synthesises clicks and keystrokes
     dbus # dbus-launch, the `dbus-x11` half of the apt line
     tigervnc # Xvnc, reached through the wrapper above
-    xfce.xfwm4 # the window manager Cursor waits for
+    xfwm4 # the window manager Cursor waits for
   ])
-  ++ (with pkgs.xorg; [
+  ++ (with pkgs; [
     xdpyinfo # x11-utils
     xprop # x11-utils
     xrandr # x11-xserver-utils

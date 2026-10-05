@@ -1,6 +1,6 @@
 {
   description = "Node.js project";
-  inputs.nixpkgs.url = "nixpkgs/nixos-25.11";
+  inputs.nixpkgs.url = "nixpkgs/nixos-26.05";
   outputs = { self, nixpkgs }:
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
@@ -11,8 +11,9 @@
         in {
           default = pkgs.mkShell {
             packages = with pkgs; [
-              nodejs nodePackages.pnpm nodePackages.typescript
-              nodePackages.vercel nodePackages.wrangler bun
+              # nodePackages is gone in 26.05; vercel left nixpkgs with it
+              # (use `pnpm dlx vercel`).
+              nodejs pnpm typescript wrangler bun
             ];
           };
         });

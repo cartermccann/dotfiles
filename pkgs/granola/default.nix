@@ -76,11 +76,11 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "granola";
-  version = "7.488.3";
+  version = "7.626.1";
 
   src = fetchurl {
     url = "https://dr2v7l5emb758.cloudfront.net/${finalAttrs.version}/Granola-${finalAttrs.version}-mac-universal.dmg";
-    hash = "sha256-1AXW2HNHEEPy4RfooDCqQM/1t9PklGg6q4Ymm1N1H68=";
+    hash = "sha256-GSolTzKYCSXnvygm/uzJwEZ9Hca5wYafGnCDsD7+m6I=";
   };
 
   nativeBuildInputs = [
@@ -135,14 +135,17 @@ stdenv.mkDerivation (finalAttrs: {
     if platform_patched == 0:
         sys.exit("no platform fallback found; Granola's bundler output changed")
 
-    capture_pat = b'loopbackAllDevices'
-    capture_rep = b'granola_mt.monitor'
+    # Anchored on the non-win32/non-darwin `:t(...)` else branch: since 7.6xx
+    # the identifier also appears in the explicit process.platform==='win32'
+    # branch and a Windows mode selector, which Linux never reaches.
+    capture_pat = b':t({audio:{name:`All loopback devices`,id:`loopbackAllDevices`}})'
+    capture_rep = capture_pat.replace(b'loopbackAllDevices', b'granola_mt.monitor')
     if len(capture_pat) != len(capture_rep):
         sys.exit("Granola audio capture replacement changed length")
     capture_matches = data.count(capture_pat)
     if capture_matches != 1:
         sys.exit(
-            "expected exactly one loopbackAllDevices marker; "
+            "expected exactly one Linux loopbackAllDevices capture branch; "
             f"found {capture_matches}; Granola's audio capture path changed"
         )
     data = data.replace(capture_pat, capture_rep)

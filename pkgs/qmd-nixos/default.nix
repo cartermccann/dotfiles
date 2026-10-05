@@ -24,6 +24,8 @@ base.overrideAttrs (old: {
     find "$out/lib/qmd/node_modules/@node-llama-cpp" -mindepth 1 -maxdepth 1 \
       ! -name linux-x64 ! -name linux-x64-vulkan -exec rm -rf {} +
     rm -rf "$out/lib/qmd/node_modules/@reflink/reflink-linux-x64-musl"
+    # musl prebuilds (better-sqlite3 since 2.8.x) can't be patched on glibc.
+    find "$out/lib/qmd/node_modules" -path '*/prebuilds/linuxmusl-*' -prune -exec rm -rf {} +
 
     # Pin the backend so node-llama-cpp neither probes absent CUDA packages nor
     # attempts a runtime source build inside the immutable Nix store. QMD falls

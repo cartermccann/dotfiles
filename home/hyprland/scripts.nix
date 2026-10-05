@@ -35,7 +35,7 @@ let
     # outside Hyprland (the script is niri-safe by construction).
     POS=$(${hyprctl} cursorpos 2>/dev/null | tr -d ' ')
     [ -n "$POS" ] || POS="0,0"
-    ${pkgs.swww}/bin/swww img ~/wallpaper.png \
+    ${pkgs.awww}/bin/awww img ~/wallpaper.png \
       --transition-type grow --transition-pos "$POS" \
       --transition-fps 165 --transition-duration 0.7 --transition-bezier .05,.7,.1,1
   '';

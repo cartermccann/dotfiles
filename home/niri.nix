@@ -26,7 +26,7 @@ let
     # the extension for jpg picks.
     [ -n "$PICK" ] || exit 0
     ${pkgs.imagemagick}/bin/magick "$PICK" ~/wallpaper.png
-    swww img ~/wallpaper.png --transition-type fade --transition-duration 1
+    awww img ~/wallpaper.png --transition-type fade --transition-duration 1
   '';
 in
 {

@@ -11,10 +11,16 @@
     viAlias = true;
     vimAlias = true;
     defaultEditor = true;
+    # 26.05 flipped both defaults to false; no plugin here uses either provider.
+    withRuby = false;
+    withPython3 = false;
+    # HM 26.05 writes the provider toggles to nvim/init.lua, which collides
+    # with the out-of-store nvim/ symlink below; load them via the wrapper.
+    sideloadInitLua = true;
     extraPackages = with pkgs; [
       # LSP servers — Nix-provided so Mason isn't needed
       pyright
-      nodePackages.typescript-language-server
+      typescript-language-server
       nixd
       elixir-ls
       zls

@@ -159,12 +159,12 @@ let
     general.logo = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
 
     background = {
-      # swww owns the wallpaper on this machine across all three sessions,
+      # awww (swww, renamed in nixpkgs 26.05) owns the wallpaper on this machine across all three sessions,
       # and ~/wallpaper.png is a cross-session contract (niri autostart,
       # hyprlock background, both wallpaper pickers). Leaving Caelestia's own
-      # wallpaper layer on would put a second wallpaper *above* swww's on the
+      # wallpaper layer on would put a second wallpaper *above* awww's on the
       # Background layer. false keeps the surface — the desktop clock and
-      # visualiser still draw — but paints it transparent so swww shows
+      # visualiser still draw — but paints it transparent so awww shows
       # through. Same call as Noctalia's wallpaper module being disabled.
       wallpaperEnabled = false;
     };

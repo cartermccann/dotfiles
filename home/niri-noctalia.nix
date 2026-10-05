@@ -158,10 +158,10 @@ in
   xdg.configFile."niri/config-noctalia.kdl".source = validatedNiriConfig ''
     // Startup — env import + restart failed portal services, then launch noctalia-shell
     spawn-at-startup "bash" "-c" "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME && systemctl --user restart xdg-desktop-portal-gtk xdg-desktop-portal 2>/dev/null; noctalia-shell &"
-    spawn-at-startup "swww-daemon"
+    spawn-at-startup "awww-daemon"
     spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
     spawn-at-startup "wlsunset" "-t" "3500" "-T" "6500" "-l" "40.76" "-L" "-111.89"
-    spawn-at-startup "bash" "-c" "sleep 1 && swww img /home/${user}/wallpaper.png --transition-type fade --transition-duration 1"
+    spawn-at-startup "bash" "-c" "sleep 1 && awww img /home/${user}/wallpaper.png --transition-type fade --transition-duration 1"
     spawn-at-startup "xwayland-satellite"
     // EasyEffects is gone entirely — its Arya correction now runs as a
     // PipeWire filter-chain sink declared in modules/audio.nix. It used to be
@@ -172,16 +172,15 @@ in
     // touching. The replacement is ranked below both hardware sinks and so
     // can never take the default on its own.
 
-    // Outputs — Dell U2414H portrait on the left, HP 27mq landscape to its right.
-    // Dell rotated 90° → occupies 1080x1920, so the HP starts at x=1080.
+    // Outputs — Dell U2414H landscape on the left, HP 27mq landscape to its right.
+    // Dell is 1920 wide, so the HP starts at x=1920.
     output "DP-1" {
       mode "1920x1080@60"
-      transform "270"
       position x=0 y=0
     }
     output "HDMI-A-1" {
       mode "2560x1440@59.951"
-      position x=1080 y=0
+      position x=1920 y=0
     }
 
     // Input

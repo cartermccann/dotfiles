@@ -190,15 +190,15 @@ in
     pango
     cairo
     gdk-pixbuf
-    xorg.libX11
-    xorg.libXi
-    xorg.libxcb
-    xorg.libXcomposite
-    xorg.libXdamage
-    xorg.libXext
-    xorg.libXfixes
-    xorg.libXrandr
-    xorg.libxshmfence
+    libx11
+    libxi
+    libxcb
+    libxcomposite
+    libxdamage
+    libxext
+    libxfixes
+    libxrandr
+    libxshmfence
     mesa
     libgbm # gbm split out of mesa in nixpkgs 25.x; Electron 29 (Work Louder Input) needs libgbm.so.1
     libGL

@@ -38,6 +38,8 @@
   # XDG user directories — keep the ones we use, redirect the rest
   xdg.userDirs = {
     enable = true;
+    # Keep exporting XDG_*_DIR (the pre-26.05 default) for scripts that read them.
+    setSessionVariables = true;
     desktop = "$HOME/Desktop";
     documents = "$HOME/Documents";
     download = "$HOME/Downloads";

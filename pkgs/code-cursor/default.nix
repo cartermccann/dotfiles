@@ -1,12 +1,11 @@
 # Cursor pinned ahead of nixpkgs (nixpkgs code-cursor lags upstream releases).
-# Vendored from nixpkgs pkgs/by-name/co/code-cursor, Linux-only.
+# Vendored from nixpkgs pkgs/by-name/co/code-cursor (26.05, buildVscode), Linux-only.
 # To bump: get the new URL from
 #   curl -s "https://cursor.com/api/download?platform=linux-x64&releaseTrack=latest"
 # then `nix store prefetch-file <url>` and update sources.json.
 {
   lib,
-  callPackage,
-  vscode-generic,
+  buildVscode,
   fetchurl,
   appimageTools,
   commandLineArgs ? "",
@@ -17,7 +16,7 @@ let
   source = fetchurl { inherit (sourcesJson.sources.x86_64-linux) url hash; };
   finalCommandLineArgs = "--update=false " + commandLineArgs;
 in
-callPackage vscode-generic rec {
+(buildVscode rec {
   inherit (sourcesJson) version vscodeVersion;
   useVSCodeRipgrep = false;
   commandLineArgs = finalCommandLineArgs;
@@ -51,4 +50,17 @@ callPackage vscode-generic rec {
     platforms = [ "x86_64-linux" ];
     mainProgram = "cursor";
   };
-}
+}).overrideAttrs
+  (oldAttrs: {
+    autoPatchelfIgnoreMissingDeps = (oldAttrs.autoPatchelfIgnoreMissingDeps or [ ]) ++ [
+      "libc.musl-*.so.*" # musl-based node modules are not used on glibc systems
+    ];
+    preFixup = (oldAttrs.preFixup or "") + ''
+      sed -i '/^Keywords=/a MimeType=application/x-cursor-workspace;' \
+        $out/share/applications/cursor.desktop
+    '';
+    postInstall = (oldAttrs.postInstall or "") + ''
+      install -Dm644 ../mime/packages/cursor-workspace.xml -t $out/share/mime/packages
+      rm -f $out/lib/cursor/resources/appimageupdatetool.AppImage
+    '';
+  })

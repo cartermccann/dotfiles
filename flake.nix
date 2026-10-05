@@ -2,11 +2,11 @@
   description = "NixOS Configuration";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-25.11";
+    nixpkgs.url = "nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     google-workspace-cli = {
@@ -19,7 +19,7 @@
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     stylix = {
-      url = "github:nix-community/stylix/release-25.11";
+      url = "github:nix-community/stylix/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # Niri is the fallback session (Hyprland is the daily driver), so it tracks
@@ -32,6 +32,8 @@
     # Hyprland 0.55+ (Lua config). Pinned to a release tag; intentionally NOT
     # following nixpkgs so prebuilt artifacts hit hyprland.cachix.org rather than
     # forcing a local source compile (substituter added in modules/common.nix).
+    # Held at v0.55.3: v0.56.2 is not on hyprland.cachix and its from-source
+    # build fails at CMake FetchContent for glaze (2026-10-05). Retry next tag.
     hyprland = {
       url = "github:hyprwm/Hyprland?ref=v0.55.3&submodules=1";
     };
@@ -68,7 +70,7 @@
     };
     # Keep the upstream runtime closure intact; its ELF audit targets its own
     # nixpkgs, so this input deliberately does not follow the host nixpkgs.
-    codex-desktop-linux.url = "github:ilysenko/codex-desktop-linux/84a7ca4c8f0fb0a34cbfd83c9164b39b84cb6612";
+    codex-desktop-linux.url = "github:ilysenko/codex-desktop-linux/a0b23fed42be7f03d5a23f017efb111b1346a559";
     helium = {
       url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -78,7 +80,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     herdr = {
-      url = "github:ogulcancelik/herdr/v0.9.1";
+      url = "github:ogulcancelik/herdr/v0.9.3";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
   };

@@ -50,10 +50,10 @@ let
       local mod = "SUPER"
 
       -- Monitors
-      -- Dell U2414H portrait on the left, HP 27mq landscape to its right.
-      -- Dell rotated 90° → occupies 1080x1920, so the HP starts at x=1080.
-      hl.monitor({ output = "DP-1", mode = "1920x1080@60", position = "0x0", scale = 1, transform = 3 })
-      hl.monitor({ output = "HDMI-A-1", mode = "2560x1440@60", position = "1080x0", scale = 1 })
+      -- Dell U2414H landscape on the left, HP 27mq landscape to its right.
+      -- Dell is 1920 wide, so the HP starts at x=1920.
+      hl.monitor({ output = "DP-1", mode = "1920x1080@60", position = "0x0", scale = 1 })
+      hl.monitor({ output = "HDMI-A-1", mode = "2560x1440@60", position = "1920x0", scale = 1 })
       hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 
       -- Environment
@@ -516,10 +516,10 @@ let
         -- while there is no compositor, hits "Start request repeated too
         -- quickly", and a plain restart on a start-limited unit fails.
         hl.exec_cmd([[bash -c 'systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE NIXOS_OZONE_WL GBM_BACKEND NVD_BACKEND LIBVA_DRIVER_NAME __GLX_VENDOR_LIBRARY_NAME; dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE; systemctl --user reset-failed xdg-desktop-portal-gtk xdg-desktop-portal-hyprland xdg-desktop-portal 2>/dev/null; systemctl --user restart xdg-desktop-portal-gtk xdg-desktop-portal-hyprland xdg-desktop-portal 2>/dev/null']])
-        hl.exec_cmd("swww-daemon")
+        hl.exec_cmd("awww-daemon")
         -- Give the daemon a moment to bind its socket, then restore the shared
         -- still wallpaper used by Niri, Hyprland, and hyprlock.
-        hl.exec_cmd([[bash -c 'sleep 1 && ${pkgs.swww}/bin/swww img ${config.home.homeDirectory}/wallpaper.png --transition-type fade --transition-duration 1']])
+        hl.exec_cmd([[bash -c 'sleep 1 && ${pkgs.awww}/bin/awww img ${config.home.homeDirectory}/wallpaper.png --transition-type fade --transition-duration 1']])
         hl.exec_cmd("wl-paste --watch cliphist store")
         ${shellSep "\n  "
           [
@@ -569,5 +569,5 @@ in
   stylix.targets.waybar.enable = false;
 
   # Two bars: the full bar on the HP (2560 wide) and a slim bar on the
-  # portrait Dell (1080 wide — the full module set overflows it there).
+  # smaller Dell (sized for when it ran portrait at 1080 wide).
 }

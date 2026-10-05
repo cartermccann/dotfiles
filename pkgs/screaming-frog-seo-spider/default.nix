@@ -17,7 +17,16 @@
   cairo,
   pango,
   gdk-pixbuf,
-  xorg,
+  libx11,
+  libxau,
+  libxcb,
+  libxdmcp,
+  libxext,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxtst,
+  libxxf86vm,
 }:
 
 # Screaming Frog SEO Spider — proprietary Swing/AWT crawler, shipped only as a
@@ -40,16 +49,16 @@ let
     cairo
     pango
     gdk-pixbuf
-    xorg.libX11
-    xorg.libXext
-    xorg.libXi
-    xorg.libXrender
-    xorg.libXtst
-    xorg.libXrandr
-    xorg.libXxf86vm
-    xorg.libxcb
-    xorg.libXau
-    xorg.libXdmcp
+    libx11
+    libxext
+    libxi
+    libxrender
+    libxtst
+    libxrandr
+    libxxf86vm
+    libxcb
+    libxau
+    libxdmcp
   ];
 in
 stdenv.mkDerivation rec {

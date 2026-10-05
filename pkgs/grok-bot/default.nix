@@ -32,7 +32,14 @@
   pipewire,
   systemd,
   vulkan-loader,
-  xorg,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxrandr,
+  libxshmfence,
   zlib,
 }:
 
@@ -83,14 +90,14 @@ let
     systemd # libudev
     vulkan-loader
     zlib
-    xorg.libX11
-    xorg.libXcomposite
-    xorg.libXdamage
-    xorg.libXext
-    xorg.libXfixes
-    xorg.libXrandr
-    xorg.libxcb
-    xorg.libxshmfence
+    libx11
+    libxcomposite
+    libxdamage
+    libxext
+    libxfixes
+    libxrandr
+    libxcb
+    libxshmfence
   ];
 in
 stdenv.mkDerivation (finalAttrs: {

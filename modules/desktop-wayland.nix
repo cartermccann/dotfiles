@@ -136,7 +136,7 @@ in
   environment.systemPackages = with pkgs; [
     ghostty
     fuzzel
-    swww
+    awww
     grim
     slurp
     wl-clipboard
