@@ -233,7 +233,11 @@ let
       -- take ouranos.glass.blurThreshold, which sits under the tint floor.
       ${shell
         [
-          ''hl.layer_rule({ match = { namespace = "waybar" },                     blur = true, ignore_alpha = 0.2 })''
+          # xray: the bar's blur samples only the wallpaper. Without it Hyprland
+          # re-blurs whatever window sits under the bar and the whole bar blinks
+          # when that window's colours change, until a hover forces a redraw
+          # (hyprwm/Hyprland discussion #10363; seen here 2026-10-06).
+          ''hl.layer_rule({ match = { namespace = "waybar" },                     blur = true, ignore_alpha = 0.2, xray = true })''
           ''hl.layer_rule({ match = { namespace = "launcher" },                   blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold}, dim_around = true }) -- fuzzel: spotlight dim''
           ''hl.layer_rule({ match = { namespace = "swaync-control-center" },      blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold} })''
           ''hl.layer_rule({ match = { namespace = "swaync-notification-window" }, blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold} })''
@@ -284,7 +288,7 @@ let
           ''hl.bind(mod .. " + CTRL + C",    hl.dsp.exec_cmd("ouranos-menu capture"))''
           ''hl.bind(mod .. " + CTRL + O",    hl.dsp.exec_cmd("ouranos-menu toggle"))''
           ''hl.bind(mod .. " + ESCAPE",      hl.dsp.exec_cmd("ouranos-menu system"))''
-          ''hl.bind(mod .. " + CTRL + K",    hl.dsp.exec_cmd("ouranos-keys"))''
+          ''hl.bind(mod .. " + slash",       hl.dsp.exec_cmd("ouranos-keys")) -- keybinding cheatsheet''
           ''hl.bind(mod .. " + O",           hl.dsp.exec_cmd("ouranos-project"))''
           ''hl.bind(mod .. " + SHIFT + A",   hl.dsp.exec_cmd("ouranos-agents menu"))''
         ]
