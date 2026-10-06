@@ -84,6 +84,14 @@
     herdr = {
       url = "github:ogulcancelik/herdr/v0.9.3";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
+      # herdr's lock pins a July rust-overlay that still reads stdenv.isLinux /
+      # isDarwin, which warns on every eval. The Rust version itself comes from
+      # herdr's rust-toolchain.toml, so a newer overlay doesn't change it.
+      inputs.rust-overlay.follows = "rust-overlay";
+    };
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
   };
 
