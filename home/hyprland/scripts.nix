@@ -106,6 +106,8 @@ let
     else
       ${hyprctl} hyprsunset temperature 3500
     fi
+    # hyprsunset acks before it applies, so an immediate re-read is stale.
+    sleep 0.2
     ${pkgs.procps}/bin/pkill -RTMIN+8 waybar || true
   '';
 
