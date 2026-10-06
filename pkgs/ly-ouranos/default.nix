@@ -1,4 +1,5 @@
 {
+  lib,
   runCommand,
   python3,
   ly,
@@ -8,27 +9,35 @@
 #   ouranos.dur  the CM/26 monogram resolving coarse -> sharp (make-dur.py)
 #   ouranos.ini  a language file: Ly's English strings with slash-pair labels
 #                ("01 / USER"); every key is kept so Ly's parser finds them all
+let
+  labels = {
+    login = "01 / USER";
+    password = "02 / PASS";
+    shutdown = "/ SHUTDOWN";
+    restart = "/ REBOOT";
+    sleep = "/ SLEEP";
+    brightness_down = "/ BRIGHT -";
+    brightness_up = "/ BRIGHT +";
+    toggle_password = "/ SHOW PASS";
+    authenticating = "AUTH / ...";
+    logout = "SESSION / ENDED";
+  };
+  lines = lib.mapAttrsToList (key: label: "${key} = ${label}") labels;
+in
 runCommand "ly-ouranos" { nativeBuildInputs = [ python3 ]; } ''
   mkdir -p $out
   cp ${./monogram.py} monogram.py
   PYTHONPATH=. python3 ${./make-dur.py} $out/ouranos.dur
 
-  sed \
-    -e 's|^login = .*|login = 01 / USER|' \
-    -e 's|^password = .*|password = 02 / PASS|' \
-    -e 's|^shutdown = .*|shutdown = / SHUTDOWN|' \
-    -e 's|^restart = .*|restart = / REBOOT|' \
-    -e 's|^sleep = .*|sleep = / SLEEP|' \
-    -e 's|^authenticating = .*|authenticating = AUTH / ...|' \
-    -e 's|^logout = .*|logout = SESSION / ENDED|' \
-    -e 's|^toggle_password = .*|toggle_password = / SHOW PASS|' \
-    ${ly.src}/res/lang/en.ini > $out/ouranos.ini
+  sed ${
+    lib.concatMapStringsSep " " (
+      key: "-e " + lib.escapeShellArg "s|^${key} = .*|${key} = ${labels.${key}}|"
+    ) (lib.attrNames labels)
+  } ${ly.src}/res/lang/en.ini > $out/ouranos.ini
 
   # sed exits 0 whether or not a key matched; fail the build if upstream
   # renamed one instead of shipping a half-English greeter.
-  for want in 'login = 01 / USER' 'password = 02 / PASS' 'shutdown = / SHUTDOWN' \
-              'restart = / REBOOT' 'sleep = / SLEEP' 'toggle_password = / SHOW PASS' \
-              'authenticating = AUTH / ...' 'logout = SESSION / ENDED'; do
+  for want in ${lib.escapeShellArgs lines}; do
     grep -qxF "$want" $out/ouranos.ini || { echo "ly lang: '$want' did not apply" >&2; exit 1; }
   done
 ''

@@ -42,6 +42,13 @@
     earlySetup = true;
   };
 
+  # The monitors are external, so brightnessctl has nothing to drive: drop
+  # Ly's brightness keys rather than show dead hints. atlas keeps them.
+  services.displayManager.ly.settings = {
+    brightness_down_key = "null";
+    brightness_up_key = "null";
+  };
+
   # Ollama — high tier: RTX 5070 (12GB VRAM) + 64GB RAM (see modules/ollama.nix)
   local.ollamaTier = "high";
 

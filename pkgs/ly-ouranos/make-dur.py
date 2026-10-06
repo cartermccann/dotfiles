@@ -7,7 +7,7 @@ delay and the resolve replays every ~45s.
 
 Colours use the 256 format with full_color on: Ly sends them as 24-bit and
 the kernel console snaps each to its 16-slot palette by brightness
-(vt.c rgb_foreground), which modules/common.nix remaps to Ouranos. The
+(vt.c rgb_foreground), which Stylix's console target remaps to Ouranos. The
 indices below are the ones that land on the intended slots:
   15  (255,255,255) -> bright white  -> #f4f7fc  letters
   12  (0,0,255)     -> bright blue   -> #3b6bff  slash + shadow

@@ -88,10 +88,6 @@ in
       hide_version_string = true;
       hide_key_hints = false; # "F1 / SHUTDOWN" etc. from the ouranos lang file
       sleep_cmd = "/run/current-system/systemd/bin/systemctl suspend"; # F3 / SLEEP
-      # The monitors are external, so brightnessctl has nothing to drive here:
-      # drop the keys rather than show dead hints.
-      brightness_down_key = "null";
-      brightness_up_key = "null";
       hide_keyboard_locks = true;
       lang = "ouranos"; # /etc/ly/lang/ouranos.ini
       initial_info_text = "AUTH / READY";

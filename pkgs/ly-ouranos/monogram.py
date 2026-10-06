@@ -20,16 +20,16 @@ STEPS = [6, 4, 3, 2, 1]  # coarse -> sharp: resolve block size per frame
 
 
 def bitmap():
-    """Return (pixels, colour) grids at glyph resolution x scale."""
+    """Return (pixels, roles) grids at glyph resolution x scale."""
     rows = 7
     pix, col = [[] for _ in range(rows)], [[] for _ in range(rows)]
     for i, ch in enumerate(TEXT):
         g = GLYPHS[ch]
         c = ACCENT if ch == "/" else LETTER
         for y in range(rows):
-            if i:
+            if i:  # one blank pixel column between glyphs
                 pix[y].append(0)
-                col[y].append(0)
+                col[y].append(None)
             for bit in g[y]:
                 pix[y].append(int(bit))
                 col[y].append(c)
@@ -47,7 +47,8 @@ def bitmap():
 
 
 def resolve(pix, col, step):
-    """Portfolio2's resolve: average step x step blocks, majority wins."""
+    """Portfolio2's resolve: a step x step block lights when at least half its
+    pixels are on, and takes LETTER if any lit pixel is a letter, else ACCENT."""
     if step <= 1:
         return pix, col
     h, w = len(pix), len(pix[0])
@@ -58,7 +59,8 @@ def resolve(pix, col, step):
             cells = [(y, x) for y in range(by, min(by + step, h)) for x in range(bx, min(bx + step, w))]
             on = sum(pix[y][x] for y, x in cells)
             if on * 2 >= len(cells):
-                c = max((col[y][x] for y, x in cells if pix[y][x]), default=LETTER)
+                lit = [col[y][x] for y, x in cells if pix[y][x]]
+                c = LETTER if LETTER in lit else ACCENT
                 for y, x in cells:
                     rp[y][x], rc[y][x] = 1, c
     return rp, rc
@@ -67,7 +69,7 @@ def resolve(pix, col, step):
 def cells(pix, col):
     """Glyph pixels -> console cells with a 1px cobalt offset shadow.
 
-    Returns rows of (char, fg) where each pixel is two cells ("██")."""
+    Returns rows of (char, role) where each pixel is two cells ("██")."""
     h, w = len(pix), len(pix[0])
     H, W = h + 1, (w + 1) * 2
     out = [[(" ", None)] * W for _ in range(H)]
@@ -82,7 +84,6 @@ def cells(pix, col):
                 for dx in (0, 1):
                     out[y][x * 2 + dx] = ("█", col[y][x])
     return out
-
 
 
 if __name__ == "__main__":
