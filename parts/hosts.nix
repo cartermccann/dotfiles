@@ -72,12 +72,15 @@ let
               users.${user} = {
                 imports = [
                   ../home/common.nix
-                ];
+                ]
+                # Zen's HM module pins kronos's existing profile path.
+                ++ inputs.nixpkgs.lib.optional (hostname == "kronos") ../home/zen.nix;
               };
               extraSpecialArgs = {
                 inherit user pkgs-unstable;
                 inherit (inputs)
                   caelestia
+                  zen-browser
                   comcreate-desktop-app
                   codex-desktop-linux
                   google-workspace-cli
