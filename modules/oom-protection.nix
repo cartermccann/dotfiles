@@ -26,11 +26,16 @@
     freeMemKillThreshold = 3;
     freeSwapThreshold = 10;
     freeSwapKillThreshold = 5;
+    # Kill the largest process, not the highest oom_score. Ranked by oom_score,
+    # the +300 prefer bonus (plus Chrome's own oom_score_adj) let ~400 tiny
+    # renderers/node workers outrank a ~40G hog on 2026-10-06; the box froze.
+    # Under --sort-by-rss, prefer/avoid shift RSS by +/-3GiB instead.
     extraArgs = [
+      "--sort-by-rss"
       "--prefer"
-      "^(2\\.1\\.150|claude|node|bfs|chromium|chrome|firefox|zen|ffmpeg|HandBrake)$"
+      "^(2\\.1\\.150|claude|node|next-server.*|bfs|chromium|chrome|firefox|zen|ffmpeg|HandBrake)$"
       "--avoid"
-      "^(systemd|systemd-.*|niri|Xwayland|wireplumber|pipewire|pipewire-pulse|sshd|dbus-daemon|gnome-keyring|gpg-agent)$"
+      "^(systemd|systemd-.*|niri|\\.Hyprland-wrapp|Xwayland|wireplumber|pipewire|pipewire-pulse|sshd|dbus-daemon|gnome-keyring|gpg-agent)$"
     ];
   };
 
