@@ -14,6 +14,7 @@
 #   menu.nix        the Ouranos menu (Super+Alt+Space), focus-or-launch, keybinding list
 #   projects.nix    project launcher (Super+O): repo picker -> herdr workspace layout
 #   agents.nix      agent cockpit: waybar module + switcher (Super+Shift+A) over herdr
+#   calendar.nix    the clock's calendar dropdown (calendar.py, Google iCal feeds)
 #   compositor.nix  hyprland.lua + hyprsunset.conf
 #   waybar.nix      waybar config + stylesheet
 #   swaync.nix      notification daemon + stylesheet
@@ -24,7 +25,7 @@
 #
 # Colours come from lib/palette.nix; glass, shape and blur from
 # lib/ouranos.nix. Each module imports them directly rather than threading
-# them through, so any one of them can be read on its own. The two large stylesheets (waybar, swaync) are plain .css
+# them through, so any one of them can be read on its own. The large stylesheets (waybar, swaync, calendar) are plain .css
 # files under config/hyprland/ with no interpolation; palette-css.nix emits
 # the palette and glass tokens next to each (and next to swayosd's inline
 # one) as _ouranos.css, which they pull in with @import. fuzzel, hyprlock and
@@ -36,6 +37,7 @@
     ./menu.nix
     ./projects.nix
     ./agents.nix
+    ./calendar.nix
     ./compositor.nix
     ./waybar.nix
     ./swaync.nix

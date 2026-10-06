@@ -83,16 +83,19 @@ in
           tooltip-format = "modes · hover to show the inactive ones";
         };
 
-        # Left-click flips to the ISO/week format (waybar's format-alt), middle
-        # steps through the timezones, hover shows the month.
+        # Left-click drops the calendar (calendar.nix) and closes it again,
+        # right-click flips to the ISO/week format, middle steps through the
+        # timezones. No hover tooltip: the dropdown is the calendar now.
         clock = {
           format = "{:%H:%M  ·  %a %b %d}";
           format-alt = "{:%Y-%m-%d  ·  week %V}";
+          format-alt-click = 3;
           timezones = [
             ""
             "Etc/UTC"
           ];
-          tooltip-format = "<tt>{calendar}</tt>";
+          tooltip = false;
+          on-click = "ouranos-calendar";
           actions.on-click-middle = "tz_up";
         };
         # Every agent herdr knows about; amber when one is waiting on you.

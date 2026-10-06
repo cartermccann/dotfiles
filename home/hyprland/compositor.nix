@@ -242,6 +242,7 @@ let
           ''hl.layer_rule({ match = { namespace = "swaync-control-center" },      blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold} })''
           ''hl.layer_rule({ match = { namespace = "swaync-notification-window" }, blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold} })''
           ''hl.layer_rule({ match = { namespace = "swayosd" },                    blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold} })''
+          ''hl.layer_rule({ match = { namespace = "^ouranos-calendar$" },         blur = true, ignore_alpha = ${toString ouranos.glass.blurThreshold} })''
         ]
         [
           # Every Caelestia surface is namespaced caelestia-<name>
