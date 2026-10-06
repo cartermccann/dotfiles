@@ -21,7 +21,8 @@ import sys
 import monogram as m
 
 WHITE, COBALT, SLATE, GROUND = 15, 12, 236, 0
-COLOUR = {m.LETTER: WHITE, m.SLASH: COBALT}
+COLOUR = {m.LETTER: WHITE, m.ACCENT: COBALT}
+SIGNATURE = "CM/2026"  # Portfolio2's signature, right-aligned on the readout row
 FPS = 12  # ~83 ms a step, Portfolio2's resolve cadence
 HOLD = 45  # seconds the sharp frame stays up before the next resolve
 
@@ -31,9 +32,11 @@ def frame(step):
     cells = m.cells(pix, col)
     width = len(cells[0])
     label = "RES / OK" if step == 1 else f"RES / {step:02d}"
-    rows = [[(ch, COLOUR.get(fg, COBALT) if ch != " " else GROUND) for ch, fg in r] for r in cells]
+    rows = [[(ch, COLOUR[role] if ch != " " else GROUND) for ch, role in r] for r in cells]
     rows.append([(" ", GROUND)] * width)
-    rows.append([(c, SLATE) for c in label.ljust(width)])
+    readout = [(c, SLATE) for c in label.ljust(width - len(SIGNATURE))]
+    sig = [(c, COBALT if c == "/" else WHITE) for c in SIGNATURE]
+    rows.append(readout + sig)
     return rows
 
 

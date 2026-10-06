@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  user,
   ...
 }:
 
@@ -27,6 +28,10 @@
     ../../modules/apps.nix
     ../../modules/oom-protection.nix
   ];
+
+  # Zen through its home-manager module so Stylix themes it; the module pins
+  # this host's existing profile path, so it stays a kronos choice.
+  home-manager.users.${user}.imports = [ ../../home/zen.nix ];
 
   networking.hostName = "kronos";
 

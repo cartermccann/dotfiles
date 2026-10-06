@@ -21,5 +21,14 @@ runCommand "ly-ouranos" { nativeBuildInputs = [ python3 ]; } ''
     -e 's|^sleep = .*|sleep = / SLEEP|' \
     -e 's|^authenticating = .*|authenticating = AUTH / ...|' \
     -e 's|^logout = .*|logout = SESSION / ENDED|' \
+    -e 's|^toggle_password = .*|toggle_password = / SHOW PASS|' \
     ${ly.src}/res/lang/en.ini > $out/ouranos.ini
+
+  # sed exits 0 whether or not a key matched; fail the build if upstream
+  # renamed one instead of shipping a half-English greeter.
+  for want in 'login = 01 / USER' 'password = 02 / PASS' 'shutdown = / SHUTDOWN' \
+              'restart = / REBOOT' 'sleep = / SLEEP' 'toggle_password = / SHOW PASS' \
+              'authenticating = AUTH / ...' 'logout = SESSION / ENDED'; do
+    grep -qxF "$want" $out/ouranos.ini || { echo "ly lang: '$want' did not apply" >&2; exit 1; }
+  done
 ''

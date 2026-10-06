@@ -1,9 +1,8 @@
-"""CM/26 monogram for the Ly greeter, in console cells.
+"""CM/26 monogram for the Ly greeter, in console cells (make-dur.py).
 
-One source for both the canvas mockup and the shipped .dur file. Pixels are
-drawn 2 cells wide x 1 cell tall (console cells are ~1:2), then scaled.
-Colours are VT palette indices (Ouranos remap in modules/common.nix):
-  0 ground #0a0c11 · 4 cobalt #3b6bff · 8 slate #3a4152 · 15 lightest #f4f7fc
+Glyph pixels are drawn 2 cells wide (console cells are ~1:2, so pixels come
+out square), then scaled. Each cell carries a role, LETTER or ACCENT (the
+slash and the offset shadow); make-dur.py maps roles to colours.
 """
 
 GLYPHS = {
@@ -16,16 +15,17 @@ GLYPHS = {
 TEXT = "CM/26"
 SCALE_Y = 2  # each glyph pixel row -> 2 console rows
 SCALE_X = 2  # each glyph pixel col -> 2 px -> 4 console cells
-LETTER, SLASH, SHADOW = 15, 4, 4
+LETTER, ACCENT = "letter", "accent"
+STEPS = [6, 4, 3, 2, 1]  # coarse -> sharp: resolve block size per frame
 
 
 def bitmap():
     """Return (pixels, colour) grids at glyph resolution x scale."""
     rows = 7
-    pix, col = [[0] * 0 for _ in range(rows)], [[0] * 0 for _ in range(rows)]
+    pix, col = [[] for _ in range(rows)], [[] for _ in range(rows)]
     for i, ch in enumerate(TEXT):
         g = GLYPHS[ch]
-        c = SLASH if ch == "/" else LETTER
+        c = ACCENT if ch == "/" else LETTER
         for y in range(rows):
             if i:
                 pix[y].append(0)
@@ -52,7 +52,7 @@ def resolve(pix, col, step):
         return pix, col
     h, w = len(pix), len(pix[0])
     rp = [[0] * w for _ in range(h)]
-    rc = [[0] * w for _ in range(h)]
+    rc = [[None] * w for _ in range(h)]
     for by in range(0, h, step):
         for bx in range(0, w, step):
             cells = [(y, x) for y in range(by, min(by + step, h)) for x in range(bx, min(bx + step, w))]
@@ -70,12 +70,12 @@ def cells(pix, col):
     Returns rows of (char, fg) where each pixel is two cells ("██")."""
     h, w = len(pix), len(pix[0])
     H, W = h + 1, (w + 1) * 2
-    out = [[(" ", 0)] * W for _ in range(H)]
+    out = [[(" ", None)] * W for _ in range(H)]
     for y in range(h):  # shadow first, offset +1,+1 px
         for x in range(w):
             if pix[y][x]:
                 for dx in (0, 1):
-                    out[y + 1][(x + 1) * 2 + dx] = ("█", SHADOW)
+                    out[y + 1][(x + 1) * 2 + dx] = ("█", ACCENT)
     for y in range(h):
         for x in range(w):
             if pix[y][x]:
@@ -83,8 +83,6 @@ def cells(pix, col):
                     out[y][x * 2 + dx] = ("█", col[y][x])
     return out
 
-
-STEPS = [6, 4, 3, 2, 1]  # coarse -> sharp, then hold
 
 
 if __name__ == "__main__":

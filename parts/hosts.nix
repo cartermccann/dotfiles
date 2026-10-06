@@ -72,9 +72,7 @@ let
               users.${user} = {
                 imports = [
                   ../home/common.nix
-                ]
-                # Zen's HM module pins kronos's existing profile path.
-                ++ inputs.nixpkgs.lib.optional (hostname == "kronos") ../home/zen.nix;
+                ];
               };
               extraSpecialArgs = {
                 inherit user pkgs-unstable;

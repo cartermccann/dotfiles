@@ -17,9 +17,8 @@ let
   pal = import ../lib/palette.nix;
 
   # Ly colours are 0x00RRGGBB. The most significant byte is a *styling* flag,
-  # not alpha, which is why 0x20000000 below is TB_HI_BLACK rather than a
-  # translucent black — and why a plain colour keeps that byte at 00. pal.raw.*
-  # is the palette slot without its leading '#'.
+  # not alpha, so a plain colour keeps it at 00. pal.raw.* is the palette slot
+  # without its leading '#'.
   lyColor = raw: "0x00${raw}";
 
   # Both Ly and SDDM can read a flat directory of .desktop files. Start from
@@ -61,7 +60,7 @@ in
     # accent. Assets are generated in pkgs/ly-ouranos.
     #
     # Ly renders on the framebuffer console: colours snap to the 16 VT slots
-    # (modules/common.nix remaps them to Ouranos) and text is a bitmap font.
+    # (Stylix's console target sets them from Ouranos) and text is a bitmap font.
     settings = {
       waylandsessions = "${visibleWaylandSessions}";
       full_color = true;
@@ -73,7 +72,7 @@ in
 
       # The box keeps its border here: that cobalt line IS the accent, which is
       # why hide_borders flips false relative to the config this replaces.
-      box_title = "KRONOS / ${config.system.nixos.release}";
+      box_title = "${lib.toUpper config.networking.hostName} / ${config.system.nixos.release}";
       hide_borders = false;
       blank_box = true;
       text_in_center = true;
@@ -82,12 +81,17 @@ in
       input_len = 34;
       edge_margin = 2;
 
-      clock = "%H:%M · %a %b %d";
+      clock = "%H:%M · %^a %^b %d"; # 22:42 · MON OCT 05
       bigclock = "none"; # the monogram is the hero; a big clock would fight it
 
       asterisk = "0x2022"; # bullet instead of *
       hide_version_string = true;
       hide_key_hints = false; # "F1 / SHUTDOWN" etc. from the ouranos lang file
+      sleep_cmd = "/run/current-system/systemd/bin/systemctl suspend"; # F3 / SLEEP
+      # The monitors are external, so brightnessctl has nothing to drive here:
+      # drop the keys rather than show dead hints.
+      brightness_down_key = "null";
+      brightness_up_key = "null";
       hide_keyboard_locks = true;
       lang = "ouranos"; # /etc/ly/lang/ouranos.ini
       initial_info_text = "AUTH / READY";
