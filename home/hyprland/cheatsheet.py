@@ -2,7 +2,8 @@
 fuzzel. Each source is read live, so the sheet can't drift from the config:
 
   desktop  `hyprctl binds -j`; every bind in compositor.nix carries a description
-  nvim     the config's keymaps, via a headless nvim
+  nvim     the config's keymaps, via a headless nvim (with the LSP and gitsigns
+           attach hooks run on a scratch buffer, so buffer-local maps show too)
   tmux     `list-keys -N` against the tmux.conf on disk; custom binds carry notes
   herdr    herdr's defaults overlaid with ~/.config/herdr/config.toml
   ly/bar   the greeter keys and waybar's click actions (fixed lists here)
@@ -46,14 +47,15 @@ def desktop():
     if out is None:
         return [("desktop", "?", "couldn't reach Hyprland")]
     binds = [b for b in json.loads(out) if not b["catch_all"]]
-    # a submap's rows are shown behind the root bind that enters it, found by
-    # its description naming the submap ("tmux mode (prefix)")
+    # A submap's rows are shown behind the root bind that enters it. Lua binds
+    # are opaque to hyprctl, so that bind is found by its description, which
+    # compositor.nix writes as "<submap> mode ..." ("tmux mode (prefix)").
+    submaps = {b["submap"] for b in binds if b["submap"]}
     prefix = {}
     for b in binds:
-        if not b["submap"]:
-            for name in {x["submap"] for x in binds if x["submap"]}:
-                if b["description"].lower().startswith(name):
-                    prefix[name] = chord(b["modmask"], b["key"])
+        name = b["description"].split(" mode", 1)[0]
+        if not b["submap"] and name in submaps and " mode" in b["description"]:
+            prefix.setdefault(name, chord(b["modmask"], b["key"]))
     rows, runs = [], {}
     for b in binds:
         keys = chord(b["modmask"], b["key"])
@@ -74,45 +76,53 @@ def desktop():
     for section, keys, what in rows:
         if isinstance(keys, list):
             keys.sort(key=lambda k: k[1])
-            (first, lo), (last, hi) = keys[0], keys[-1]
-            keys, what = f"{first}…{last[-1]}", f"{what}{lo}–{hi}"
+            if len(keys) == 1:  # a lone numbered bind, not a run
+                (k, n), = keys
+                keys, what = k, f"{what}{n}"
+            else:
+                (first, lo), (last, hi) = keys[0], keys[-1]
+                keys, what = f"{first}…{last[-1]}", f"{what}{lo}–{hi}"
         out.append((section, keys, what))
     return out
 
 
+# Joined onto one line for `+lua`, so no `--` comments inside. lspconfig and
+# gitsigns load on BufReadPre; their attach hooks define the buffer-local maps,
+# run here on a scratch buffer.
 NVIM_DUMP = r"""
 vim.api.nvim_exec_autocmds("User", { pattern = "VeryLazy" })
+require("lazy").load({ plugins = { "nvim-lspconfig", "gitsigns.nvim" } })
+local buf = vim.api.nvim_create_buf(false, true)
+local attach = {
+  LSP = function()
+    vim.api.nvim_exec_autocmds("LspAttach", { group = "ouranos_lsp", buffer = buf, data = { client_id = -1 } })
+  end,
+  git = function()
+    local plugin = require("lazy.core.config").plugins["gitsigns.nvim"]
+    require("lazy.core.plugin").values(plugin, "opts", false).on_attach(buf)
+  end,
+}
 local rows = {}
-for _, mode in ipairs({ "n", "x", "i", "t" }) do
-  for _, m in ipairs(vim.api.nvim_get_keymap(mode)) do
+local function add(maps, mode, source)
+  for _, m in ipairs(maps) do
     if m.desc and m.desc ~= "" and m.desc ~= "which_key_ignore" and not m.lhs:find("<Plug>") then
-      rows[#rows + 1] = { mode = mode, lhs = m.lhs, desc = m.desc }
+      rows[#rows + 1] = { mode = mode, lhs = m.lhs, desc = m.desc, source = source }
+    end
+  end
+end
+for _, mode in ipairs({ "n", "x", "i", "t" }) do
+  add(vim.api.nvim_get_keymap(mode), mode)
+end
+for source, run in pairs(attach) do
+  if pcall(run) then
+    for _, mode in ipairs({ "n", "x" }) do
+      add(vim.api.nvim_buf_get_keymap(buf, mode), mode, source)
+      for _, m in ipairs(vim.api.nvim_buf_get_keymap(buf, mode)) do vim.keymap.del(mode, m.lhs, { buffer = buf }) end
     end
   end
 end
 io.stdout:write(vim.json.encode(rows))
 """
-
-# Buffer-local maps that only exist once something attaches, so a headless
-# dump can't see them. Sources: config/nvim/lua/lsp.lua (LspAttach) and the
-# gitsigns on_attach in config/nvim/lua/plugins/editor.lua.
-ATTACHED = [
-    ("LSP", [
-        ("gd", "Goto definition"), ("gr", "References"), ("gI", "Goto implementation"),
-        ("gy", "Goto type definition"), ("gD", "Goto declaration"), ("K", "Hover docs"),
-        ("<leader>ca", "Code action"), ("<leader>cr", "Rename"), ("<leader>ss", "Symbols"),
-        ("<leader>sS", "Workspace symbols"), ("<leader>cl", "LSP info"),
-    ]),
-    ("git", [
-        ("]h", "Next hunk"), ("[h", "Prev hunk"), ("<leader>ghs", "Stage hunk"),
-        ("<leader>ghr", "Reset hunk"), ("<leader>ghp", "Preview hunk"),
-        ("<leader>ghb", "Blame line"), ("<leader>ghB", "Blame buffer"),
-        ("<leader>ghS", "Stage buffer"), ("<leader>ghR", "Reset buffer"),
-        ("<leader>ghu", "Undo stage hunk"), ("<leader>ghd", "Diff this"),
-        ("<leader>ghD", "Diff this ~"),
-    ]),
-]
-
 
 def nvim():
     out = run(["nvim", "--headless", "-i", "NONE", "+lua " + NVIM_DUMP.replace("\n", " "), "+qa"])
@@ -130,9 +140,11 @@ def nvim():
             continue
         seen.add((lhs, m["desc"]))
         tag = {"n": "", "x": " (visual)", "i": " (insert)", "t": " (terminal)"}[m["mode"]]
+        if m.get("source"):
+            tag += f" ({m['source']})"
         rows.append(("nvim", lhs, m["desc"] + tag))
-    for source, maps in ATTACHED:
-        rows += [("nvim", k, f"{d} ({source})") for k, d in maps]
+    # nvim itself maps K to hover on attach, but only for a real client
+    rows.append(("nvim", "K", "Hover docs (LSP)"))
     return rows
 
 
@@ -143,7 +155,7 @@ def tmux():
     conf = os.path.join(HOME, ".config/tmux/tmux.conf")
     out = run(["tmux", "-L", "ouranos-keys", "-f", conf, "start-server", ";",
                "show-options", "-gv", "prefix", ";", "list-keys", "-N"])
-    if out is None:
+    if not out:
         return [("tmux", "?", "couldn't read the tmux config")]
     prefix, *lines = out.splitlines()
     rows = []
@@ -151,7 +163,7 @@ def tmux():
         # "C-a c   New window", or "M-Up   Previous session" for the root table;
         # the key column is padded, sometimes down to a single space
         words = line.split()
-        n = 2 if words[0] == prefix else 1
+        n = 2 if words[:1] == [prefix] else 1
         if len(words) > n:
             rows.append(("tmux", " ".join(words[:n]), " ".join(words[n:])))
     return rows
@@ -199,12 +211,15 @@ def herdr():
     return rows
 
 
-LY = [("F1", "Shut down"), ("F2", "Reboot"), ("F3", "Sleep"), ("F7", "Show password")]
+LY = [
+    ("F1", "Shut down"), ("F2", "Reboot"), ("F3", "Sleep"), ("F7", "Show password"),
+    ("F5 / F6", "Brightness down / up (atlas; kronos has no panel)"),
+]
 
 # waybar's on-click actions, from home/hyprland/waybar.nix
 BAR = [
     ("click workspace", "Switch to it"),
-    ("click modes ⋯", "Show inactive modes; click one to toggle it"),
+    ("hover modes ⋯", "Slide out inactive modes; click one to toggle it"),
     ("click clock", "Toggle ISO/week format"),
     ("middle-click clock", "Step through timezones (UTC)"),
     ("click AGENTS", "Agent switcher"),

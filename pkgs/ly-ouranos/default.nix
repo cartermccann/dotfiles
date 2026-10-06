@@ -30,9 +30,11 @@ runCommand "ly-ouranos" { nativeBuildInputs = [ python3 ]; } ''
   PYTHONPATH=. python3 ${./make-dur.py} $out/ouranos.dur
 
   sed ${
-    lib.concatMapStringsSep " " (
-      key: "-e " + lib.escapeShellArg "s|^${key} = .*|${key} = ${labels.${key}}|"
-    ) (lib.attrNames labels)
+    lib.concatStringsSep " " (
+      lib.mapAttrsToList (
+        key: label: "-e " + lib.escapeShellArg "s|^${key} = .*|${key} = ${label}|"
+      ) labels
+    )
   } ${ly.src}/res/lang/en.ini > $out/ouranos.ini
 
   # sed exits 0 whether or not a key matched; fail the build if upstream

@@ -316,7 +316,7 @@ let
       hl.bind(mod .. " + T", hl.dsp.window.float(), { description = "Toggle floating" })
       hl.bind(mod .. " + C", hl.dsp.window.center(), { description = "Center window" })
       hl.bind(mod .. " + P", hl.dsp.window.pseudo(), { description = "Pseudo-tile" })
-      hl.bind(mod .. " + S", hl.dsp.layout("togglesplit"), { description = "Toggle split direction" })
+      hl.bind(mod .. " + S", hl.dsp.layout("togglesplit"), { description = "Toggle split direction (dwindle)" })
 
       -- Scratchpad (special workspace) — drops in with slidefadevert; keep a
       -- persistent ghostty+tmux session here.
