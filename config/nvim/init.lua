@@ -1,41 +1,18 @@
--- Bootstrap lazy.nvim
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git", "clone", "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", lazypath,
-  })
-end
-vim.opt.rtp:prepend(lazypath)
+-- nvim on plain lazy.nvim: no distro, native LSP (lua/lsp.lua), every server
+-- and formatter from Nix (home/neovim.nix). Colours come from the Ouranos
+-- palette via colors/palette.lua.
+--
+--   lua/config/options.lua    editor options
+--   lua/config/lazy.lua       lazy.nvim bootstrap + plugin specs (lua/plugins/*)
+--   lua/config/keymaps.lua    global keymaps (LazyVim-compatible muscle memory)
+--   lua/config/autocmds.lua   autocommands
+--   lua/config/statusline.lua the statusline
+--   lua/lsp.lua               servers, diagnostics, LspAttach maps
+--   lua/ai/herdr.lua          send code to the Codex/Claude panes in herdr
+vim.loader.enable()
 
--- LazyVim setup
-require("lazy").setup({
-  spec = {
-    { "LazyVim/LazyVim", import = "lazyvim.plugins" },
-    { import = "lazyvim.plugins.extras.lang.python" },
-    { import = "lazyvim.plugins.extras.lang.typescript" },
-    { import = "lazyvim.plugins.extras.lang.elixir" },
-    { import = "lazyvim.plugins.extras.lang.rust" },
-    { import = "lazyvim.plugins.extras.lang.nix" },
-    { import = "lazyvim.plugins.extras.lang.clangd" },
-    { import = "lazyvim.plugins.extras.lang.zig" },
-    { import = "lazyvim.plugins.extras.lang.java" },
-    { import = "lazyvim.plugins.extras.lang.git" },
-    { import = "lazyvim.plugins.extras.ui.indent-blankline" },
-    { import = "lazyvim.plugins.extras.ui.mini-animate" },
-    { import = "lazyvim.plugins.extras.ui.smear-cursor" },
-    { import = "lazyvim.plugins.extras.ui.treesitter-context" },
-    { import = "plugins" },
-  },
-  defaults = { lazy = false, version = false },
-  install = { colorscheme = { "palette", "square", "catppuccin-mocha", "tokyonight-night", "nord", "kanagawa-wave", "gruvbox", "rose-pine", "habamax" } },
-  checker = { enabled = true },
-  performance = {
-    rtp = {
-      disabled_plugins = {
-        "gzip", "tarPlugin", "tohtml", "tutor", "zipPlugin",
-      },
-    },
-  },
-})
+require("config.options")
+require("config.lazy")
+require("config.keymaps")
+require("config.autocmds")
+require("config.statusline")

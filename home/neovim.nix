@@ -17,16 +17,35 @@
     # HM 26.05 writes the provider toggles to nvim/init.lua, which collides
     # with the out-of-store nvim/ symlink below; load them via the wrapper.
     sideloadInitLua = true;
+    # Every language server and formatter comes from here; there is no Mason.
+    # Mason's auto-enable is how a removed Copilot kept attaching with
+    # telemetry on, and its prebuilt binaries break on NixOS (marksman/ICU).
+    # config/nvim/lua/lsp.lua enables only the servers whose binary exists.
     extraPackages = with pkgs; [
-      # LSP servers — Nix-provided so Mason isn't needed
+      # language servers
+      vtsls # TS/JS
+      tailwindcss-language-server
+      vscode-langservers-extracted # json, css, html, eslint
       pyright
-      typescript-language-server
+      ruff
+      gopls
+      rust-analyzer
       nixd
+      lua-language-server
       elixir-ls
       zls
-      rust-analyzer
       clang-tools
       jdt-language-server
+      bash-language-server
+      yaml-language-server
+      taplo # toml
+      marksman
+      # formatters (conform.nvim)
+      stylua
+      prettierd
+      shfmt
+      gofumpt
+      nixfmt
     ];
   };
 

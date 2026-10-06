@@ -1,60 +1,36 @@
--- AI layer (revised 2026-06-10). One tool per layer:
---   completion menu  blink.cmp (LazyVim default; accepts on <CR>/<C-y>, never Tab)
---   tab autocomplete minuet-ai.nvim ghost text → local Ollama FIM
---                    (qwen2.5-coder:3b-base, ~1.9 GB resident on the 5070).
---                    <Tab> accepts the ghost via the blink keymap chain below.
---   agent            Claude Code in its tmux pane, bridged in via claudecode.nvim
---
--- Replaced GitHub Copilot (ai.copilot-native + ai.sidekick, removed from
--- lazyvim.json) — local FIM is free, private, and instant. Codex/Claude
--- subscriptions stay the AGENT layer (claudecode.nvim), not tab-complete:
--- their latency (1-5s) and per-token APIs are the wrong tool for inline FIM.
+-- AI, one tool per layer:
+--   inline ghost text  minuet-ai.nvim → local Ollama FIM (qwen2.5-coder:3b-base,
+--                      ~1.9 GB on the 5070), <Tab> accepts it
+--   agents             Claude Code and Codex in herdr panes. claudecode.nvim is
+--                      Claude's IDE bridge (/ide); lua/ai/herdr.lua sends code
+--                      to either agent's pane in the same project.
+-- No Copilot: local FIM is free, private and instant, and the subscriptions
+-- (Claude, Codex) are the agent layer, where 1-5s latency is fine.
 return {
-  -- ghost-text mode: AI suggestions render inline, not as a blink menu source
-  {
-    "LazyVim/LazyVim",
-    opts = function()
-      vim.g.ai_cmp = false
-    end,
-  },
-
-  -----------------------------------------------------------------------------
-  -- Local FIM tab-completion — minuet-ai.nvim → Ollama (OpenAI-compatible FIM)
-  -----------------------------------------------------------------------------
   {
     "milanglacier/minuet-ai.nvim",
     event = "InsertEnter",
     opts = {
       provider = "openai_fim_compatible",
-      n_completions = 1, -- single ghost suggestion (not a menu)
-      context_window = 1024, -- chars of context sent; 3B model + GPU handles it
-      throttle = 400, -- local model is fast — tighter than the 1000ms default
+      n_completions = 1,
+      context_window = 1024,
+      throttle = 400,
       debounce = 200,
       request_timeout = 3,
-      notify = "warn", -- quiet unless something's actually wrong
+      notify = "warn",
       provider_options = {
         openai_fim_compatible = {
-          -- `api_key` is the NAME of an env var that must merely exist; "TERM"
-          -- is always set in a terminal, so the (irrelevant) key check passes.
+          -- `api_key` names an env var that must merely exist; TERM always does.
           api_key = "TERM",
           name = "Ollama",
           end_point = "http://localhost:11434/v1/completions",
           model = "qwen2.5-coder:3b-base",
-          optional = {
-            max_tokens = 256,
-            top_p = 0.9,
-          },
+          optional = { max_tokens = 256, top_p = 0.9 },
         },
       },
       virtualtext = {
-        auto_trigger_ft = { "*" }, -- ghost text as you type, Copilot-style
-        auto_trigger_ignore_ft = {
-          "neo-tree", "snacks_dashboard", "snacks_picker_input",
-          "TelescopePrompt", "lazy", "mason", "help", "checkhealth", "oil",
-        },
-        -- <Tab> accept is handled in the blink keymap chain (below) so snippet
-        -- jumps and a literal tab still fall through. These Alt maps are the
-        -- explicit controls: force-accept, line/N-line accept, cycle, dismiss.
+        auto_trigger_ft = { "*" },
+        auto_trigger_ignore_ft = { "snacks_dashboard", "snacks_picker_input", "lazy", "help", "checkhealth" },
         keymap = {
           accept = "<A-A>",
           accept_line = "<A-a>",
@@ -67,8 +43,7 @@ return {
     },
   },
 
-  -- <Tab> chain: accept ghost → jump snippet → literal tab. blink owns the
-  -- keymap so there's no raw-map conflict; the menu still accepts on <CR>/<C-y>.
+  -- <Tab>: accept ghost text → jump snippet → literal tab
   {
     "saghen/blink.cmp",
     opts = {
@@ -89,23 +64,21 @@ return {
     },
   },
 
-  -----------------------------------------------------------------------------
-  -- Agent layer — WebSocket MCP bridge: nvim hosts the server, the Claude Code
-  -- CLI in tmux connects via `/ide` — selection/buffer context flows over,
-  -- diffs come back as native nvim diff views. terminal.provider=none keeps
-  -- Claude in tmux.
-  -----------------------------------------------------------------------------
+  -- Loaded at startup, not on first keypress, so Claude Code's /ide finds this
+  -- nvim as soon as it opens.
   {
     "coder/claudecode.nvim",
+    event = "VeryLazy",
     dependencies = { "folke/snacks.nvim" },
-    opts = {
-      terminal = { provider = "none" },
-    },
+    opts = { terminal = { provider = "none" } },
     keys = {
-      { "<leader>cs", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send selection to Claude" },
-      { "<leader>cb", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add buffer to Claude context" },
-      { "<leader>cd", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept Claude diff" },
-      { "<leader>cD", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Reject Claude diff" },
+      { "<leader>ac", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Claude: send selection" },
+      { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", desc = "Claude: add buffer" },
+      { "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Claude: accept diff" },
+      { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Claude: deny diff" },
+      { "<leader>ax", function() require("ai.herdr").send("codex") end, mode = { "n", "v" }, desc = "Codex: send code ref" },
+      { "<leader>aX", function() require("ai.herdr").send("claude") end, mode = { "n", "v" }, desc = "Claude pane: send code ref" },
+      { "<leader>ae", function() require("ai.herdr").diagnostics("codex") end, desc = "Codex: fix these diagnostics" },
     },
   },
 }
