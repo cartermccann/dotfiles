@@ -44,23 +44,11 @@ let
       printf "  ·  any key to close"; read -rsn1' _ "$*"
   '';
 
-  # Searchable keybinding list, read from the live hyprland.lua so it can never
-  # drift from the binds Nix generated.
+  # The keybinding cheatsheet (Super+/): desktop, nvim, herdr, Ly and bar
+  # bindings, each read live by cheatsheet.py, searchable in fuzzel.
   keys = pkgs.writeShellScriptBin "ouranos-keys" ''
-    ${pkgs.python3}/bin/python3 - "${cfgHome}/hypr/hyprland.lua" <<'PY' | ${fuzzel} --prompt="keys › " --width 72 >/dev/null
-    import re, sys
-    rows = []
-    for line in open(sys.argv[1]):
-        m = re.match(r'\s*hl\.bind\((.+?),\s*hl\.(dsp\.[\w.]+)\((.*?)\)\s*(?:,\s*\{[^}]*\})?\)\s*(?:--\s*(.*))?$', line)
-        if not m or " .. i" in m.group(1) or "key" in m.group(1):
-            continue
-        key = re.sub(r'mod\s*\.\.\s*"', "SUPER", m.group(1)).strip('"').replace(" + ", "+").replace(" ", "")
-        key = "+".join(p.capitalize() if p.isupper() and len(p) > 1 else p for p in key.split("+"))
-        arg = m.group(3).strip("[]\"' ")
-        what = m.group(4) or (arg[:60] if m.group(2) == "dsp.exec_cmd" else m.group(2)[4:])
-        rows.append(f"{key:<24} {what.strip()}")
-    print("\n".join(rows))
-    PY
+    ${pkgs.python3}/bin/python3 ${./cheatsheet.py} "${cfgHome}/hypr/hyprland.lua" \
+      | ${fuzzel} --prompt="keys › " --width 100 --lines 24 >/dev/null
   '';
 
   # Capture helpers that need more than one line.
@@ -311,7 +299,7 @@ let
       id = "keys";
       glyph = "󰌌";
       label = "Keybindings";
-      hint = "Super+Ctrl+K";
+      hint = "Super+/";
       action = "ouranos-keys";
     }
 
