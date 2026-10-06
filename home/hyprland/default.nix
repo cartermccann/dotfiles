@@ -13,6 +13,7 @@
 #   bar-scripts.nix waybar's live modules: modes, recording, Tailscale, updates
 #   menu.nix        the Ouranos menu (Super+Alt+Space), focus-or-launch, keybinding list
 #   projects.nix    project launcher (Super+O): repo picker -> herdr workspace layout
+#   agents.nix      agent cockpit: waybar module + switcher (Super+Shift+A) over herdr
 #   compositor.nix  hyprland.lua + hyprsunset.conf
 #   waybar.nix      waybar config + stylesheet
 #   swaync.nix      notification daemon + stylesheet
@@ -34,6 +35,7 @@
     ./bar-scripts.nix
     ./menu.nix
     ./projects.nix
+    ./agents.nix
     ./compositor.nix
     ./waybar.nix
     ./swaync.nix

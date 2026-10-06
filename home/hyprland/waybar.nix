@@ -95,6 +95,15 @@ in
           tooltip-format = "<tt>{calendar}</tt>";
           actions.on-click-middle = "tz_up";
         };
+        # Every agent herdr knows about; amber when one is waiting on you.
+        "custom/agents" = {
+          exec = "ouranos-agents status";
+          return-type = "json";
+          interval = 3;
+          signal = 8;
+          on-click = "ouranos-agents menu";
+          escape = true;
+        };
         "custom/updates" = {
           exec = "ouranos-updates status";
           return-type = "json";
@@ -225,6 +234,7 @@ in
         "group/modes"
         "group/active"
         "clock"
+        "custom/agents"
       ];
     in
     builtins.toJSON [

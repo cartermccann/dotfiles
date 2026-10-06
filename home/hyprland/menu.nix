@@ -130,6 +130,13 @@ let
     }
 
     {
+      id = "agents";
+      glyph = "󰚩";
+      label = "Agents";
+      hint = "Super+Shift+A";
+      action = "ouranos-agents menu";
+    }
+    {
       id = "projects";
       glyph = "󰉋";
       label = "Projects";

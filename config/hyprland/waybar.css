@@ -109,6 +109,15 @@ label {
   background: alpha(@base05, 0.06);
   color: @base05;
 }
+#custom-agents {
+  color: @base0D;
+  padding: 0 9px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+#custom-agents.waiting {
+  color: @base0A;
+}
 #custom-updates {
   color: @base0D;
   padding: 0 9px;

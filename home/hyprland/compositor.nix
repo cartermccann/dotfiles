@@ -286,6 +286,7 @@ let
           ''hl.bind(mod .. " + ESCAPE",      hl.dsp.exec_cmd("ouranos-menu system"))''
           ''hl.bind(mod .. " + CTRL + K",    hl.dsp.exec_cmd("ouranos-keys"))''
           ''hl.bind(mod .. " + O",           hl.dsp.exec_cmd("ouranos-project"))''
+          ''hl.bind(mod .. " + SHIFT + A",   hl.dsp.exec_cmd("ouranos-agents menu"))''
         ]
         [
           ''hl.bind(mod .. " + SPACE",  hl.dsp.global("caelestia:launcher"))''
