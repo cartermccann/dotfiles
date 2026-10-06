@@ -6,6 +6,7 @@
   zen-browser,
   helium,
   claude-desktop,
+  user,
   ...
 }:
 
@@ -60,40 +61,47 @@ in
     polkitPolicyOwners = [ "cjm" ];
   };
 
-  environment.systemPackages = with pkgs; [
-    onePasswordMcp
+  environment.systemPackages =
+    with pkgs;
+    [
+      onePasswordMcp
 
-    # Browsers
-    googleChromeWrapped
-    zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
-    floorp-bin
-    helium.packages.${pkgs.stdenv.hostPlatform.system}.default
+      # Browsers
+      googleChromeWrapped
+      floorp-bin
+      helium.packages.${pkgs.stdenv.hostPlatform.system}.default
 
-    # Communication
-    slack
-    pkgs-unstable.beeper
+      # Communication
+      slack
+      pkgs-unstable.beeper
 
-    # Utilities
-    localsend # local file sharing
-    nautilus # file manager
-    gnome-disk-utility
-    gnome-calculator
-    fastfetch
-    inxi
-    blanket
-    statix # nix linter
+      # Utilities
+      localsend # local file sharing
+      nautilus # file manager
+      gnome-disk-utility
+      gnome-calculator
+      fastfetch
+      inxi
+      blanket
+      statix # nix linter
 
-    #Graphic editor
-    inkscape
-    lsd
-    # Notes
-    obsidian
+      #Graphic editor
+      inkscape
+      lsd
+      # Notes
+      obsidian
 
-    #code editor
-    # pinned ahead of nixpkgs code-cursor (built with nixpkgs' buildVscode)
-    (callPackage ../pkgs/code-cursor { })
-    cursor-cli
-    # AI
-    claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs
-  ];
+      #code editor
+      # pinned ahead of nixpkgs code-cursor (built with nixpkgs' buildVscode)
+      (callPackage ../pkgs/code-cursor { })
+      cursor-cli
+      # AI
+      claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs
+    ]
+    # Zen: from home-manager where home/zen.nix manages it (kronos, so Stylix
+    # can theme the profile), as a system package everywhere else. Installing
+    # both put two copies in the closure.
+    ++ lib.optional (
+      !(config.home-manager.users.${user}.programs.zen-browser.enable or false)
+    ) zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default;
 }
