@@ -537,7 +537,13 @@ let
           [
             ''hl.exec_cmd("swayosd-server --style ${cfgHome}/swayosd/style.css")''
             ''hl.exec_cmd("${waybarCmd}")''
-            ''hl.exec_cmd("swaync")''
+            # Through its systemd unit, not a bare process: swaync is also
+            # D-Bus-activated (the first notification at login starts
+            # swaync.service), and a second, exec'd instance made that unit lose
+            # the race and sit in `systemctl --failed`. One unit, one instance.
+            # The environment import is repeated here so this start can't beat
+            # the import above it (autostart commands run concurrently).
+            ''hl.exec_cmd("bash -c 'systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE; systemctl --user start swaync'")''
             ''hl.exec_cmd("hypridle")''
           ]
           [
