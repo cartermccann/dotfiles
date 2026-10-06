@@ -95,9 +95,13 @@ let
   # Reads the live temperature rather than a state file: the 20:30 profile in
   # hyprsunset.conf warms the screen on its own, and a state file never saw
   # that, so the first press after dusk went the wrong way.
+  # `identity` alone resets the matrix but leaves the stored kelvin (what the
+  # query above returns) at 3500, so "off" still read as on and every later
+  # press sent identity again. Park the kelvin at neutral first, then identity.
   hyprNightToggle = pkgs.writeShellScriptBin "hypr-night-toggle" ''
     T=$(${hyprctl} hyprsunset temperature 2>/dev/null | tr -dc 0-9)
     if [ -n "$T" ] && [ "$T" -lt 6000 ]; then
+      ${hyprctl} hyprsunset temperature 6500
       ${hyprctl} hyprsunset identity
     else
       ${hyprctl} hyprsunset temperature 3500
