@@ -39,9 +39,22 @@ local servers = {
   -- rust_analyzer: rustaceanvim
 }
 
+-- lspconfig gives some servers a function as `cmd` (it picks flags at spawn
+-- time), so there is no argv to read; name their binaries here.
+local binaries = {
+  tailwindcss = "tailwindcss-language-server",
+  jsonls = "vscode-json-language-server",
+  cssls = "vscode-css-language-server",
+  html = "vscode-html-language-server",
+  eslint = "vscode-eslint-language-server",
+  jdtls = "jdtls",
+  yamlls = "yaml-language-server",
+}
+
 local function available(name)
   local cmd = (vim.lsp.config[name] or {}).cmd
-  return type(cmd) ~= "table" or vim.fn.executable(cmd[1]) == 1
+  local bin = type(cmd) == "table" and cmd[1] or binaries[name]
+  return bin ~= nil and vim.fn.executable(bin) == 1
 end
 
 function M.setup()

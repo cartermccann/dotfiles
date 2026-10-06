@@ -24,9 +24,6 @@ return {
   { "folke/lazydev.nvim", ft = "lua", opts = { library = { { path = "${3rd}/luv/library", words = { "vim%.uv" } } } } },
 
   { "echasnovski/mini.pairs", event = "VeryLazy", opts = { modes = { insert = true, command = true } } },
-  { "echasnovski/mini.surround", keys = { "gsa", "gsd", "gsr", "gsf", "gsh" }, opts = {
-    mappings = { add = "gsa", delete = "gsd", replace = "gsr", find = "gsf", highlight = "gsh" },
-  } },
 
   -- a/i textobjects; f/c come from treesitter (nvim-treesitter-textobjects queries)
   {
@@ -59,6 +56,12 @@ return {
     keys = {
       { "<leader>cf", function() require("conform").format({ async = true }) end, mode = { "n", "v" }, desc = "Format" },
       {
+        "<leader>cF",
+        function() require("conform").format({ formatters = { "injected" }, timeout_ms = 3000 }) end,
+        mode = { "n", "v" },
+        desc = "Format injected languages",
+      },
+      {
         "<leader>uf",
         function()
           vim.g.autoformat = vim.g.autoformat == false
@@ -69,8 +72,8 @@ return {
     },
     opts = {
       default_format_opts = { lsp_format = "fallback" },
-      format_on_save = function()
-        if vim.g.autoformat == false then return end
+      format_on_save = function(buf)
+        if vim.g.autoformat == false or vim.b[buf].autoformat == false then return end
         return { timeout_ms = 1500 }
       end,
       formatters_by_ft = {

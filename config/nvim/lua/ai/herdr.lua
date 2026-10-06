@@ -17,7 +17,9 @@ local function find_agent(kind)
   if not ok or not data.result then return nil, "herdr isn't running" end
   local root, best = project_root(), nil
   for _, a in ipairs(data.result.agents or {}) do
-    if a.agent == kind and a.cwd and vim.startswith(a.cwd, root) then
+    -- exact repo or a subdirectory; a bare prefix would also match the
+    -- `gwa` sibling worktrees (repo--branch)
+    if a.agent == kind and a.cwd and (a.cwd == root or vim.startswith(a.cwd, root .. "/")) then
       if a.agent_status == "idle" or a.agent_status == "done" then return a end
       best = best or a
     end
@@ -56,6 +58,15 @@ end
 -- Prompt for an instruction, then send it with the code reference.
 function M.send(kind)
   local ref = code_ref()
+  vim.ui.input({ prompt = kind .. " › " .. ref .. " " }, function(msg)
+    if msg == nil then return end
+    prompt(kind, vim.trim(ref .. " " .. msg))
+  end)
+end
+
+-- Send the whole file as an @path reference, with an instruction.
+function M.send_file(kind)
+  local ref = "@" .. vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
   vim.ui.input({ prompt = kind .. " › " .. ref .. " " }, function(msg)
     if msg == nil then return end
     prompt(kind, vim.trim(ref .. " " .. msg))

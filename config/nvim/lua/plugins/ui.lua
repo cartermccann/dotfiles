@@ -1,3 +1,19 @@
+-- The house motion curve, cubic-bezier(.2,.8,.2,1), as a snacks easing
+-- function (t elapsed, b start, c change, d duration). x(u) is solved for u by
+-- Newton's method, then y(u) is the eased progress.
+local function ouranos_ease(t, b, c, d)
+  local x1, y1, x2, y2 = 0.2, 0.8, 0.2, 1
+  local function bez(u, p1, p2) return 3 * (1 - u) ^ 2 * u * p1 + 3 * (1 - u) * u ^ 2 * p2 + u ^ 3 end
+  local function dbez(u, p1, p2) return 3 * (1 - u) ^ 2 * p1 + 6 * (1 - u) * u * (p2 - p1) + 3 * u ^ 2 * (1 - p2) end
+  local x, u = t / d, t / d
+  for _ = 1, 6 do
+    local dx = dbez(u, x1, x2)
+    if math.abs(dx) < 1e-6 then break end
+    u = math.min(1, math.max(0, u - (bez(u, x1, x2) - x) / dx))
+  end
+  return b + c * bez(u, y1, y2)
+end
+
 -- UI: snacks does the heavy lifting (picker, explorer, dashboard, notifier,
 -- input, indent guides, smooth scroll). One filename display (the
 -- statusline), one motion layer (snacks.scroll), one scope guide.
@@ -20,7 +36,7 @@ return {
       indent = { enabled = true, animate = { enabled = false } },
       scroll = {
         enabled = true,
-        animate = { duration = { step = 10, total = 160 }, easing = "outQuad" },
+        animate = { duration = { step = 10, total = 160 }, easing = ouranos_ease },
       },
       dashboard = {
         enabled = true,

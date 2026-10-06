@@ -13,7 +13,6 @@ return {
     branch = "main",
     lazy = false, -- the main branch doesn't support lazy-loading
     build = ":TSUpdate",
-    cmd = { "TSUpdate", "TSInstall", "TSUninstall" },
     config = function()
       local ts = require("nvim-treesitter")
       local have = ts.get_installed()
@@ -42,7 +41,11 @@ return {
       for key, query in pairs(objects) do
         local up = key:upper()
         local function map(lhs, fn, desc)
-          vim.keymap.set({ "n", "x", "o" }, lhs, function() move[fn](query, "textobjects") end, { desc = desc })
+          vim.keymap.set({ "n", "x", "o" }, lhs, function()
+            -- in diff mode ]c/[c stay vim's next/prev change (diffview, :diffsplit)
+            if vim.wo.diff and key == "c" then return vim.cmd.normal({ lhs, bang = true }) end
+            move[fn](query, "textobjects")
+          end, { desc = desc })
         end
         map("]" .. key, "goto_next_start", "Next " .. query)
         map("[" .. key, "goto_previous_start", "Prev " .. query)
@@ -53,4 +56,14 @@ return {
   },
 
   { "windwp/nvim-ts-autotag", event = { "BufReadPre", "BufNewFile" }, opts = {} },
+
+  -- the enclosing function/class pinned at the top while scrolling
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = { mode = "cursor", max_lines = 3 },
+    keys = {
+      { "<leader>ut", function() require("treesitter-context").toggle() end, desc = "Toggle treesitter context" },
+    },
+  },
 }

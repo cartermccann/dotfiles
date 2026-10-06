@@ -32,7 +32,7 @@ au("BufReadPost", {
 -- q closes the throwaway windows
 au("FileType", {
   group = group,
-  pattern = { "help", "qf", "man", "checkhealth", "lspinfo", "notify", "grug-far", "gitsigns-blame" },
+  pattern = { "help", "qf", "man", "checkhealth", "grug-far", "gitsigns-blame" },
   callback = function(ev)
     vim.bo[ev.buf].buflisted = false
     vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = ev.buf, silent = true })

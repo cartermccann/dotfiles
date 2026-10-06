@@ -78,7 +78,11 @@ return {
       { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Claude: deny diff" },
       { "<leader>ax", function() require("ai.herdr").send("codex") end, mode = { "n", "v" }, desc = "Codex: send code ref" },
       { "<leader>aX", function() require("ai.herdr").send("claude") end, mode = { "n", "v" }, desc = "Claude pane: send code ref" },
+      { "<leader>af", function() require("ai.herdr").send_file("codex") end, desc = "Codex: send file" },
+      { "<leader>aF", function() require("ai.herdr").send_file("claude") end, desc = "Claude pane: send file" },
       { "<leader>ae", function() require("ai.herdr").diagnostics("codex") end, desc = "Codex: fix these diagnostics" },
+      { "<leader>aE", function() require("ai.herdr").diagnostics("claude") end, desc = "Claude pane: fix these diagnostics" },
+      { "<leader>at", function() vim.system({ "ouranos-herdr" }) end, desc = "Open herdr" },
     },
   },
 }

@@ -9,7 +9,7 @@
 -- design calls tuned for reading a full file, so they stay hand-written here.
 --
 -- Transparency: defaults ON so the ground comes from the terminal/compositor
--- blur (matches square.lua + the catppuccin/transparent roster). Set
+-- blur (ghostty is the glass pane). Set
 -- `vim.g.palette_transparent = false` before `:colorscheme palette` for a solid bg.
 
 vim.cmd("hi clear")
@@ -347,54 +347,6 @@ hl("Added", { fg = c.green })
 hl("Changed", { fg = c.azure })
 hl("Removed", { fg = c.red })
 
--- ── Telescope ──
-hl("TelescopeNormal", { fg = c.fg, bg = FB })
-hl("TelescopeBorder", { fg = c.hairline, bg = FB })
-hl("TelescopeTitle", { fg = c.azure, bold = true })
-hl("TelescopeSelection", { bg = c.sel })
-hl("TelescopeSelectionCaret", { fg = c.azure })
-hl("TelescopeMatching", { fg = c.azure, bold = true })
-hl("TelescopePromptPrefix", { fg = c.azure })
-hl("TelescopePromptNormal", { fg = c.fg, bg = FB })
-hl("TelescopePromptBorder", { fg = c.hairline, bg = FB })
-hl("TelescopeResultsNormal", { fg = c.fg, bg = FB })
-hl("TelescopeResultsBorder", { fg = c.hairline, bg = FB })
-hl("TelescopePreviewNormal", { fg = c.fg, bg = FB })
-hl("TelescopePreviewBorder", { fg = c.hairline, bg = FB })
-
--- ── Neo-tree ──
-hl("NeoTreeNormal", { fg = c.fg, bg = NB })
-hl("NeoTreeNormalNC", { fg = c.fg, bg = NB })
-hl("NeoTreeDirectoryName", { fg = c.azure })
-hl("NeoTreeDirectoryIcon", { fg = c.azure })
-hl("NeoTreeRootName", { fg = c.azure, bold = true })
-hl("NeoTreeFileName", { fg = c.fg })
-hl("NeoTreeGitModified", { fg = c.azure })
-hl("NeoTreeGitDirty", { fg = c.azure })
-hl("NeoTreeGitUntracked", { fg = c.green })
-hl("NeoTreeGitAdded", { fg = c.green })
-hl("NeoTreeGitDeleted", { fg = c.red })
-hl("NeoTreeGitConflict", { fg = c.orange })
-hl("NeoTreeIndentMarker", { fg = "#232a37" })
-hl("NeoTreeDimText", { fg = c.muted })
-hl("NeoTreeTabActive", { fg = c.azure, bold = true })
-hl("NeoTreeTabInactive", { fg = c.taupe })
-
--- ── Indent-blankline ──
-hl("IblIndent", { fg = "#1b212c" })
-hl("IblScope", { fg = c.hairline })
-hl("IndentBlanklineChar", { fg = "#1b212c" })
-hl("IndentBlanklineContextChar", { fg = c.hairline })
-
--- ── Rainbow delimiters (warm spectrum from the palette) ──
-hl("RainbowDelimiterRed", { fg = c.red })
-hl("RainbowDelimiterYellow", { fg = c.yellow })
-hl("RainbowDelimiterBlue", { fg = c.azure })
-hl("RainbowDelimiterOrange", { fg = c.orange })
-hl("RainbowDelimiterGreen", { fg = c.green })
-hl("RainbowDelimiterViolet", { fg = c.periwinkle })
-hl("RainbowDelimiterCyan", { fg = c.cyan })
-
 -- ── Which-key ──
 hl("WhichKey", { fg = c.azure })
 hl("WhichKeyGroup", { fg = c.periwinkle })
@@ -404,15 +356,10 @@ hl("WhichKeyFloat", { bg = FB })
 hl("WhichKeyBorder", { fg = c.hairline, bg = FB })
 hl("WhichKeyValue", { fg = c.taupe })
 
--- ── Noice ──
-hl("NoiceCmdlinePopup", { fg = c.fg, bg = FB })
-hl("NoiceCmdlinePopupBorder", { fg = c.hairline })
-hl("NoiceCmdlineIcon", { fg = c.azure })
-hl("NoicePopupmenu", { fg = c.fg, bg = FB })
-hl("NoicePopupmenuBorder", { fg = c.hairline })
-hl("NoicePopupmenuSelected", { bg = c.sel })
-hl("NoicePopupmenuMatch", { fg = c.azure, bold = true })
-hl("NoiceConfirmBorder", { fg = c.hairline })
+-- ── Treesitter context ──
+hl("TreesitterContext", { bg = c.surface })
+hl("TreesitterContextLineNumber", { fg = c.taupe, bg = c.surface })
+hl("TreesitterContextBottom", { sp = c.hairline, underline = true })
 
 -- ── Snacks ──
 hl("SnacksDashboardHeader", { fg = c.azure })
@@ -461,18 +408,6 @@ hl("MiniIconsOrange", { fg = c.orange })
 hl("MiniIconsPurple", { fg = c.periwinkle })
 hl("MiniIconsRed", { fg = c.red })
 hl("MiniIconsYellow", { fg = c.yellow })
-
--- ── Bufferline ──
-hl("BufferLineFill", { bg = NB })
-hl("BufferLineBackground", { fg = c.taupe, bg = NB })
-hl("BufferLineBufferVisible", { fg = c.fg_light, bg = NB })
-hl("BufferLineBufferSelected", { fg = c.azure, bg = NB, bold = true })
-hl("BufferLineModified", { fg = c.green, bg = NB })
-hl("BufferLineModifiedVisible", { fg = c.green, bg = NB })
-hl("BufferLineModifiedSelected", { fg = c.green, bg = NB })
-hl("BufferLineIndicatorSelected", { fg = c.azure, bg = NB })
-hl("BufferLineSeparator", { fg = c.bg, bg = NB })
-hl("BufferLineSeparatorSelected", { fg = c.bg, bg = NB })
 
 -- ── Lazy ──
 hl("LazyButton", { fg = c.fg, bg = c.surface })
