@@ -180,7 +180,7 @@ let
   # hand-pinned apps against upstream and the flake's nixpkgs age, writing a
   # cache the bar reads; `status` never touches the network.
   ouranosUpdates = pkgs.writeShellScriptBin "ouranos-updates" ''
-    REPO=${home}/dotfiles
+    REPO=${home}/nix-config
     CACHE=''${XDG_CACHE_HOME:-$HOME/.cache}/ouranos/updates
     mkdir -p "$(dirname "$CACHE")"
     CURL="${pkgs.curl}/bin/curl -fsSL --max-time 20"

@@ -19,7 +19,7 @@
 # Headless runs can't answer permission prompts, so the sweep runs against a
 # scoped allowlist (loop-settings.json in the skill dir): the repo-state.sh
 # helper + read-only text tools, read-only access under ~/projects,
-# ~/CLAUDE.md, ~/dotfiles, and ~/.claude, writes ONLY to
+# ~/CLAUDE.md, ~/nix-config, and ~/.claude, writes ONLY to
 # ~/.claude/self-improve/** and ~/.claude/loops/docs-gardener/**; web access
 # and edits to CLAUDE.md/skills/settings/rules are explicitly denied.
 # Everything else auto-denies.

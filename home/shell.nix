@@ -30,8 +30,8 @@ let
     dlog = "docker logs";
 
     # Nix
-    nrs = "nh os switch ~/dotfiles";
-    update = "nh os switch ~/dotfiles --update";
+    nrs = "nh os switch ~/nix-config";
+    update = "nh os switch ~/nix-config --update";
 
     # Modern replacements.
     # Dropped as unused over a full history window: ll (fish ships its own `la`,
@@ -95,7 +95,7 @@ in
           kronos-banner
         end
       end
-      set -gx NH_FLAKE $HOME/dotfiles
+      set -gx NH_FLAKE $HOME/nix-config
       set -gx GOPATH $HOME/.local/share/go
       set -gx GOBIN $HOME/.local/bin
       fish_add_path $HOME/.local/bin

@@ -686,7 +686,7 @@ The two-week candidate cannot become the default merely because the calendar exp
 ### P6.7 Packaging, migration, rollback, and docs
 
 - [ ] Run nix flake check and validate module evaluation for both hosts.
-- [ ] Build with nh os build ~/dotfiles and start from an offline realized closure.
+- [ ] Build with nh os build ~/nix-config and start from an offline realized closure.
 - [ ] Test clean install, activation, upgrade, every released schema migration, model checksum failure, uninstall, and rollback.
 - [ ] Verify ASR models never download at application runtime.
 - [ ] Verify the external Ollama dependency fails closed on a missing or mismatched digest.

@@ -115,7 +115,7 @@ rec {
   # Stylix wants bare hex per slot. Night variant: the house runs dark.
   base16 = pick pal.raw // {
     scheme = "Ouranos";
-    author = "kronos dotfiles";
+    author = "kronos nix-config";
   };
 
   # GTK3/4 CSS has no custom properties, only @define-color, so the glass

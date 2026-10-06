@@ -67,7 +67,7 @@ patched package passed all 19,200 connections, session closes, and both invalid
 request checks. Tested package:
 `/nix/store/jz8lvrzk733jcd8agmq5d0ircw469ka0-gnome-keyring-48.0`.
 
-Validate integration with `nh os build ~/dotfiles`. Carter then applies with
+Validate integration with `nh os build ~/nix-config`. Carter then applies with
 `nrs` and logs out and back in (or reboots) to replace the running daemon and let
 PAM unlock it. A successful build does not replace the currently running daemon.
 After activation, check the daemon's `/proc/<pid>/exe` resolves into the patched

@@ -10,7 +10,7 @@ SCHEME_FILE="${1:-}"
 
 # Auto-detect from Stylix config if no arg
 if [[ -z "$SCHEME_FILE" ]]; then
-  STYLIX_NIX="$HOME/dotfiles/modules/stylix.nix"
+  STYLIX_NIX="$HOME/nix-config/modules/stylix.nix"
   if [[ -f "$STYLIX_NIX" ]]; then
     # Extract the scheme filename (e.g., rose-pine.yaml)
     SCHEME_NAME=$(grep 'base16Scheme' "$STYLIX_NIX" | sed 's/.*\/\([^"]*\.yaml\).*/\1/')

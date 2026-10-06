@@ -35,7 +35,7 @@
   # nvim/ because that directory is the out-of-store symlink below.
   xdg.configFile."ouranos/palette.lua".text = (import ../lib/ouranos.nix).luaPalette;
 
-  # Live-editable nvim config via symlink to dotfiles
+  # Live-editable nvim config via symlink into this repo
   xdg.configFile."nvim".source =
-    config.lib.file.mkOutOfStoreSymlink "/home/${user}/dotfiles/config/nvim";
+    config.lib.file.mkOutOfStoreSymlink "/home/${user}/nix-config/config/nvim";
 }

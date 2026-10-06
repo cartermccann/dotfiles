@@ -18,7 +18,7 @@ lib.mkIf (config.home.username == "cjm") {
   # Keep the collection manifest writable and versioned: qmd's own collection
   # commands can update it, and the resulting change remains visible in git.
   xdg.configFile."qmd/index.yml" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/config/qmd/index.yml";
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-config/config/qmd/index.yml";
     force = true;
   };
 

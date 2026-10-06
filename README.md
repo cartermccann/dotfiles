@@ -1,4 +1,4 @@
-# dotfiles
+# nix-config
 
 NixOS flake for all my machines: Hyprland (two shell variants — waybar and Caelestia/Quickshell) plus Niri + Noctalia as a fallback, Ghostty, Neovim, tmux, and a dev-first setup with local LLMs. Built on flake-parts; home-manager runs as a NixOS module.
 
@@ -12,13 +12,13 @@ NixOS flake for all my machines: Hyprland (two shell variants — waybar and Cae
 ## Usage
 
 ```bash
-git clone https://github.com/cartermccann/dotfiles ~/dotfiles
+git clone https://github.com/cartermccann/nix-config ~/nix-config
 
 # Validate without sudo
-nh os build ~/dotfiles
+nh os build ~/nix-config
 
 # Apply (or use the `nrs` alias)
-sudo nixos-rebuild switch --flake ~/dotfiles#kronos
+sudo nixos-rebuild switch --flake ~/nix-config#kronos
 ```
 
 `update` (alias) rebuilds with updated flake inputs.
@@ -33,7 +33,7 @@ modules/           # NixOS system modules (desktop, nvidia, audio, ollama, oom-p
 home/              # home-manager modules (shell, tools, neovim, tmux, niri, hyprland, crash-watch, ...)
 lib/               # overlays, the Ouranos palette (night/day), llm-models.nix
 pkgs/              # custom package definitions (codex, qmd, ...)
-templates/         # dev-shell templates for `nix flake init -t ~/dotfiles#<lang>`
+templates/         # dev-shell templates for `nix flake init -t ~/nix-config#<lang>`
 config/            # generated blobs kept as real files: nvim, hyprland CSS, audio presets, qmd
 scripts/           # repo-root helpers referenced by modules (banners, Caelestia scheme)
 home/scripts/      # home-manager unit scripts (mcp-reaper, crash-watch)
@@ -54,7 +54,7 @@ wallpaper/
    ```nix
    flake.nixosConfigurations.myhost = mkHost "myhost" { user = "myuser"; };
    ```
-3. `sudo nixos-rebuild switch --flake ~/dotfiles#myhost`
+3. `sudo nixos-rebuild switch --flake ~/nix-config#myhost`
 
 ## Desktop sessions
 
@@ -115,7 +115,7 @@ Maintenance loops run as systemd user timers. Codex self-improve is still schedu
 Per-language templates live in `templates/` and auto-activate via direnv:
 
 ```bash
-nix flake init -t ~/dotfiles#python   # node, python, go, rust, elixir, zig, java, c, ruby, deno
+nix flake init -t ~/nix-config#python   # node, python, go, rust, elixir, zig, java, c, ruby, deno
 echo "use flake" > .envrc && direnv allow
 ```
 

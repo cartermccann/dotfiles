@@ -1,4 +1,4 @@
-# dotfiles — NixOS flake
+# nix-config — NixOS flake
 
 Flake-parts layout. This repo defines the entire system (kronos) + home-manager config.
 
@@ -8,14 +8,14 @@ Flake-parts layout. This repo defines the entire system (kronos) + home-manager 
 - `hosts/` — per-machine config
 - `modules/` — NixOS system modules (desktop, nvidia, ollama, oom-protection, ...)
 - `home/` — home-manager modules (tools, shell, neovim, tmux, niri, hyprland, ...)
-- `templates/` — `nix flake init -t ~/dotfiles#<lang>` dev-shell templates
+- `templates/` — `nix flake init -t ~/nix-config#<lang>` dev-shell templates
 - `scripts/`, `home/scripts/`, `config/`, `wallpaper/` — non-Nix assets referenced by modules
 
 ## Workflow
 
 1. Edit the relevant module (`home/` for user-level, `modules/` for system-level).
-2. Validate without sudo: `nh os build ~/dotfiles` (or `nix flake check ~/dotfiles`).
-3. Apply: user runs `nrs` (nh os switch). There is NO passwordless sudo for rebuilds. After a successful `nh os build`, ask the user to apply (e.g. `! sudo nixos-rebuild switch --flake ~/dotfiles#kronos`).
+2. Validate without sudo: `nh os build ~/nix-config` (or `nix flake check ~/nix-config`).
+3. Apply: user runs `nrs` (nh os switch). There is NO passwordless sudo for rebuilds. After a successful `nh os build`, ask the user to apply (e.g. `! sudo nixos-rebuild switch --flake ~/nix-config#kronos`).
 
 ## Conventions
 

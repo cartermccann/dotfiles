@@ -43,7 +43,7 @@ Run from this checkout (the expression uses Carter's existing locked nixpkgs):
 
 ```sh
 nix build --impure --out-link /home/cjm/.local/state/hypruse-poc/package \
-  --expr 'let f = builtins.getFlake "/home/cjm/dotfiles"; pkgs = import f.inputs.nixpkgs { system = "x86_64-linux"; }; in pkgs.callPackage /home/cjm/dotfiles/pkgs/hypruse {}'
+  --expr 'let f = builtins.getFlake "/home/cjm/nix-config"; pkgs = import f.inputs.nixpkgs { system = "x86_64-linux"; }; in pkgs.callPackage /home/cjm/nix-config/pkgs/hypruse {}'
 ```
 
 That external symlink is a GC root, not a global installation or repository
@@ -56,12 +56,12 @@ That external symlink is a GC root, not a global installation or repository
 It was verified with:
 
 ```sh
-cd /home/cjm/dotfiles/pkgs/hypruse/trial
+cd /home/cjm/nix-config/pkgs/hypruse/trial
 codex mcp get hypruse --json
 ```
 
 Start a Codex task/CLI from that directory to load it. The trusted ancestor is
-`/home/cjm/dotfiles`; this does not change global trust or MCP configuration.
+`/home/cjm/nix-config`; this does not change global trust or MCP configuration.
 The existing root `.codex` is an unrelated zero-byte file and is left intact.
 `codex -C ... mcp get` did not use the directory for configuration discovery in
 the installed CLI; actually changing the working directory did.
@@ -139,8 +139,8 @@ Those properties are guards, not proof of the window's purpose: inspect the
 actual overlay before supplying its address. No blanket class rule is installed.
 
 ```sh
-python /home/cjm/dotfiles/scripts/codex-voice-resize.py --address 0xCURRENT
-python /home/cjm/dotfiles/scripts/codex-voice-resize.py --address 0xCURRENT --apply
+python /home/cjm/nix-config/scripts/codex-voice-resize.py --address 0xCURRENT
+python /home/cjm/nix-config/scripts/codex-voice-resize.py --address 0xCURRENT --apply
 ```
 
 Apply records a private rollback JSON before changing geometry. It targets
@@ -149,7 +149,7 @@ and verifies geometry twice. To restore the same surviving window in the same
 Hyprland session, use the printed snapshot path:
 
 ```sh
-python /home/cjm/dotfiles/scripts/codex-voice-resize.py --address 0xCURRENT --restore /tmp/codex-voice-geometry-XXXX.json --apply
+python /home/cjm/nix-config/scripts/codex-voice-resize.py --address 0xCURRENT --restore /tmp/codex-voice-geometry-XXXX.json --apply
 ```
 
 Eight helper tests passed; read-only live Lua checks verified lookup, stable ID

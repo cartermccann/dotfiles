@@ -32,7 +32,7 @@ collections:
     context:
       /: Business documents, proposals, and durable text outside the Obsidian vault
   system-config:
-    path: /home/cjm/dotfiles
+    path: /home/cjm/nix-config
     pattern: "**/*.{md,nix}"
     context:
       /: Declarative NixOS, Home Manager, workstation automation, and operating documentation

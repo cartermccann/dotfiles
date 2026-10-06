@@ -101,9 +101,9 @@ codex-update --cli-only     # Update only the CLI, then test and build
 codex-update --desktop-only # Update only the desktop, then test and build
 ```
 
-The command defaults to `~/dotfiles`; `--repo /path/to/dotfiles` selects another
+The command defaults to `~/nix-config`; `--repo /path/to/nix-config` selects another
 checkout. Before the first system switch, run the source directly with
-`python3 ~/dotfiles/scripts/codex-update.py --check` or omit `--check` to update.
+`python3 ~/nix-config/scripts/codex-update.py --check` or omit `--check` to update.
 
 The CLI version and architecture-specific hashes live in `pkgs/codex/sources.json`.
 The updater resolves OpenAI's latest stable GitHub release, requires both Linux
@@ -150,4 +150,4 @@ The snapshots include pre-existing local work; do not blindly restore entire
 files over newer edits. Use the previous NixOS generation or restore only the
 Codex-specific configuration changes, then rebuild and switch.
 
-The update does not commit, reset or otherwise discard unrelated dotfiles work.
+The update does not commit, reset or otherwise discard unrelated work in the repo.

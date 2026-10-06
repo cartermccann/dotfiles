@@ -2,7 +2,7 @@
 -- Ouranos night: cobalt on near-black. Mirrors the Hyprland session so the
 -- editor matches the desktop.
 --
--- Palette source of truth: ~/dotfiles/lib/palette.nix (Base16). The 16 slots
+-- Palette source of truth: ~/nix-config/lib/palette.nix (Base16). The 16 slots
 -- are read from ~/.config/ouranos/palette.lua, which home/neovim.nix generates
 -- from it, so a palette change reaches the editor on the next rebuild. The
 -- derived tints below (string-green, bg washes, selection, indent guides) are

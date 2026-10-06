@@ -229,7 +229,7 @@ def update(repo, args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo", type=Path, default=Path.home() / "dotfiles")
+    parser.add_argument("--repo", type=Path, default=Path.home() / "nix-config")
     parser.add_argument("--check", action="store_true", help="Only report current and latest pins")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--cli-only", action="store_true")

@@ -32,7 +32,7 @@ let
       nh
     ];
     text = ''
-      exec python3 ${../scripts/codex-update.py} --repo ${pkgs.lib.escapeShellArg "${config.home.homeDirectory}/dotfiles"} "$@"
+      exec python3 ${../scripts/codex-update.py} --repo ${pkgs.lib.escapeShellArg "${config.home.homeDirectory}/nix-config"} "$@"
     '';
   };
 
