@@ -82,7 +82,10 @@ return {
       { "<leader>aF", function() require("ai.herdr").send_file("claude") end, desc = "Claude pane: send file" },
       { "<leader>ae", function() require("ai.herdr").diagnostics("codex") end, desc = "Codex: fix these diagnostics" },
       { "<leader>aE", function() require("ai.herdr").diagnostics("claude") end, desc = "Claude pane: fix these diagnostics" },
-      { "<leader>at", function() vim.system({ "ouranos-herdr" }) end, desc = "Open herdr" },
+      { "<leader>at", function()
+        if vim.fn.executable("ouranos-herdr") == 0 then return vim.notify("ouranos-herdr not on PATH", vim.log.levels.WARN) end
+        vim.system({ "ouranos-herdr" })
+      end, desc = "Open herdr" },
     },
   },
 }

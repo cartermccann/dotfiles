@@ -43,7 +43,7 @@ return {
         local function map(lhs, fn, desc)
           vim.keymap.set({ "n", "x", "o" }, lhs, function()
             -- in diff mode ]c/[c stay vim's next/prev change (diffview, :diffsplit)
-            if vim.wo.diff and key == "c" then return vim.cmd.normal({ lhs, bang = true }) end
+            if vim.wo.diff and key == "c" then return vim.cmd.normal({ vim.v.count1 .. lhs, bang = true }) end
             move[fn](query, "textobjects")
           end, { desc = desc })
         end

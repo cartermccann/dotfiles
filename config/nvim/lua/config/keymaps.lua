@@ -50,9 +50,11 @@ map("n", "]e", function() vim.diagnostic.jump({ count = 1, severity = "ERROR", f
 map("n", "[e", function() vim.diagnostic.jump({ count = -1, severity = "ERROR", float = true }) end, { desc = "Prev error" })
 
 -- find / search (snacks.picker)
+-- opts may be a function, so values like the file's dir are read at press time
 local P = function(name, opts)
-  return function() Snacks.picker[name](opts) end
+  return function() Snacks.picker[name](type(opts) == "function" and opts() or opts) end
 end
+local here = function() return { cwd = vim.fn.expand("%:p:h") } end
 map("n", "<leader><space>", P("smart"), { desc = "Find files (smart)" })
 map("n", "<leader>ff", P("files"), { desc = "Find files" })
 map("n", "<leader>fr", P("recent"), { desc = "Recent files" })
@@ -102,13 +104,14 @@ end, { desc = "Toggle palette transparency" })
 
 -- terminal
 map({ "n", "t" }, "<C-/>", function() Snacks.terminal() end, { desc = "Terminal" })
+map({ "n", "t" }, "<C-_>", function() Snacks.terminal() end, { desc = "which_key_ignore" }) -- <C-/> as tmux sends it
 map("n", "<leader>ft", function() Snacks.terminal() end, { desc = "Terminal" })
-map("n", "<leader>fT", function() Snacks.terminal(nil, { cwd = vim.fn.expand("%:p:h") }) end, { desc = "Terminal (file dir)" })
+map("n", "<leader>fT", function() Snacks.terminal(nil, here()) end, { desc = "Terminal (file dir)" })
 
 -- files / buffers
 map("n", "<leader>fb", P("buffers"), { desc = "Buffers" })
 map("n", "<leader>fg", P("git_files"), { desc = "Git files" })
-map("n", "<leader>fF", P("files", { cwd = vim.fn.expand("%:p:h") }), { desc = "Files (file dir)" })
+map("n", "<leader>fF", P("files", here), { desc = "Files (file dir)" })
 map("n", "<leader>fR", P("recent", { filter = { cwd = true } }), { desc = "Recent (cwd)" })
 map("n", "<leader>fn", "<cmd>enew<cr>", { desc = "New file" })
 map("n", "<leader>`", "<cmd>e #<cr>", { desc = "Alternate buffer" })
@@ -130,8 +133,8 @@ map("n", "<leader>sB", P("grep_buffers"), { desc = "Grep open buffers" })
 map("n", "<leader>sc", P("command_history"), { desc = "Command history" })
 map("n", "<leader>sC", P("commands"), { desc = "Commands" })
 map("n", "<leader>sD", P("diagnostics_buffer"), { desc = "Buffer diagnostics" })
-map("n", "<leader>sG", P("grep", { cwd = vim.fn.expand("%:p:h") }), { desc = "Grep (file dir)" })
-map({ "n", "x" }, "<leader>sW", P("grep_word", { cwd = vim.fn.expand("%:p:h") }), { desc = "Grep word (file dir)" })
+map("n", "<leader>sG", P("grep", here), { desc = "Grep (file dir)" })
+map({ "n", "x" }, "<leader>sW", P("grep_word", here), { desc = "Grep word (file dir)" })
 map("n", "<leader>sj", P("jumps"), { desc = "Jumps" })
 map("n", "<leader>sm", P("marks"), { desc = "Marks" })
 map("n", "<leader>sl", P("loclist"), { desc = "Location list" })
@@ -178,14 +181,14 @@ map("n", "<leader>cs", "<cmd>Trouble symbols toggle<cr>", { desc = "Symbols (Tro
 
 -- git
 map("n", "<leader>gf", P("git_log_file"), { desc = "File history" })
-map("n", "<leader>gL", P("git_log", { cwd = vim.fn.expand("%:p:h") }), { desc = "Git log (file dir)" })
+map("n", "<leader>gL", P("git_log", here), { desc = "Git log (file dir)" })
 map("n", "<leader>gS", P("git_stash"), { desc = "Git stash" })
 map("n", "<leader>gD", P("git_diff"), { desc = "Git diff (hunks)" })
 map("n", "<leader>gi", P("gh_issue"), { desc = "GitHub issues (open)" })
 map("n", "<leader>gI", P("gh_issue", { state = "all" }), { desc = "GitHub issues (all)" })
 map("n", "<leader>gp", P("gh_pr"), { desc = "GitHub PRs (open)" })
 map("n", "<leader>gP", P("gh_pr", { state = "all" }), { desc = "GitHub PRs (all)" })
-map("n", "<leader>gG", function() Snacks.lazygit({ cwd = vim.fn.expand("%:p:h") }) end, { desc = "Lazygit (file dir)" })
+map("n", "<leader>gG", function() Snacks.lazygit(here()) end, { desc = "Lazygit (file dir)" })
 map({ "n", "x" }, "<leader>gY", function()
   Snacks.gitbrowse({ open = function(url) vim.fn.setreg("+", url) end, notify = false })
 end, { desc = "Copy GitHub URL" })
