@@ -32,10 +32,11 @@
     # Hyprland 0.55+ (Lua config). Pinned to a release tag; intentionally NOT
     # following nixpkgs so prebuilt artifacts hit hyprland.cachix.org rather than
     # forcing a local source compile (substituter added in modules/common.nix).
-    # Held at v0.55.3: v0.56.2 is not on hyprland.cachix and its from-source
-    # build fails at CMake FetchContent for glaze (2026-10-05). Retry next tag.
+    # v0.56.1, not v0.56.2: 0.56.2 is not on hyprland.cachix and its
+    # from-source build fails at CMake FetchContent for glaze (2026-10-05).
+    # 0.56.2 only adds a duplicate-config-value crash fix; retry next tag.
     hyprland = {
-      url = "github:hyprwm/Hyprland?ref=v0.55.3&submodules=1";
+      url = "github:hyprwm/Hyprland?ref=v0.56.1&submodules=1";
     };
     ghostty = {
       url = "github:ghostty-org/ghostty";
