@@ -102,6 +102,7 @@ def fetch(url):
     # Private calendar data: the directory and every file in it are owner-only
     # from the moment they exist.
     CACHE.mkdir(mode=0o700, parents=True, exist_ok=True)
+    CACHE.chmod(0o700)  # mkdir's mode only applies when it creates the directory
     path = cache_file(url)
     try:
         if path.read_bytes() == body:
