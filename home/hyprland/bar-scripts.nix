@@ -42,6 +42,7 @@ let
 
   # ouranos-mode status <mode> on|peek   waybar JSON for one indicator
   # ouranos-mode toggle <mode>            flip it
+  # ouranos-mode is <mode>                exit 0 if on
   #
   # `on` modules show only while active; `peek` modules show only while
   # inactive and live in the hover drawer, so the bar stays quiet until a mode
@@ -77,6 +78,8 @@ let
     }
 
     case "$1" in
+      # Exit status only: lets the Ouranos menu tick active modes.
+      is) active "$2" ;;
       status)
         MODE=$2; VIEW=$3
         if active "$MODE"; then ON=1; else ON=0; fi

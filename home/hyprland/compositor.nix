@@ -279,6 +279,12 @@ let
         [
           ''hl.bind(mod .. " + SPACE",  hl.dsp.exec_cmd("fuzzel --config ${cfgHome}/fuzzel/hypr.ini"))''
           ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini | cliphist decode | wl-copy"))''
+          # The Ouranos menu (home/hyprland/menu.nix) and direct jumps into it.
+          ''hl.bind(mod .. " + ALT + SPACE", hl.dsp.exec_cmd("ouranos-menu"))''
+          ''hl.bind(mod .. " + CTRL + C",    hl.dsp.exec_cmd("ouranos-menu capture"))''
+          ''hl.bind(mod .. " + CTRL + O",    hl.dsp.exec_cmd("ouranos-menu toggle"))''
+          ''hl.bind(mod .. " + ESCAPE",      hl.dsp.exec_cmd("ouranos-menu system"))''
+          ''hl.bind(mod .. " + CTRL + K",    hl.dsp.exec_cmd("ouranos-keys"))''
         ]
         [
           ''hl.bind(mod .. " + SPACE",  hl.dsp.global("caelestia:launcher"))''
