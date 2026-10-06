@@ -12,6 +12,8 @@
 # sessions depend on just as much as the niri one. desktop-hyprland.nix and
 # desktop-niri-noctalia.nix layer session-specific bits on top of this.
 let
+  # The Ly greeter's monogram animation and slash-pair language file.
+  lyOuranos = pkgs.callPackage ../pkgs/ly-ouranos { };
   pal = import ../lib/palette.nix;
 
   # Ly colours are 0x00RRGGBB. The most significant byte is a *styling* flag,
@@ -52,16 +54,14 @@ in
   services.displayManager.ly = lib.mkIf (!config.services.displayManager.sddm.enable) {
     enable = true;
     # The greeter is ported from the atlas one (cartermccann/gentoo-dotfiles,
-    # system/ly/config.ini) and retinted from lib/palette.nix, so it stops
-    # being the last Catppuccin Macchiato surface on a host that is Ouranos
-    # everywhere else.
+    # system/ly/config.ini), retinted from lib/palette.nix, and carries
+    # Portfolio2's language as far as a console allows: the CM/26 monogram
+    # resolving coarse to sharp (Ly's .dur animation), slash-pair labels from
+    # a custom language file ("01 / USER"), a hairline box and one cobalt
+    # accent. Assets are generated in pkgs/ly-ouranos.
     #
-    # Two things did not survive the version gap. Atlas ran an older Ly with
-    # `animation_frame_delay = 24` ("higher = slower/calmer; default 5 is
-    # frantic"); 1.3.2 has no such key, and the knob that actually paces the
-    # animation is now min_refresh_delta, the event-loop timeout. And the
-    # atlas file set gameoflife_fg, which is dead weight when the chosen
-    # animation is colormix, so it is dropped rather than carried over.
+    # Ly renders on the framebuffer console: colours snap to the 16 VT slots
+    # (modules/common.nix remaps them to Ouranos) and text is a bitmap font.
     settings = {
       waylandsessions = "${visibleWaylandSessions}";
       full_color = true;
@@ -73,37 +73,43 @@ in
 
       # The box keeps its border here: that cobalt line IS the accent, which is
       # why hide_borders flips false relative to the config this replaces.
-      box_title = "kronos";
+      box_title = "KRONOS / ${config.system.nixos.release}";
       hide_borders = false;
       blank_box = true;
       text_in_center = true;
       margin_box_h = 4;
-      margin_box_v = 2;
+      margin_box_v = 1; # keeps the box clear of the monogram above it
       input_len = 34;
       edge_margin = 2;
 
-      clock = "%A, %B %d";
-      bigclock = "en";
-      bigclock_12hr = false; # 24h, matching waybar and the Ouranos prompt
-      bigclock_seconds = false; # a ticking seconds column fights the animation
+      clock = "%H:%M · %a %b %d";
+      bigclock = "none"; # the monogram is the hero; a big clock would fight it
 
       asterisk = "0x2022"; # bullet instead of *
       hide_version_string = true;
-      hide_key_hints = true;
+      hide_key_hints = false; # "F1 / SHUTDOWN" etc. from the ouranos lang file
       hide_keyboard_locks = true;
+      lang = "ouranos"; # /etc/ly/lang/ouranos.ini
+      initial_info_text = "AUTH / READY";
 
-      animation = "colormix";
-      animation_timeout_sec = 0; # run for as long as the greeter is up
-      colormix_col1 = lyColor pal.raw.base0D; # cobalt — the accent
-      colormix_col2 = "0x00102a66"; # deep navy; no palette slot sits this low
-      colormix_col3 = "0x20000000"; # TB_HI_BLACK — keeps the base truly black
-      min_refresh_delta = 24; # ms per event loop pass — paces the shader
+      animation = "dur_file";
+      dur_file_path = "/etc/ly/ouranos.dur";
+      dur_offset_alignment = "topcenter";
+      dur_y_offset = 1;
+      animation_timeout_sec = 0; # the .dur loops: resolve, hold 45s, resolve
+      animation_frame_delay = 24; # ms per event-loop pass
 
       allow_empty_password = false;
       clear_password = true;
       numlock = false;
       save = true;
     };
+  };
+  # Ly reads its language from <config dir>/lang/<lang>.ini, so the assets sit
+  # beside /etc/ly/config.ini.
+  environment.etc = lib.mkIf (!config.services.displayManager.sddm.enable) {
+    "ly/ouranos.dur".source = "${lyOuranos}/ouranos.dur";
+    "ly/lang/ouranos.ini".source = "${lyOuranos}/ouranos.ini";
   };
 
   # SDDM's package, Breeze theme and Wayland greeter are supplied by Plasma's
