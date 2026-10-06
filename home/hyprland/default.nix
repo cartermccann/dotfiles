@@ -12,6 +12,7 @@
 #   scripts.nix     the hypr-* helper scripts
 #   bar-scripts.nix waybar's live modules: modes, recording, Tailscale, updates
 #   menu.nix        the Ouranos menu (Super+Alt+Space), focus-or-launch, keybinding list
+#   projects.nix    project launcher (Super+O): repo picker -> herdr workspace layout
 #   compositor.nix  hyprland.lua + hyprsunset.conf
 #   waybar.nix      waybar config + stylesheet
 #   swaync.nix      notification daemon + stylesheet
@@ -32,6 +33,7 @@
     ./scripts.nix
     ./bar-scripts.nix
     ./menu.nix
+    ./projects.nix
     ./compositor.nix
     ./waybar.nix
     ./swaync.nix

@@ -130,6 +130,20 @@ let
     }
 
     {
+      id = "projects";
+      glyph = "󰉋";
+      label = "Projects";
+      hint = "Super+O";
+      action = "ouranos-project";
+    }
+    {
+      id = "herdr";
+      glyph = "󰆍";
+      label = "Herdr";
+      hint = "agent workspaces";
+      action = "ouranos-herdr";
+    }
+    {
       id = "capture";
       glyph = "󰄀";
       label = "Capture";
