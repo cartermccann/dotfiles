@@ -219,22 +219,93 @@ let
         fi
         ;;
       menu)
-        # Codex and the flake update themselves; Cursor, Granola and grok-cli
-        # are hand-pinned (hash + patch checks), so they stay listed for a
-        # deliberate bump.
-        PICK=$( (cat "$CACHE" 2>/dev/null; echo "Update codex + flake, test build"; echo "Re-check now") | ${fuzzel} --prompt="updates › ")
+        PICK=$( (cat "$CACHE" 2>/dev/null; echo "Update everything + test build"; echo "Re-check now") | ${fuzzel} --prompt="updates › ")
         case "$PICK" in
-          "Update codex + flake, test build")
-            ghostty --class=TUI.float --working-directory="$REPO" -e fish -ic \
-              "codex-update; nix flake update; and nh os build $REPO; read -P 'enter to close '" & ;;
+          "Update everything + test build") ouranos-present ouranos-update & ;;
           "Re-check now") "$0" check ;;
         esac
         ;;
     esac
   '';
+
+  # ouranos-update: the one-click update, run from the badge or the menu.
+  # Omarchy's plugin-update loop (fetch -> diff -> build -> rollback) for this
+  # flake: codex first (codex-update owns its pins and its own test build),
+  # then the hand-pinned apps, then the flake inputs, then one test build.
+  # A failed build rolls the lock back and retries with the pin bumps alone,
+  # so one broken input doesn't throw away everything else.
+  ouranosUpdate = pkgs.writeShellScriptBin "ouranos-update" ''
+    set -u
+    REPO=${home}/nix-config
+    cd "$REPO" || exit 1
+    CURL="${pkgs.curl}/bin/curl -fsSL --max-time 30"
+    GUM=${pkgs.gum}/bin/gum
+    CHANGED=()
+    say() { printf '\e[34m›\e[0m %s\n' "$*"; }
+    edited() { ! git diff --quiet -- "$1"; }
+    prefetch() { nix store prefetch-file --json "$1" 2>/dev/null | ${jq} -r .hash; }
+    setline() { # setline <file> <key> <value>: replace the first `  key = "..."` line
+      sed -i "0,/^  $2 = \".*\";/s||  $2 = \"$3\";|" "$1"
+    }
+
+    say "codex"
+    codex-update --cli-only || say "codex-update failed or had nothing to do; continuing"
+
+    bump() { # bump <name> <file> <current> <latest> <url>
+      local name=$1 file=$2 cur=$3 new=$4 url=$5
+      if [ -z "$new" ] || [ "$new" = null ] || [ "$new" = "$cur" ]; then say "$name $cur ✓"; return; fi
+      if edited "$file"; then say "$name: $file has local edits, skipping"; return; fi
+      local h; h=$(prefetch "$url") || true
+      if [ -z "$h" ]; then say "$name: download failed, skipping"; return; fi
+      case "$file" in
+        *.json) ${jq} --arg v "$new" --arg u "$url" --arg h "$h" \
+                  '.version = $v | .sources["x86_64-linux"].url = $u | .sources["x86_64-linux"].hash = $h' \
+                  "$file" > "$file.tmp" && mv "$file.tmp" "$file" ;;
+        *) setline "$file" version "$new"; sed -i "0,/hash = \"sha256-[^\"]*\"/s||hash = \"$h\"|" "$file" ;;
+      esac
+      CHANGED+=("$file"); say "$name $cur → $new"
+    }
+
+    CJ=$($CURL 'https://www.cursor.com/api/download?platform=linux-x64&releaseTrack=stable' || echo '{}')
+    bump Cursor pkgs/code-cursor/sources.json "$(${jq} -r .version pkgs/code-cursor/sources.json)" \
+      "$(${jq} -r .version <<<"$CJ")" "$(${jq} -r .downloadUrl <<<"$CJ")"
+    GV=$(${pkgs.curl}/bin/curl -sI --max-time 30 https://api.granola.ai/v1/download-latest | grep -i '^location' | grep -oP '/\K[0-9]+\.[0-9]+\.[0-9]+(?=/)')
+    bump Granola pkgs/granola/default.nix "$(grep -oP '^  version = "\K[0-9.]+' pkgs/granola/default.nix)" \
+      "$GV" "https://dr2v7l5emb758.cloudfront.net/$GV/Granola-$GV-mac-universal.dmg"
+    XV=$($CURL https://storage.googleapis.com/grok-build-public-artifacts/cli/stable | tr -d '[:space:]')
+    bump grok-cli pkgs/grok-cli/default.nix "$(grep -oP '^  version = "\K[0-9.]+' pkgs/grok-cli/default.nix)" \
+      "$XV" "https://storage.googleapis.com/grok-build-public-artifacts/cli/grok-$XV-linux-x86_64"
+
+    say "flake inputs"
+    cp flake.lock /tmp/ouranos-update-flake.lock
+    nix flake update 2>&1 | grep -E "Updated input '[^/']+'" || say "inputs already current"
+
+    git --no-pager diff --stat
+    build() { nh os build "$REPO" --no-nom 2>&1 | tail -n 25; return "''${PIPESTATUS[0]}"; }
+    if build; then
+      say "test build passed"
+    else
+      say "build failed with the new inputs; retrying with the app pins only"
+      cp /tmp/ouranos-update-flake.lock flake.lock
+      if ! build; then
+        say "build failed with the app pins too; restoring everything"
+        [ ''${#CHANGED[@]} -gt 0 ] && git checkout -- "''${CHANGED[@]}"
+        ouranos-updates check
+        exit 1
+      fi
+      say "test build passed without the input refresh (an input is broken upstream)"
+    fi
+    ouranos-updates check
+    if $GUM confirm "Apply now (nrs)?"; then nh os switch "$REPO"; fi
+    if ! git diff --quiet && $GUM confirm "Commit this update?"; then
+      git add -A flake.lock pkgs/code-cursor pkgs/granola pkgs/grok-cli pkgs/codex flake.nix
+      git commit -q -m "Update pinned apps and flake inputs" && git log --oneline -1
+    fi
+  '';
 in
 {
   home.packages = [
+    ouranosUpdate
     hyprRecord
     ouranosMode
     ouranosTailscale
