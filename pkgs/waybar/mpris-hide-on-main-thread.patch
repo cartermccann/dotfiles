@@ -1,0 +1,22 @@
+--- a/src/modules/mpris/mpris.cpp	2026-10-06 11:23:58.845925957 -0600
++++ b/src/modules/mpris/mpris.cpp	2026-10-06 11:23:58.855917241 -0600
+@@ -459,9 +459,8 @@
+ 
+   spdlog::debug("mpris: player-stop callback");
+ 
+-  // hide widget
+-  mpris->event_box_.set_visible(false);
+-  // update widget
++  // Hiding happens in update() on the main thread: touching the widget from
++  // this playerctl callback can segfault in Gtk::Widget::set_visible.
+   mpris->dp.emit();
+ }
+ 
+@@ -650,6 +649,7 @@
+ 
+   if (info.status == PLAYERCTL_PLAYBACK_STATUS_STOPPED) {
+     spdlog::debug("mpris[{}]: player stopped, skipping update", info.name);
++    event_box_.set_visible(false);
+     return;
+   }
+ 

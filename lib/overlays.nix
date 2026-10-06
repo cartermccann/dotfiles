@@ -9,10 +9,15 @@
     neovim-unwrapped =
       inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system}.neovim-unwrapped;
   })
-  # Backport Waybar #5165 (c19abf3): the mpris module hid its widget straight
-  # from a playerctl callback and segfaulted when a player stopped (seen here
-  # 2026-10-06; upstream #5124). Unreleased as of 0.15.0; drop once nixpkgs
-  # ships a release that contains it.
+  # waybar 0.15.0's mpris module hides its widget from inside playerctl
+  # callbacks, which segfaults in Gtk::Widget::set_visible (seen here
+  # 2026-10-06 in onPlayerStop; upstream #5124 for onPlayerNameVanished).
+  #   - c19abf3 (#5165): upstream's fix for onPlayerNameVanished
+  #   - mpris-hide-on-main-thread.patch: the same fix for onPlayerStop, the
+  #     path that actually crashed here; the hide moves into update(), which
+  #     runs on the main thread. Upstream master dropped the call too (0a50e82).
+  # Neither is in a release yet; drop both once nixpkgs ships one that has them
+  # (the patches will then fail to apply, which is the signal).
   (final: prev: {
     waybar = prev.waybar.overrideAttrs (old: {
       patches = (old.patches or [ ]) ++ [
@@ -20,6 +25,7 @@
           url = "https://github.com/Alexays/Waybar/commit/c19abf373bceb3eb264690f94d367407d7133568.patch";
           hash = "sha256-yRsqQZRqP+qClLsJ/WOp0NkvYqLECNl7ylndS9Kva+4=";
         })
+        ../pkgs/waybar/mpris-hide-on-main-thread.patch
       ];
     });
   })
