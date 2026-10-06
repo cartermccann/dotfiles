@@ -430,11 +430,11 @@ let
         [
           # Waybar handles SIGUSR2 as an in-process reload, avoiding a layer-shell
           # teardown/recreate flash. Start it only when no process is running.
-          # The pattern matches .waybar-wrapped, the name nixpkgs' wrapper runs
+          # The bare pattern matches .waybar-wrapped, the name nixpkgs' wrapper runs
           # it under; `-x waybar` never matched, so this always started a second bar.
-          ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill -USR2 '^\\.?waybar(-wrapped)?$' || ${waybarCmd}"))''
+          ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill -USR2 waybar || ${waybarCmd}"))''
           # SIGUSR1 is waybar's show/hide toggle: the screen back, panels and binds intact.
-          ''hl.bind(mod .. " + B", hl.dsp.exec_cmd("pkill -USR1 '^\\.?waybar(-wrapped)?$'"))''
+          ''hl.bind(mod .. " + B", hl.dsp.exec_cmd("pkill -USR1 waybar"))''
         ]
         [
           # Caelestia has no reload signal; -k then -d is the supported restart.

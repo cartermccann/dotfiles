@@ -17,8 +17,9 @@ let
   jq = "${pkgs.jq}/bin/jq";
   fuzzel = "${pkgs.fuzzel}/bin/fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini";
   notify = "${pkgs.libnotify}/bin/notify-send";
-  # waybar runs as .waybar-wrapped (nixpkgs wrapper), so -x waybar never matches.
-  refresh = "${pkgs.procps}/bin/pkill -RTMIN+8 '^\\.?waybar(-wrapped)?$'";
+  # waybar runs as .waybar-wrapped (nixpkgs wrapper), so -x waybar never matches;
+  # a bare substring does (and stays under pgrep's 15-char pattern warning).
+  refresh = "${pkgs.procps}/bin/pkill -RTMIN+8 waybar";
   dictationState = "${home}/.local/state/parakeet-dictation";
 
   # Screen recording of the focused monitor, toggled. gpu-screen-recorder
