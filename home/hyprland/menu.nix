@@ -44,10 +44,10 @@ let
       printf "  ·  any key to close"; read -rsn1' _ "$*"
   '';
 
-  # The keybinding cheatsheet (Super+/): desktop, nvim, herdr, Ly and bar
-  # bindings, each read live by cheatsheet.py, searchable in fuzzel.
+  # The keybinding cheatsheet (Super+/): desktop, nvim, tmux, herdr, Ly and
+  # bar bindings, each read live by cheatsheet.py, searchable in fuzzel.
   keys = pkgs.writeShellScriptBin "ouranos-keys" ''
-    ${pkgs.python3}/bin/python3 ${./cheatsheet.py} "${cfgHome}/hypr/hyprland.lua" \
+    ${pkgs.python3}/bin/python3 ${./cheatsheet.py} \
       | ${fuzzel} --prompt="keys › " --width 100 --lines 24 >/dev/null
   '';
 

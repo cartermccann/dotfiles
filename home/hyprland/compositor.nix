@@ -276,76 +276,76 @@ let
 
       -- Keybinds
       -- Programs
-      hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("ghostty"))
+      hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd("ghostty"), { description = "Terminal" })
       -- canonical tmux session ("work"), same bind as the niri session
-      hl.bind(mod .. " + ALT + RETURN", hl.dsp.exec_cmd("ghostty -e fish -c 'tmux attach; or tmux new -s work'"))
+      hl.bind(mod .. " + ALT + RETURN", hl.dsp.exec_cmd("ghostty -e fish -c 'tmux attach; or tmux new -s work'"), { description = "Terminal in tmux session work" })
       ${shell
         [
-          ''hl.bind(mod .. " + SPACE",  hl.dsp.exec_cmd("fuzzel --config ${cfgHome}/fuzzel/hypr.ini"))''
-          ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini | cliphist decode | wl-copy"))''
+          ''hl.bind(mod .. " + SPACE",  hl.dsp.exec_cmd("fuzzel --config ${cfgHome}/fuzzel/hypr.ini"), { description = "App launcher" })''
+          ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("cliphist list | fuzzel --dmenu --config ${cfgHome}/fuzzel/hypr.ini | cliphist decode | wl-copy"), { description = "Clipboard history" })''
           # The Ouranos menu (home/hyprland/menu.nix) and direct jumps into it.
-          ''hl.bind(mod .. " + ALT + SPACE", hl.dsp.exec_cmd("ouranos-menu"))''
-          ''hl.bind(mod .. " + CTRL + C",    hl.dsp.exec_cmd("ouranos-menu capture"))''
-          ''hl.bind(mod .. " + CTRL + O",    hl.dsp.exec_cmd("ouranos-menu toggle"))''
-          ''hl.bind(mod .. " + ESCAPE",      hl.dsp.exec_cmd("ouranos-menu system"))''
-          ''hl.bind(mod .. " + slash",       hl.dsp.exec_cmd("ouranos-keys")) -- keybinding cheatsheet''
-          ''hl.bind(mod .. " + O",           hl.dsp.exec_cmd("ouranos-project"))''
-          ''hl.bind(mod .. " + SHIFT + A",   hl.dsp.exec_cmd("ouranos-agents menu"))''
+          ''hl.bind(mod .. " + ALT + SPACE", hl.dsp.exec_cmd("ouranos-menu"), { description = "Ouranos menu" })''
+          ''hl.bind(mod .. " + CTRL + C",    hl.dsp.exec_cmd("ouranos-menu capture"), { description = "Menu › Capture" })''
+          ''hl.bind(mod .. " + CTRL + O",    hl.dsp.exec_cmd("ouranos-menu toggle"), { description = "Menu › Toggle" })''
+          ''hl.bind(mod .. " + ESCAPE",      hl.dsp.exec_cmd("ouranos-menu system"), { description = "Menu › System" })''
+          ''hl.bind(mod .. " + slash",       hl.dsp.exec_cmd("ouranos-keys"), { description = "Keybinding cheatsheet" })''
+          ''hl.bind(mod .. " + O",           hl.dsp.exec_cmd("ouranos-project"), { description = "Open a project" })''
+          ''hl.bind(mod .. " + SHIFT + A",   hl.dsp.exec_cmd("ouranos-agents menu"), { description = "Agent switcher" })''
         ]
         [
-          ''hl.bind(mod .. " + SPACE",  hl.dsp.global("caelestia:launcher"))''
+          ''hl.bind(mod .. " + SPACE",  hl.dsp.global("caelestia:launcher"), { description = "App launcher" })''
           # Caelestia's CLI wraps the same cliphist store the waybar session
           # writes to, so history carries across both sessions.
-          ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("caelestia clipboard"))''
+          ''hl.bind(mod .. " + V",      hl.dsp.exec_cmd("caelestia clipboard"), { description = "Clipboard history" })''
         ]
       }
 
       -- Screenshots (grimblast adds --freeze: the screen stops while you aim)
-      hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd([[grimblast --freeze save area - | satty -f - --output-filename ~/Pictures/Screenshots/satty-$(date +%Y%m%d-%H%M%S).png]]))
-      hl.bind(mod .. " + SHIFT + P", hl.dsp.exec_cmd("grimblast --freeze copy output"))
-      hl.bind("Print",               hl.dsp.exec_cmd([[grimblast save output ~/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png]]))
+      hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd([[grimblast --freeze save area - | satty -f - --output-filename ~/Pictures/Screenshots/satty-$(date +%Y%m%d-%H%M%S).png]]), { description = "Screenshot area → annotate" })
+      hl.bind(mod .. " + SHIFT + P", hl.dsp.exec_cmd("grimblast --freeze copy output"), { description = "Screenshot monitor → clipboard" })
+      hl.bind("Print",               hl.dsp.exec_cmd([[grimblast save output ~/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png]]), { description = "Screenshot monitor → ~/Pictures/Screenshots" })
 
       -- Color picker → clipboard
-      hl.bind(mod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a"))
+      hl.bind(mod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a"), { description = "Color picker → clipboard" })
 
       -- Window management
-      hl.bind(mod .. " + Q", hl.dsp.window.close())
-      hl.bind(mod .. " + W", hl.dsp.window.close())
-      hl.bind(mod .. " + F",         hl.dsp.window.fullscreen({ mode = "maximized" })) -- maximize (keep gaps/bar)
-      hl.bind(mod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen" })) -- true fullscreen
-      hl.bind(mod .. " + T", hl.dsp.window.float())
-      hl.bind(mod .. " + C", hl.dsp.window.center())
-      hl.bind(mod .. " + P", hl.dsp.window.pseudo())
-      hl.bind(mod .. " + S", hl.dsp.layout("togglesplit")) -- dwindle layout message
+      hl.bind(mod .. " + Q", hl.dsp.window.close(), { description = "Close window" })
+      hl.bind(mod .. " + W", hl.dsp.window.close(), { description = "Close window" })
+      hl.bind(mod .. " + F",         hl.dsp.window.fullscreen({ mode = "maximized" }), { description = "Maximize (keeps gaps and bar)" })
+      hl.bind(mod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen" }), { description = "Fullscreen" })
+      hl.bind(mod .. " + T", hl.dsp.window.float(), { description = "Toggle floating" })
+      hl.bind(mod .. " + C", hl.dsp.window.center(), { description = "Center window" })
+      hl.bind(mod .. " + P", hl.dsp.window.pseudo(), { description = "Pseudo-tile" })
+      hl.bind(mod .. " + S", hl.dsp.layout("togglesplit"), { description = "Toggle split direction" })
 
       -- Scratchpad (special workspace) — drops in with slidefadevert; keep a
       -- persistent ghostty+tmux session here.
-      hl.bind(mod .. " + grave",         hl.dsp.workspace.toggle_special({ name = "scratch" }))
-      hl.bind(mod .. " + SHIFT + grave", hl.dsp.window.move({ workspace = "special:scratch", follow = false }))
+      hl.bind(mod .. " + grave",         hl.dsp.workspace.toggle_special({ name = "scratch" }), { description = "Scratchpad" })
+      hl.bind(mod .. " + SHIFT + grave", hl.dsp.window.move({ workspace = "special:scratch", follow = false }), { description = "Send window to scratchpad" })
 
       -- Vim + arrow focus
-      hl.bind(mod .. " + H", hl.dsp.focus({ direction = "l" }))
-      hl.bind(mod .. " + J", hl.dsp.focus({ direction = "d" }))
-      hl.bind(mod .. " + K", hl.dsp.focus({ direction = "u" }))
-      hl.bind(mod .. " + L", hl.dsp.focus({ direction = "r" }))
-      hl.bind(mod .. " + left",  hl.dsp.focus({ direction = "l" }))
-      hl.bind(mod .. " + down",  hl.dsp.focus({ direction = "d" }))
-      hl.bind(mod .. " + up",    hl.dsp.focus({ direction = "u" }))
-      hl.bind(mod .. " + right", hl.dsp.focus({ direction = "r" }))
+      hl.bind(mod .. " + H", hl.dsp.focus({ direction = "l" }), { description = "Focus left" })
+      hl.bind(mod .. " + J", hl.dsp.focus({ direction = "d" }), { description = "Focus down" })
+      hl.bind(mod .. " + K", hl.dsp.focus({ direction = "u" }), { description = "Focus up" })
+      hl.bind(mod .. " + L", hl.dsp.focus({ direction = "r" }), { description = "Focus right" })
+      hl.bind(mod .. " + left",  hl.dsp.focus({ direction = "l" }), { description = "Focus left" })
+      hl.bind(mod .. " + down",  hl.dsp.focus({ direction = "d" }), { description = "Focus down" })
+      hl.bind(mod .. " + up",    hl.dsp.focus({ direction = "u" }), { description = "Focus up" })
+      hl.bind(mod .. " + right", hl.dsp.focus({ direction = "r" }), { description = "Focus right" })
 
       -- Vim + arrow move
-      hl.bind(mod .. " + SHIFT + H", hl.dsp.window.move({ direction = "l" }))
-      hl.bind(mod .. " + SHIFT + J", hl.dsp.window.move({ direction = "d" }))
-      hl.bind(mod .. " + SHIFT + K", hl.dsp.window.move({ direction = "u" }))
-      hl.bind(mod .. " + SHIFT + L", hl.dsp.window.move({ direction = "r" }))
-      hl.bind(mod .. " + SHIFT + left",  hl.dsp.window.move({ direction = "l" }))
-      hl.bind(mod .. " + SHIFT + down",  hl.dsp.window.move({ direction = "d" }))
-      hl.bind(mod .. " + SHIFT + up",    hl.dsp.window.move({ direction = "u" }))
-      hl.bind(mod .. " + SHIFT + right", hl.dsp.window.move({ direction = "r" }))
+      hl.bind(mod .. " + SHIFT + H", hl.dsp.window.move({ direction = "l" }), { description = "Move window left" })
+      hl.bind(mod .. " + SHIFT + J", hl.dsp.window.move({ direction = "d" }), { description = "Move window down" })
+      hl.bind(mod .. " + SHIFT + K", hl.dsp.window.move({ direction = "u" }), { description = "Move window up" })
+      hl.bind(mod .. " + SHIFT + L", hl.dsp.window.move({ direction = "r" }), { description = "Move window right" })
+      hl.bind(mod .. " + SHIFT + left",  hl.dsp.window.move({ direction = "l" }), { description = "Move window left" })
+      hl.bind(mod .. " + SHIFT + down",  hl.dsp.window.move({ direction = "d" }), { description = "Move window down" })
+      hl.bind(mod .. " + SHIFT + up",    hl.dsp.window.move({ direction = "u" }), { description = "Move window up" })
+      hl.bind(mod .. " + SHIFT + right", hl.dsp.window.move({ direction = "r" }), { description = "Move window right" })
 
       -- Resize: numeric pixel deltas (x/y).
-      hl.bind(mod .. " + minus", hl.dsp.window.resize({ x = -100, y = 0, relative = true }))
-      hl.bind(mod .. " + equal", hl.dsp.window.resize({ x = 100,  y = 0, relative = true }))
+      hl.bind(mod .. " + minus", hl.dsp.window.resize({ x = -100, y = 0, relative = true }), { description = "Narrow window" })
+      hl.bind(mod .. " + equal", hl.dsp.window.resize({ x = 100,  y = 0, relative = true }), { description = "Widen window" })
 
       -- tmux prefix mode: SUPER+A ≈ C-a (mirrors home/tmux.nix)
       -- One-shot like tmux: each action drops back to the root keymap.
@@ -361,152 +361,152 @@ let
       end
       hl.define_submap("tmux", function()
         -- prefix | / - : preselect the dwindle direction, spawn the terminal there
-        hl.bind("backslash",         oneshot(hl.dsp.layout("preselect r"), hl.dsp.exec_cmd("ghostty")))
-        hl.bind("SHIFT + backslash", oneshot(hl.dsp.layout("preselect r"), hl.dsp.exec_cmd("ghostty")))
-        hl.bind("minus",             oneshot(hl.dsp.layout("preselect d"), hl.dsp.exec_cmd("ghostty")))
+        hl.bind("backslash",         oneshot(hl.dsp.layout("preselect r"), hl.dsp.exec_cmd("ghostty")), { description = "Split right (new terminal)" })
+        hl.bind("SHIFT + backslash", oneshot(hl.dsp.layout("preselect r"), hl.dsp.exec_cmd("ghostty")), { description = "Split right (new terminal)" })
+        hl.bind("minus",             oneshot(hl.dsp.layout("preselect d"), hl.dsp.exec_cmd("ghostty")), { description = "Split down (new terminal)" })
         -- prefix c : new "window" → first empty workspace + terminal
-        hl.bind("C", oneshot(hl.dsp.focus({ workspace = "empty" }), hl.dsp.exec_cmd("ghostty")))
+        hl.bind("C", oneshot(hl.dsp.focus({ workspace = "empty" }), hl.dsp.exec_cmd("ghostty")), { description = "New workspace with a terminal" })
         -- prefix hjkl : pane navigation
-        hl.bind("H", oneshot(hl.dsp.focus({ direction = "l" })))
-        hl.bind("J", oneshot(hl.dsp.focus({ direction = "d" })))
-        hl.bind("K", oneshot(hl.dsp.focus({ direction = "u" })))
-        hl.bind("L", oneshot(hl.dsp.focus({ direction = "r" })))
+        hl.bind("H", oneshot(hl.dsp.focus({ direction = "l" })), { description = "Focus left" })
+        hl.bind("J", oneshot(hl.dsp.focus({ direction = "d" })), { description = "Focus down" })
+        hl.bind("K", oneshot(hl.dsp.focus({ direction = "u" })), { description = "Focus up" })
+        hl.bind("L", oneshot(hl.dsp.focus({ direction = "r" })), { description = "Focus right" })
         -- prefix HJKL : repeatable resize (stays in the mode; ESC to leave)
-        hl.bind("SHIFT + H", hl.dsp.window.resize({ x = -80, y = 0,   relative = true }), { repeating = true })
-        hl.bind("SHIFT + J", hl.dsp.window.resize({ x = 0,   y = 80,  relative = true }), { repeating = true })
-        hl.bind("SHIFT + K", hl.dsp.window.resize({ x = 0,   y = -80, relative = true }), { repeating = true })
-        hl.bind("SHIFT + L", hl.dsp.window.resize({ x = 80,  y = 0,   relative = true }), { repeating = true })
+        hl.bind("SHIFT + H", hl.dsp.window.resize({ x = -80, y = 0,   relative = true }), { description = "Shrink width (repeats)", repeating = true })
+        hl.bind("SHIFT + J", hl.dsp.window.resize({ x = 0,   y = 80,  relative = true }), { description = "Grow height (repeats)", repeating = true })
+        hl.bind("SHIFT + K", hl.dsp.window.resize({ x = 0,   y = -80, relative = true }), { description = "Shrink height (repeats)", repeating = true })
+        hl.bind("SHIFT + L", hl.dsp.window.resize({ x = 80,  y = 0,   relative = true }), { description = "Grow width (repeats)", repeating = true })
         -- prefix z / x : zoom pane, kill pane
-        hl.bind("Z", oneshot(hl.dsp.window.fullscreen({ mode = "maximized" })))
-        hl.bind("X", oneshot(hl.dsp.window.close()))
+        hl.bind("Z", oneshot(hl.dsp.window.fullscreen({ mode = "maximized" })), { description = "Zoom window" })
+        hl.bind("X", oneshot(hl.dsp.window.close()), { description = "Close window" })
         -- prefix n / p : next / previous "window" (workspace)
-        hl.bind("N", oneshot(hl.dsp.focus({ workspace = "e+1" })))
-        hl.bind("P", oneshot(hl.dsp.focus({ workspace = "e-1" })))
+        hl.bind("N", oneshot(hl.dsp.focus({ workspace = "e+1" })), { description = "Next workspace" })
+        hl.bind("P", oneshot(hl.dsp.focus({ workspace = "e-1" })), { description = "Previous workspace" })
         -- prefix 1-9,0 : jump to workspace N (tmux select-window parity)
         for i = 1, 10 do
           local key = (i == 10) and "0" or tostring(i)
-          hl.bind(key, oneshot(hl.dsp.focus({ workspace = i })))
+          hl.bind(key, oneshot(hl.dsp.focus({ workspace = i })), { description = "Workspace " .. i })
         end
-        hl.bind("ESCAPE", hl.dsp.submap("reset"))
-        hl.bind("catchall", hl.dsp.submap("reset"))
+        hl.bind("ESCAPE", hl.dsp.submap("reset"), { description = "Leave tmux mode" })
+        hl.bind("catchall", hl.dsp.submap("reset"), { description = "Leave tmux mode" })
       end)
-      hl.bind(mod .. " + A", hl.dsp.submap("tmux"))
+      hl.bind(mod .. " + A", hl.dsp.submap("tmux"), { description = "tmux mode (prefix)" })
 
       -- Workspaces 1-10 (focus + move-window-to)
       for i = 1, 10 do
         local key = (i == 10) and "0" or tostring(i)
-        hl.bind(mod .. " + " .. key,           hl.dsp.focus({ workspace = i }))
-        hl.bind(mod .. " + SHIFT + " .. key,   hl.dsp.window.move({ workspace = i, follow = true }))
+        hl.bind(mod .. " + " .. key,           hl.dsp.focus({ workspace = i }), { description = "Workspace " .. i })
+        hl.bind(mod .. " + SHIFT + " .. key,   hl.dsp.window.move({ workspace = i, follow = true }), { description = "Move window to workspace " .. i })
       end
-      hl.bind(mod .. " + TAB",         hl.dsp.focus({ workspace = "e+1" }))
-      hl.bind(mod .. " + SHIFT + TAB", hl.dsp.focus({ workspace = "e-1" }))
+      hl.bind(mod .. " + TAB",         hl.dsp.focus({ workspace = "e+1" }), { description = "Next workspace" })
+      hl.bind(mod .. " + SHIFT + TAB", hl.dsp.focus({ workspace = "e-1" }), { description = "Previous workspace" })
 
       -- Notifications ${if caelestia then "(caelestia)" else "(swaync)"}
       ${shell
         [
-          ''hl.bind(mod .. " + comma",         hl.dsp.exec_cmd("swaync-client -d -sw")) -- dismiss latest''
-          ''hl.bind(mod .. " + SHIFT + comma", hl.dsp.exec_cmd("swaync-client -C -sw")) -- close all''
-          ''hl.bind(mod .. " + N",             hl.dsp.exec_cmd("swaync-client -t -sw")) -- toggle panel''
+          ''hl.bind(mod .. " + comma",         hl.dsp.exec_cmd("swaync-client --close-latest -sw"), { description = "Dismiss latest notification" })''
+          ''hl.bind(mod .. " + SHIFT + comma", hl.dsp.exec_cmd("swaync-client -C -sw"), { description = "Clear notifications" })''
+          ''hl.bind(mod .. " + N",             hl.dsp.exec_cmd("swaync-client -t -sw"), { description = "Notification center" })''
         ]
         [
           # Caelestia exposes no per-notification dismiss, so SUPER+comma is left
           # unbound here rather than mapped to something that means something else.
-          ''hl.bind(mod .. " + SHIFT + comma", hl.dsp.global("caelestia:clearNotifs")) -- close all''
-          ''hl.bind(mod .. " + N",             hl.dsp.global("caelestia:sidebar"))     -- toggle panel''
-          ''hl.bind(mod .. " + D",             hl.dsp.global("caelestia:dashboard"))   -- dashboard''
+          ''hl.bind(mod .. " + SHIFT + comma", hl.dsp.global("caelestia:clearNotifs"), { description = "Clear notifications" })''
+          ''hl.bind(mod .. " + N",             hl.dsp.global("caelestia:sidebar"), { description = "Notification center" })''
+          ''hl.bind(mod .. " + D",             hl.dsp.global("caelestia:dashboard"), { description = "Dashboard" })''
         ]
       }
 
       -- Control panels
       -- CTRL+A is the full mixer; CTRL+S is the quick output picker (three
       -- outputs are in regular rotation, so switching shouldn't need a GUI).
-      hl.bind(mod .. " + CTRL + A", hl.dsp.exec_cmd("pavucontrol"))
-      hl.bind(mod .. " + CTRL + S", hl.dsp.exec_cmd("hypr-audio-sink"))
-      hl.bind(mod .. " + CTRL + B", hl.dsp.exec_cmd("ghostty --class=TUI.float -e bluetui"))
-      hl.bind(mod .. " + CTRL + T", hl.dsp.exec_cmd("ghostty -e btop"))
-      hl.bind(mod .. " + CTRL + D", hl.dsp.exec_cmd("ghostty -e rice-dashboard"))
+      hl.bind(mod .. " + CTRL + A", hl.dsp.exec_cmd("pavucontrol"), { description = "Audio mixer" })
+      hl.bind(mod .. " + CTRL + S", hl.dsp.exec_cmd("hypr-audio-sink"), { description = "Audio output picker" })
+      hl.bind(mod .. " + CTRL + B", hl.dsp.exec_cmd("ghostty --class=TUI.float -e bluetui"), { description = "Bluetooth" })
+      hl.bind(mod .. " + CTRL + T", hl.dsp.exec_cmd("ghostty -e btop"), { description = "System monitor" })
+      hl.bind(mod .. " + CTRL + D", hl.dsp.exec_cmd("ghostty -e rice-dashboard"), { description = "Rice dashboard" })
 
       -- Utilities
       ${shell
         [
-          ''hl.bind(mod .. " + CTRL + L",  hl.dsp.exec_cmd("hyprlock"))''
-          ''hl.bind(mod .. " + SHIFT + X", hl.dsp.exec_cmd("hypr-power-menu"))''
+          ''hl.bind(mod .. " + CTRL + L",  hl.dsp.exec_cmd("hyprlock"), { description = "Lock screen" })''
+          ''hl.bind(mod .. " + SHIFT + X", hl.dsp.exec_cmd("hypr-power-menu"), { description = "Power menu" })''
         ]
         [
-          ''hl.bind(mod .. " + CTRL + L",  hl.dsp.global("caelestia:lock"))''
-          ''hl.bind(mod .. " + SHIFT + X", hl.dsp.global("caelestia:session"))''
+          ''hl.bind(mod .. " + CTRL + L",  hl.dsp.global("caelestia:lock"), { description = "Lock screen" })''
+          ''hl.bind(mod .. " + SHIFT + X", hl.dsp.global("caelestia:session"), { description = "Power menu" })''
         ]
       }
-      hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("hypr-wallpaper-pick"))
+      hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("hypr-wallpaper-pick"), { description = "Wallpaper picker" })
       ${shell
         [
           # Waybar handles SIGUSR2 as an in-process reload, avoiding a layer-shell
           # teardown/recreate flash. Start it only when no process is running.
           # The bare pattern matches .waybar-wrapped, the name nixpkgs' wrapper runs
           # it under; `-x waybar` never matched, so this always started a second bar.
-          ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill -USR2 waybar || ${waybarCmd}"))''
+          ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("pkill -USR2 waybar || ${waybarCmd}"), { description = "Reload the bar" })''
           # SIGUSR1 is waybar's show/hide toggle: the screen back, panels and binds intact.
-          ''hl.bind(mod .. " + B", hl.dsp.exec_cmd("pkill -USR1 waybar"))''
+          ''hl.bind(mod .. " + B", hl.dsp.exec_cmd("pkill -USR1 waybar"), { description = "Show/hide the bar" })''
         ]
         [
           # Caelestia has no reload signal; -k then -d is the supported restart.
-          ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("bash -c 'caelestia shell -k; caelestia shell -d'"))''
+          ''hl.bind(mod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("bash -c 'caelestia shell -k; caelestia shell -d'"), { description = "Restart the shell" })''
         ]
       }
-      hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
-      hl.bind(mod .. " + CTRL + N",  hl.dsp.exec_cmd("hypr-night-toggle"))
-      hl.bind(mod .. " + ALT + R",   hl.dsp.exec_cmd("hypr-record")) -- focused monitor → ~/Videos/Recordings
+      hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"), { description = "Reload Hyprland" })
+      hl.bind(mod .. " + CTRL + N",  hl.dsp.exec_cmd("hypr-night-toggle"), { description = "Night light" })
+      hl.bind(mod .. " + ALT + R",   hl.dsp.exec_cmd("hypr-record"), { description = "Record focused monitor → ~/Videos/Recordings" })
       -- Batch (offline Parakeet) is the primary binding. The streaming model
       -- drops speech mid-sentence for 10-15s at a time on clean, loud input
       -- and sometimes never recovers, which no amount of pipeline work fixes:
       -- see home/dictation.nix. Offline is the accurate one on a finished
       -- utterance, so it takes the plain chord and streaming keeps SHIFT.
-      hl.bind(mod .. " + ALT + L",   hl.dsp.exec_cmd("~/.local/bin/toggle-dictation-batch.sh"))
-      hl.bind(mod .. " + ALT + SHIFT + L", hl.dsp.exec_cmd("~/.local/bin/toggle-dictation.sh"))
+      hl.bind(mod .. " + ALT + L",   hl.dsp.exec_cmd("~/.local/bin/toggle-dictation-batch.sh"), { description = "Dictation (offline)" })
+      hl.bind(mod .. " + ALT + SHIFT + L", hl.dsp.exec_cmd("~/.local/bin/toggle-dictation.sh"), { description = "Dictation (streaming)" })
 
       -- Session
-      hl.bind(mod .. " + SHIFT + E", hl.dsp.exit())
+      hl.bind(mod .. " + SHIFT + E", hl.dsp.exit(), { description = "Exit Hyprland" })
 
       -- Repeating volume/brightness ${
         if caelestia then "(wpctl; caelestia draws the OSD)" else "(via swayosd for the OSD)"
       }
       ${shell
         [
-          ''hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("swayosd-client --output-volume raise"), { repeating = true })''
-          ''hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("swayosd-client --output-volume lower"), { repeating = true })''
-          ''hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("swayosd-client --brightness raise"),    { repeating = true })''
-          ''hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("swayosd-client --brightness lower"),    { repeating = true })''
+          ''hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("swayosd-client --output-volume raise"), { description = "Volume up", repeating = true })''
+          ''hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("swayosd-client --output-volume lower"), { description = "Volume down", repeating = true })''
+          ''hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("swayosd-client --brightness raise"),    { description = "Brightness up", repeating = true })''
+          ''hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("swayosd-client --brightness lower"),    { description = "Brightness down", repeating = true })''
         ]
         [
           # Caelestia declares brightness globals but no volume ones — its OSD
           # watches PipeWire directly, so driving wpctl is what surfaces it.
           # @DEFAULT_AUDIO_SINK@ is deliberate: modules/audio.nix ranks the
           # outputs so the default is whatever is actually being listened to.
-          ''hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 3%+"), { repeating = true })''
-          ''hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-"),        { repeating = true })''
-          ''hl.bind("XF86MonBrightnessUp",  hl.dsp.global("caelestia:brightnessUp"),   { repeating = true })''
-          ''hl.bind("XF86MonBrightnessDown",hl.dsp.global("caelestia:brightnessDown"), { repeating = true })''
+          ''hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 3%+"), { description = "Volume up", repeating = true })''
+          ''hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-"),        { description = "Volume down", repeating = true })''
+          ''hl.bind("XF86MonBrightnessUp",  hl.dsp.global("caelestia:brightnessUp"),   { description = "Brightness up", repeating = true })''
+          ''hl.bind("XF86MonBrightnessDown",hl.dsp.global("caelestia:brightnessDown"), { description = "Brightness down", repeating = true })''
         ]
       }
 
       -- Locked binds (work while the lock screen is active)
       ${shell
         [
-          ''hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle"), { locked = true })''
-          ''hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("swayosd-client --input-volume mute-toggle"),  { locked = true })''
+          ''hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle"), { description = "Mute", locked = true })''
+          ''hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("swayosd-client --input-volume mute-toggle"),  { description = "Mute mic", locked = true })''
         ]
         [
-          ''hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),   { locked = true })''
-          ''hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), { locked = true })''
+          ''hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),   { description = "Mute", locked = true })''
+          ''hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), { description = "Mute mic", locked = true })''
         ]
       }
-      hl.bind("XF86AudioPlay",    hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-      hl.bind("XF86AudioNext",    hl.dsp.exec_cmd("playerctl next"),       { locked = true })
-      hl.bind("XF86AudioPrev",    hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
+      hl.bind("XF86AudioPlay",    hl.dsp.exec_cmd("playerctl play-pause"), { description = "Play/pause", locked = true })
+      hl.bind("XF86AudioNext",    hl.dsp.exec_cmd("playerctl next"),       { description = "Next track", locked = true })
+      hl.bind("XF86AudioPrev",    hl.dsp.exec_cmd("playerctl previous"),   { description = "Previous track", locked = true })
 
       -- Mouse drag/resize
-      hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
-      hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+      hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(),   { description = "Drag window", mouse = true })
+      hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), { description = "Resize window", mouse = true })
 
       -- Autostart
       hl.on("hyprland.start", function()
