@@ -14,6 +14,14 @@ let
     upstream = codex-desktop-linux.packages.${pkgs.stdenv.hostPlatform.system}.codex-desktop;
   };
 
+  codexHooksRepair = pkgs.writeShellApplication {
+    name = "codex-hooks-repair";
+    runtimeInputs = [ pkgs.python3 ];
+    text = ''
+      exec python3 ${../scripts/codex-hook-compat.py} "$@"
+    '';
+  };
+
   codexDesktopGuard = pkgs.writeShellApplication {
     name = "codex-desktop-guard";
     runtimeInputs = [
@@ -73,6 +81,11 @@ let
       # explicit profile override: upstream gives that override additional
       # behavior beyond choosing a directory. Existing user overrides survive.
       export CODEX_HOME="''${CODEX_HOME:-${homeDir}/.codex}"
+      # Some Claude plugins pass argv separately; Codex executes only command.
+      # Reapply after plugin refreshes without granting trust to changed hooks.
+      if ! ${codexHooksRepair}/bin/codex-hooks-repair --codex-home "$CODEX_HOME"; then
+        echo "WARN: Stripe hook repair failed; continuing Codex launch." >&2
+      fi
       export CODEX_LINUX_DISABLE_USAGE_REPORTING="''${CODEX_LINUX_DISABLE_USAGE_REPORTING:-1}"
       # Reuse the input daemon already configured for system dictation.
       # Its NixOS socket is outside the backend's default search locations.
@@ -135,7 +148,10 @@ let
   };
 in
 lib.mkIf (config.home.username == "cjm") {
-  home.packages = [ codexDesktopGuard ];
+  home.packages = [
+    codexDesktopGuard
+    codexHooksRepair
+  ];
 
   home.file.".local/share/applications/codex-desktop.desktop" = {
     force = true;

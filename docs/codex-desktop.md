@@ -76,6 +76,20 @@ live interaction results.
 
 ### Hooks host capability
 
+Stripe plugin 0.10.3 uses `command: node` with the script in a separate `args`
+field. Codex 0.162.0 ignores that field and runs bare Node on the hook's JSON
+stdin, producing a syntax error. `codex-hooks-repair` folds only the recognized
+Stripe lifecycle script argument into its command and saves the original
+manifest beside it as `hooks.json.codex-compat-backup`. The desktop guard runs
+this repair on launch so a plugin refresh can be repaired on the next launch.
+CLI users can run `codex-hooks-repair` directly after a plugin refresh.
+
+The repair leaves hook enablement and trusted hashes alone. Approve the corrected
+Stripe commands in Settings > Hooks once; changed commands require native trust
+review. Other plugins and hooks remain untouched. Verify the effective commands
+with local app-server `hooks/list`, and run
+`python3 scripts/test_codex_hook_compat.py` for the compatibility checks.
+
 The durable/cloud app-server currently rejects `hooks/list`. A local compatibility
 patch prevents that RPC in the shared settings/composer query and shows an
 explicit unsupported message in Hooks settings, including while project roots
