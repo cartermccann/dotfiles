@@ -19,11 +19,11 @@
 # https://storage.googleapis.com/grok-build-public-artifacts/cli/stable
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "grok-cli";
-  version = "1.0.46";
+  version = "1.0.50";
 
   src = fetchurl {
     url = "https://storage.googleapis.com/grok-build-public-artifacts/cli/grok-${finalAttrs.version}-linux-x86_64";
-    hash = "sha256-QWJqUykjJBQLklVrnUL/VULj3NBK/4Xq+4aJ3UrbRPw=";
+    hash = "sha256-yA3gFVcG/y2ZViOIexAvLQq9LGKyZD3qOgzrr33XJNU=";
   };
 
   dontUnpack = true;
