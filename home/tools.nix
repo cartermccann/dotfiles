@@ -170,6 +170,9 @@ in
     # SEO
     screamingFrog # proprietary crawler, bundled JDK
 
+    # Games
+    prismlauncher # Minecraft Java launcher (Microsoft login, bundles its own JDKs)
+
     # Rice — trimmed to the ones that are actually wired to something.
     # Dropped (zero invocations, nothing references them): pipes-rs, cbonsai,
     # asciiquarium, sl, lolcat, peaclock, tty-clock.
